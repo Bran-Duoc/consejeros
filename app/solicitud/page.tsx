@@ -320,8 +320,8 @@ export default function SolicitudPage() {
     }
   };
 
-  const handleSubmit = () => {
-    const ticket = addTicket({
+  const handleSubmit = async () => {
+    const ticket = await addTicket({
       title: data.title,
       description: data.description,
       category: data.category as TicketCategory,
