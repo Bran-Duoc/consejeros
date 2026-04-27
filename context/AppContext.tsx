@@ -156,7 +156,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         createdBy: user?.id || ticketData.createdBy,
         createdByName: user?.email || ticketData.createdByName || "Estudiante",
         status: routing.status,
-        assignedTo: routing.assignedTo,
+        assignedTo: routing.assignedTo && routing.assignedTo.includes('-') ? routing.assignedTo : null,
         slaDeadline,
       };
 

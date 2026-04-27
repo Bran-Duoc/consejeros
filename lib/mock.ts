@@ -5,7 +5,7 @@ export const councilMembers: User[] = [];
 export const adminUsers: User[] = [
   ...councilMembers,
   {
-    id: "u4",
+    id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     name: "Admin Portal",
     email: "admin@duoc.cl",
     role: "Admin_TI",
