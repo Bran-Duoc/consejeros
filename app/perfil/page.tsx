@@ -27,7 +27,7 @@ const isValidDomain = (email: string) =>
 // PANTALLA: Mis Solicitudes (usuario autenticado)
 // ============================================================
 function PerfilDashboard({ user }: { user: User }) {
-  const { tickets, audit, addSurvey } = useApp();
+  const { tickets, audit, addSurvey, role, profile } = useApp();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
   const [surveyData, setSurveyData] = useState({ csat: 0, ces: 0, comment: "" });
   const [surveySubmitted, setSurveySubmitted] = useState<Set<string>>(new Set());
@@ -37,7 +37,7 @@ function PerfilDashboard({ user }: { user: User }) {
     (t) =>
       t.createdBy === user.id ||
       t.createdByName.toLowerCase() === (user.email ?? "").toLowerCase() ||
-      t.createdBy === user.email
+      t.createdBy === (user.email ?? "").toLowerCase()
   );
 
   const handleSignOut = async () => {
@@ -86,7 +86,41 @@ function PerfilDashboard({ user }: { user: User }) {
           </div>
         </div>
 
-        {/* Sin solicitudes */}
+        {/* Info Card */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shrink-0">
+              <Icon icon="lucide:user" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Nombre</p>
+              <p className="text-sm font-semibold text-slate-800">{profile?.nombre || user.user_metadata?.full_name || user.email?.split('@')[0]}</p>
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+              <Icon icon="lucide:shield" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Rol Institucional</p>
+              <p className="text-sm font-semibold text-slate-800">{role || "Estudiante"}</p>
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+              <Icon icon="lucide:building" />
+            </div>
+            <div>
+              <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Departamento/Sede</p>
+              <p className="text-sm font-semibold text-slate-800">{profile?.departamento || "Viña del Mar"}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-slate-800">Mis Solicitudes</h2>
+          <div className="h-[1px] flex-1 mx-4 bg-slate-100 hidden sm:block" />
+        </div>
         {myTickets.length === 0 ? (
           <div className="text-center py-24 flex flex-col items-center animate-fade-in">
             <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">

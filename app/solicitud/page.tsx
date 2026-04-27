@@ -278,7 +278,7 @@ function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof 
 
 // ---- Main Page ----
 export default function SolicitudPage() {
-  const { addTicket } = useApp();
+  const { addTicket, user } = useApp();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>(initialFormData);
   const [submitted, setSubmitted] = useState(false);
@@ -286,7 +286,15 @@ export default function SolicitudPage() {
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
-    setData(loadDraft());
+    const draft = loadDraft();
+    
+    // Si hay un usuario logueado y no hay datos en el borrador, pre-llenamos
+    if (user && !draft.email) {
+      draft.email = user.email || "";
+      draft.name = user.user_metadata?.full_name || user.email?.split('@')[0] || "";
+    }
+    
+    setData(draft);
     
     // Offline-first detection
     const handleOnline = () => setIsOffline(false);

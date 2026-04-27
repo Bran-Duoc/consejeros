@@ -24,6 +24,7 @@ interface AppState {
   agents: User[];
   user: AuthUser | null;
   role: AdminRole | null;
+  profile: any | null;
   addTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">) => Promise<Ticket>;
   moveTicket: (ticketId: string, newStatus: TicketStatus) => Promise<void>;
   addAuditEntry: (entry: AuditEntry) => void;
@@ -41,6 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [slaConfig, setSlaConfig] = useState<SLAConfig[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<AdminRole | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
   const [agents, setAgents] = useState<User[]>(adminUsers);
   const [initialized, setInitialized] = useState(false);
 
@@ -61,17 +63,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (sessionUser) {
         const { data, error } = await supabase
           .from("users")
-          .select("rol")
+          .select("*")
           .eq("id", sessionUser.id)
           .single();
         
         if (data && !error) {
           setRole(data.rol as AdminRole);
+          setProfile(data);
         } else {
           setRole("Estudiante"); // Fallback
+          setProfile(null);
         }
       } else {
         setRole(null);
+        setProfile(null);
       }
     };
 
@@ -215,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         agents,
         user,
         role,
+        profile,
         addTicket,
         moveTicket,
         addAuditEntry,
