@@ -3,21 +3,31 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useApp } from "@/context/AppContext";
 import { Icon } from "@iconify/react";
 
 export default function Navbar() {
   const pathname = usePathname() || "/";
+  const { user, role } = useApp();
 
   if (pathname.startsWith("/admin")) {
     return null;
   }
 
+  // Base items always visible
   const navItems = [
     { href: "/", label: "Inicio", icon: "lucide:home" },
-    { href: "/solicitud", label: "Solicitud", icon: "lucide:mail" },
-    { href: "/portal", label: "Portal", icon: "lucide:user" },
-    { href: "/admin", label: "Admin", icon: "lucide:settings" },
+    { href: "/solicitud", label: "Ingresar Solicitud", icon: "lucide:mail" },
   ];
+
+  // Conditional items
+  if (user) {
+    navItems.push({ href: "/perfil", label: "Mi Perfil", icon: "lucide:user" });
+  }
+
+  if (role === "Consejero" || role === "Admin_TI") {
+    navItems.push({ href: "/admin", label: "Admin", icon: "lucide:settings" });
+  }
 
   return (
     <nav className="fixed top-[10px] left-[30px] right-[30px] z-50">

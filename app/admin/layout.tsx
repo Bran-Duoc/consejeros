@@ -18,11 +18,13 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { adminRole, setAdminRole } = useApp();
+  const { role, user } = useApp();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdKOpen, setCmdKOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const roleLabel = role === "Admin_TI" ? "Administrador TI" : "Consejero de Sede";
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -183,19 +185,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-foreground/50">Rol actual:</span>
-              <select
-                value={adminRole}
-                onChange={(e) => setAdminRole(e.target.value as AdminRole)}
-                className="bg-white border border-border text-sm rounded-lg px-2 py-1 outline-none focus:border-indigo-600 text-black font-medium cursor-pointer"
-              >
-                <option value="Consejero">Consejero</option>
-                <option value="Administrador TI">Administrador TI</option>
-              </select>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest leading-none mb-1">
+                {roleLabel}
+              </span>
+              <span className="text-xs text-slate-500 font-medium max-w-[150px] truncate">
+                {user?.email}
+              </span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-              <Icon icon="lucide:user" className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm border border-indigo-400/20">
+               {user?.email?.[0].toUpperCase() ?? <Icon icon="lucide:user" className="w-5 h-5" />}
             </div>
           </div>
         </header>

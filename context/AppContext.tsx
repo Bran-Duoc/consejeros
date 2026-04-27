@@ -3,14 +3,18 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import {
   Ticket, AuditEntry, Survey, SLAConfig, TicketStatus,
-  mockTickets, mockAuditEntries, mockSurveys, mockSLAConfig,
-  adminUsers, generateId, STORAGE_KEYS, loadFromStorage, saveToStorage, User,
+  generateId, STORAGE_KEYS, loadFromStorage, User,
 } from "@/lib/data";
+import {
+  mockTickets, mockAuditEntries, mockSurveys, mockSLAConfig, adminUsers
+} from "@/lib/mock";
 import { logStatusChange, logAssignment, logTicketCreation } from "@/lib/audit";
 import { routeTicket } from "@/lib/routing";
+import { supabase } from "@/lib/supabase";
+import { User as AuthUser } from "@supabase/supabase-js";
 import { db } from "@/lib/api";
 
-export type AdminRole = "Consejero" | "Administrador TI";
+export type AdminRole = "Estudiante" | "Consejero" | "Admin_TI";
 
 interface AppState {
   tickets: Ticket[];
@@ -18,8 +22,8 @@ interface AppState {
   surveys: Survey[];
   slaConfig: SLAConfig[];
   agents: User[];
-  adminRole: AdminRole;
-  setAdminRole: (role: AdminRole) => void;
+  user: AuthUser | null;
+  role: AdminRole | null;
   addTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">) => Promise<Ticket>;
   moveTicket: (ticketId: string, newStatus: TicketStatus) => Promise<void>;
   addAuditEntry: (entry: AuditEntry) => void;
@@ -35,37 +39,72 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [slaConfig, setSlaConfig] = useState<SLAConfig[]>([]);
-  const [adminRole, setAdminRole] = useState<AdminRole>("Consejero");
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [role, setRole] = useState<AdminRole | null>(null);
+  const [agents, setAgents] = useState<User[]>(adminUsers);
   const [initialized, setInitialized] = useState(false);
+
+  // Sync Auth State & Fetch Role
+  useEffect(() => {
+    const syncUserAndRole = async (sessionUser: AuthUser | null) => {
+      setUser(sessionUser);
+      if (sessionUser) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("rol")
+          .eq("id", sessionUser.id)
+          .single();
+        
+        if (data && !error) {
+          setRole(data.rol as AdminRole);
+        } else {
+          setRole("Estudiante"); // Fallback
+        }
+      } else {
+        setRole(null);
+      }
+    };
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      syncUserAndRole(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      syncUserAndRole(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Load data from Supabase on mount
   useEffect(() => {
     async function loadData() {
       try {
-        const [dbTickets, dbAudit, dbSurveys] = await Promise.all([
+        const [dbTickets, dbAudit, dbSurveys, dbUsers] = await Promise.all([
           db.tickets.getAll(),
           db.audit.getAll(),
-          db.surveys.getAll()
+          db.surveys.getAll(),
+          db.users.getAll()
         ]);
         
-        // If DB is empty, use mock data (optional, but good for first run)
-        if (dbTickets.length === 0) {
-          setTickets(loadFromStorage(STORAGE_KEYS.tickets, mockTickets));
-          setAudit(loadFromStorage(STORAGE_KEYS.audit, mockAuditEntries));
-          setSurveys(loadFromStorage(STORAGE_KEYS.surveys, mockSurveys));
-        } else {
+        if (dbTickets.length > 0) {
           setTickets(dbTickets);
           setAudit(dbAudit);
           setSurveys(dbSurveys);
+          setAgents(dbUsers);
+        } else {
+          // Si no hay datos, inicializamos con los fallbacks
+          setTickets([]);
+          setAudit([]);
+          setSurveys([]);
+          setAgents(adminUsers);
         }
         
         setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         setInitialized(true);
       } catch (err) {
-        console.error("Supabase load error, falling back to LocalStorage:", err);
-        setTickets(loadFromStorage(STORAGE_KEYS.tickets, mockTickets));
-        setAudit(loadFromStorage(STORAGE_KEYS.audit, mockAuditEntries));
-        setSurveys(loadFromStorage(STORAGE_KEYS.surveys, mockSurveys));
+        console.error("Supabase load error, falling back to minimal state:", err);
+        setAgents(adminUsers);
         setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         setInitialized(true);
       }
@@ -73,34 +112,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadData();
   }, []);
 
-  // No longer needed: we save directly to DB in the actions below
-  // Keeping LocalStorage as a secondary backup if desired, but cleaned up for now.
-  useEffect(() => {
-    if (!initialized) return;
-    saveToStorage(STORAGE_KEYS.tickets, tickets);
-  }, [tickets, initialized]);
-
   const addAuditEntry = useCallback((entry: AuditEntry) => {
     setAudit((prev) => [...prev, entry]);
   }, []);
 
   const addTicket = useCallback(
     async (ticketData: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">) => {
-      // Route the ticket intelligently
-      const routing = routeTicket({ category: ticketData.category, urgency: ticketData.urgency }, adminUsers);
-
-      // Calculate SLA deadline
+      const routing = routeTicket({ category: ticketData.category, urgency: ticketData.urgency }, agents);
       const sla = slaConfig.find((s) => s.category === ticketData.category && s.urgency === ticketData.urgency);
       const slaHours = sla?.maxHours ?? 48;
       const slaDeadline = new Date(Date.now() + slaHours * 3600000).toISOString();
 
-      // Ensure createdBy is a valid UUID for the schema (or a placeholder)
-      // Since we don't have auth yet, we use a constant UUID if it's not one
-      const createdBy = ticketData.createdBy.length > 20 ? ticketData.createdBy : "00000000-0000-0000-0000-000000000000";
-
       const ticketToCreate = {
         ...ticketData,
-        createdBy,
+        createdBy: user?.id || ticketData.createdBy,
+        createdByName: user?.email || ticketData.createdByName || "Estudiante",
         status: routing.status,
         assignedTo: routing.assignedTo,
         slaDeadline,
@@ -110,11 +136,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const newTicket = await db.tickets.create(ticketToCreate);
         setTickets((prev) => [newTicket, ...prev]);
 
-        // Audit entries
         const creationEntry = logTicketCreation(newTicket.id);
         const assignmentEntry = logAssignment(
           newTicket.id,
-          adminUsers.find((a) => a.id === routing.assignedTo)?.name ?? "Desconocido",
+          agents.find((a) => a.id === routing.assignedTo)?.name ?? "Desconocido",
           routing.reason
         );
 
@@ -126,50 +151,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAudit((prev) => [...prev, creationEntry, assignmentEntry]);
         return newTicket;
       } catch (err) {
-        console.error("Error creating ticket in Supabase:", err);
-        // Fallback for UI if DB fails
+        console.error("Error creating ticket:", err);
         const fallbackTicket: Ticket = { ...ticketToCreate, id: generateId(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
         setTickets((prev) => [fallbackTicket, ...prev]);
         return fallbackTicket;
       }
     },
-    [slaConfig]
+    [slaConfig, agents, user]
   );
 
   const moveTicket = useCallback(
     async (ticketId: string, newStatus: TicketStatus) => {
       try {
         const updatedTicket = await db.tickets.updateStatus(ticketId, newStatus);
-        
-        setTickets((prev) =>
-          prev.map((t) => (t.id === ticketId ? updatedTicket : t))
-        );
-
-        const auditEntry = logStatusChange(ticketId, "00000000-0000-0000-0000-000000000000", "Valentina Rojas", "status_change", newStatus);
+        setTickets((prev) => prev.map((t) => (t.id === ticketId ? updatedTicket : t)));
+        const auditEntry = logStatusChange(ticketId, user?.id || "system", user?.email || "Sistema", "status_change", newStatus);
         await db.audit.create(auditEntry);
         setAudit((prevAudit) => [...prevAudit, auditEntry]);
       } catch (err) {
-        console.error("Error moving ticket in Supabase:", err);
-        // Local only fallback
-        setTickets((prev) =>
-          prev.map((t) => {
-            if (t.id !== ticketId) return t;
-            return { ...t, status: newStatus, updatedAt: new Date().toISOString() };
-          })
-        );
+        console.error("Error moving ticket:", err);
       }
     },
-    []
+    [user]
   );
 
   const addSurvey = useCallback(async (surveyData: Omit<Survey, "id" | "createdAt">) => {
     try {
       await db.surveys.create(surveyData);
-      // Re-fetch or just update local state
       const newSurvey: Survey = { ...surveyData, id: generateId(), createdAt: new Date().toISOString() };
       setSurveys((prev) => [...prev, newSurvey]);
     } catch (err) {
-      console.error("Error adding survey to Supabase:", err);
+      console.error("Error adding survey:", err);
     }
   }, []);
 
@@ -190,9 +202,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         audit,
         surveys,
         slaConfig,
-        agents: adminUsers,
-        adminRole,
-        setAdminRole,
+        agents,
+        user,
+        role,
         addTicket,
         moveTicket,
         addAuditEntry,

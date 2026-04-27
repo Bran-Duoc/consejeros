@@ -1,28 +1,18 @@
 -- ============================================================
--- Sede Viña del Mar — Schema v2
+-- Sede Viña del Mar — Schema v2 (Full)
 -- Ley 21.719 RLS Compliance
--- Drop & Recreate para reemplazar el esquema inicial.
 -- ============================================================
 
 -- ============================================================
--- LIMPIEZA DEL ESQUEMA ANTERIOR
+-- LIMPIEZA
 -- ============================================================
-DROP TABLE IF EXISTS public.surveys        CASCADE;
-DROP TABLE IF EXISTS public.ticket_history CASCADE;
+DROP TABLE IF EXISTS public.surveys         CASCADE;
+DROP TABLE IF EXISTS public.ticket_history  CASCADE;
 DROP TABLE IF EXISTS public.ticket_comments CASCADE;
-DROP TABLE IF EXISTS public.tickets        CASCADE;
-DROP TABLE IF EXISTS public.users          CASCADE;
-DROP TABLE IF EXISTS public.sla_config     CASCADE;
-DROP TABLE IF EXISTS public.faq_articles   CASCADE;
-DROP TABLE IF EXISTS public.roadmap_items  CASCADE;
+DROP TABLE IF EXISTS public.tickets         CASCADE;
+DROP TABLE IF EXISTS public.users           CASCADE;
 
-DROP VIEW IF EXISTS public.v_avg_resolution_time CASCADE;
-DROP VIEW IF EXISTS public.v_fcr_rate            CASCADE;
-DROP VIEW IF EXISTS public.v_satisfaction_scores CASCADE;
-
-DROP FUNCTION IF EXISTS public.update_updated_at()        CASCADE;
-DROP FUNCTION IF EXISTS public.log_ticket_status_change() CASCADE;
-DROP FUNCTION IF EXISTS public.get_my_rol()               CASCADE;
+DROP FUNCTION IF EXISTS public.get_my_rol() CASCADE;
 
 DROP TYPE IF EXISTS public.rol_usuario      CASCADE;
 DROP TYPE IF EXISTS public.estado_ticket    CASCADE;
@@ -38,7 +28,7 @@ CREATE TYPE urgencia_ticket  AS ENUM ('Bajo', 'Medio', 'Alto', 'Crítico');
 CREATE TYPE categoria_ticket AS ENUM ('Académico', 'Infraestructura', 'Bienestar', 'Financiero', 'Otros');
 
 -- ============================================================
--- TABLE: users (Perfiles extendidos de auth.users)
+-- TABLE: users
 -- ============================================================
 CREATE TABLE public.users (
     id         UUID         PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -49,7 +39,7 @@ CREATE TABLE public.users (
 );
 
 -- ============================================================
--- TABLE: tickets (Solicitudes estudiantiles)
+-- TABLE: tickets
 -- ============================================================
 CREATE TABLE public.tickets (
     id             UUID             PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -64,10 +54,42 @@ CREATE TABLE public.tickets (
 );
 
 -- ============================================================
--- SECURITY DEFINER HELPER — evita recursión en RLS
--- Obtiene el rol del usuario auth actual sin activar las
--- policies de la tabla users (corre como owner de la DB).
+-- TABLE: ticket_history (Auditoría)
 -- ============================================================
+CREATE TABLE public.ticket_history (
+    id             UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id      UUID         NOT NULL REFERENCES public.tickets(id) ON DELETE CASCADE,
+    user_id        UUID         REFERENCES public.users(id) ON DELETE SET NULL,
+    user_name      VARCHAR(255) NOT NULL,
+    action         VARCHAR(100) NOT NULL,
+    previous_state VARCHAR(100),
+    new_state      VARCHAR(100),
+    metadata       TEXT,
+    created_at     TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- TABLE: surveys
+-- ============================================================
+CREATE TABLE public.surveys (
+    id          UUID         PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ticket_id   UUID         NOT NULL REFERENCES public.tickets(id) ON DELETE CASCADE,
+    user_id     UUID         NOT NULL REFERENCES public.users(id),
+    csat_score  INTEGER      NOT NULL CHECK (csat_score BETWEEN 1 AND 5),
+    ces_score   INTEGER      NOT NULL CHECK (ces_score BETWEEN 1 AND 7),
+    comment     TEXT,
+    created_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- RLS CONFIGURATION
+-- ============================================================
+ALTER TABLE public.users          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tickets        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ticket_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.surveys        ENABLE ROW LEVEL SECURITY;
+
+-- Helper function (Security Definer)
 CREATE OR REPLACE FUNCTION public.get_my_rol()
 RETURNS rol_usuario
 LANGUAGE sql
@@ -78,64 +100,30 @@ AS $$
   SELECT rol FROM public.users WHERE id = auth.uid();
 $$;
 
--- ============================================================
--- HABILITAR RLS
--- ============================================================
-ALTER TABLE public.users   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
+-- Policies: users
+CREATE POLICY "users: ver propio perfil" ON public.users FOR SELECT USING (id = auth.uid());
+CREATE POLICY "users: staff ve todos"   ON public.users FOR SELECT USING (public.get_my_rol() IN ('Consejero', 'Admin_TI'));
+CREATE POLICY "users: gestionar propio" ON public.users FOR ALL    USING (id = auth.uid());
 
--- ============================================================
--- POLICIES: users
--- ============================================================
+-- Policies: tickets (Ley 21.719)
+CREATE POLICY "tickets: insert" ON public.tickets FOR INSERT WITH CHECK (auth.uid() = estudiante_id);
 
--- Cada usuario lee su propio perfil
-CREATE POLICY "users: ver propio perfil"
-ON public.users FOR SELECT
-USING (id = auth.uid());
-
--- Consejeros y Admin_TI ven todos los perfiles (no bienestar tickets)
-CREATE POLICY "users: staff ve todos"
-ON public.users FOR SELECT
-USING (public.get_my_rol() IN ('Consejero', 'Admin_TI'));
-
--- Cada usuario gestiona solo su propio perfil
-CREATE POLICY "users: gestionar propio perfil"
-ON public.users FOR ALL
-USING (id = auth.uid());
-
--- ============================================================
--- POLICIES: tickets
--- ============================================================
-
--- INSERT: cualquier usuario autenticado puede abrir un ticket
-CREATE POLICY "tickets: estudiante puede crear"
-ON public.tickets FOR INSERT
-WITH CHECK (auth.uid() = estudiante_id);
-
--- SELECT (NO Bienestar): creador + Consejero + Admin_TI
-CREATE POLICY "tickets: acceso general no-bienestar"
-ON public.tickets FOR SELECT
-USING (
-    categoria <> 'Bienestar'
-    AND (
-        auth.uid() = estudiante_id
-        OR public.get_my_rol() IN ('Consejero', 'Admin_TI')
-    )
+CREATE POLICY "tickets: select no-bienestar" ON public.tickets FOR SELECT USING (
+    categoria <> 'Bienestar' AND (auth.uid() = estudiante_id OR public.get_my_rol() IN ('Consejero', 'Admin_TI'))
 );
 
--- SELECT (Bienestar — Ley 21.719):
--- SOLO el creador y Consejeros. Admin_TI EXCLUIDO explícitamente.
-CREATE POLICY "tickets: bienestar solo creador y consejero (Ley 21.719)"
-ON public.tickets FOR SELECT
-USING (
-    categoria = 'Bienestar'
-    AND (
-        auth.uid() = estudiante_id
-        OR public.get_my_rol() = 'Consejero'
-    )
+CREATE POLICY "tickets: select bienestar" ON public.tickets FOR SELECT USING (
+    categoria = 'Bienestar' AND (auth.uid() = estudiante_id OR public.get_my_rol() = 'Consejero')
 );
 
--- UPDATE: solo Consejeros pueden gestionar tickets
-CREATE POLICY "tickets: consejero puede actualizar"
-ON public.tickets FOR UPDATE
-USING (public.get_my_rol() = 'Consejero');
+CREATE POLICY "tickets: update staff" ON public.tickets FOR UPDATE USING (public.get_my_rol() IN ('Consejero', 'Admin_TI'));
+
+-- Policies: ticket_history
+CREATE POLICY "history: select" ON public.ticket_history FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id)
+);
+CREATE POLICY "history: insert" ON public.ticket_history FOR INSERT WITH CHECK (true);
+
+-- Policies: surveys
+CREATE POLICY "surveys: select" ON public.surveys FOR SELECT USING (auth.uid() = user_id OR public.get_my_rol() = 'Consejero');
+CREATE POLICY "surveys: insert" ON public.surveys FOR INSERT WITH CHECK (auth.uid() = user_id);

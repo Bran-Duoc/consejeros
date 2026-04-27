@@ -2,7 +2,8 @@
 // Intelligent Routing Logic — Auto-assigns tickets by rules
 // ============================================================
 
-import { Ticket, TicketCategory, UrgencyLevel, User, adminUsers } from "./data";
+import { Ticket, TicketCategory, UrgencyLevel, User } from "./data";
+import { adminUsers } from "./mock";
 
 interface RoutingRule {
   category?: TicketCategory;
@@ -12,19 +13,19 @@ interface RoutingRule {
 }
 
 const routingRules: RoutingRule[] = [
-  // Critical urgency → always escalate + assign to lowest-load agent
-  { urgency: "critico", assignToRole: "directora", autoEscalate: true },
+  // Critical urgency → always escalate + assign to Admin_TI
+  { urgency: "critico", assignToRole: "Admin_TI", autoEscalate: true },
   // Category-based routing
-  { category: "academico", assignToRole: "consejero" },
-  { category: "infraestructura", assignToRole: "trabajador" },
-  { category: "bienestar", assignToRole: "directora" },
-  { category: "financiero", assignToRole: "directora" },
+  { category: "academico", assignToRole: "Consejero" },
+  { category: "infraestructura", assignToRole: "Admin_TI" },
+  { category: "bienestar", assignToRole: "Consejero" },
+  { category: "financiero", assignToRole: "Admin_TI" },
   // Fallback
-  { category: "otro", assignToRole: "consejero" },
+  { category: "otro", assignToRole: "Consejero" },
 ];
 
 function getAgentsByRole(role: string, agents: User[]): User[] {
-  return agents.filter((a) => a.role === role);
+  return agents.filter((a) => a.role.toLowerCase() === role.toLowerCase());
 }
 
 function getLowestLoadAgent(agents: User[]): User | null {
@@ -45,9 +46,9 @@ export function routeTicket(
     const candidates = getAgentsByRole(urgencyRule.assignToRole, agents);
     const agent = getLowestLoadAgent(candidates) || agents[0];
     return {
-      assignedTo: agent.id,
+      assignedTo: agent?.id || "system",
       status: urgencyRule.autoEscalate ? "escalado" : "nuevo",
-      reason: `Urgencia crítica → asignado a ${agent.name} (${urgencyRule.assignToRole}) con menor carga`,
+      reason: `Urgencia crítica → asignado a ${agent?.name || "Administración"} (${urgencyRule.assignToRole})`,
     };
   }
 
@@ -56,16 +57,16 @@ export function routeTicket(
     const candidates = getAgentsByRole(categoryRule.assignToRole, agents);
     const agent = getLowestLoadAgent(candidates) || agents[0];
     return {
-      assignedTo: agent.id,
+      assignedTo: agent?.id || "system",
       status: "nuevo",
-      reason: `Categoría "${ticket.category}" → asignado a ${agent.name} (${categoryRule.assignToRole})`,
+      reason: `Categoría "${ticket.category}" → asignado a ${agent?.name || "Administración"} (${categoryRule.assignToRole})`,
     };
   }
 
   // Fallback: assign to first available
   return {
-    assignedTo: agents[0]?.id || "u1",
+    assignedTo: agents[0]?.id || "system",
     status: "nuevo",
-    reason: "Sin regla específica → asignado al primer agente disponible",
+    reason: "Sin regla específica → asignado al sistema",
   };
 }

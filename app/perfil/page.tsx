@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/context/AppContext";
 import {
@@ -23,177 +24,9 @@ const isValidDomain = (email: string) =>
   ALLOWED_DOMAINS.some((d) => email.toLowerCase().endsWith(d));
 
 // ============================================================
-// PANTALLA: Login con Magic Link
-// ============================================================
-function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState("");
-
-  const emailValid = email.includes("@") && isValidDomain(email);
-  const showDomainError = email.length > 3 && !emailValid;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!emailValid) return;
-    setStatus("loading");
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.toLowerCase().trim(),
-      options: {
-        shouldCreateUser: false, // Solo login, no registro
-        emailRedirectTo: `${window.location.origin}/portal`,
-      },
-    });
-
-    if (error) {
-      setStatus("error");
-      setErrorMsg(
-        error.message.includes("not found") || error.message.includes("not authorized")
-          ? "No encontramos una cuenta Duoc UC con este correo. Contacta al Consejo de Sede."
-          : "Error al enviar el enlace. Inténtalo nuevamente."
-      );
-    } else {
-      setStatus("sent");
-    }
-  };
-
-  return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      {/* Grid background */}
-      <div
-        className="fixed inset-0 opacity-[0.025] pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(99,102,241,0.5) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(99,102,241,0.5) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
-
-      <div className="relative w-full max-w-md animate-fade-in-up">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/60 p-8 sm:p-10">
-
-          {/* Header */}
-          <div className="flex flex-col items-center mb-8">
-            <img src="/logo.svg" alt="Sede Viña del Mar" className="w-[121px] h-[40px] object-contain mb-5" />
-            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
-              <Icon icon="lucide:layout-dashboard" className="w-7 h-7 text-indigo-600" />
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 text-center">Mi Portal</h1>
-            <p className="mt-2 text-sm text-slate-500 text-center max-w-xs">
-              Ingresa con tu correo Duoc UC para ver el estado de tus solicitudes.
-            </p>
-          </div>
-
-          {/* Estado enviado */}
-          {status === "sent" ? (
-            <div className="flex flex-col items-center gap-4 py-4 animate-fade-in">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
-                <Icon icon="lucide:mail-check" className="w-7 h-7 text-emerald-600" />
-              </div>
-              <div className="text-center">
-                <h2 className="font-semibold text-slate-800 text-lg">Enlace enviado</h2>
-                <p className="text-sm text-slate-500 mt-1 max-w-xs">
-                  Revisa tu bandeja en{" "}
-                  <span className="font-medium text-indigo-600">{email}</span>.
-                  El enlace expira en 10 minutos.
-                </p>
-              </div>
-              <button
-                onClick={() => { setStatus("idle"); setEmail(""); }}
-                className="text-xs text-slate-400 hover:text-slate-600 transition"
-              >
-                ← Usar otro correo
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
-              <div>
-                <label htmlFor="portal-email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Correo institucional
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                    <Icon
-                      icon="lucide:mail"
-                      className={`w-4 h-4 transition-colors ${
-                        showDomainError ? "text-rose-400" : emailValid ? "text-indigo-500" : "text-slate-400"
-                      }`}
-                    />
-                  </div>
-                  <input
-                    id="portal-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="nombre@duoc.cl"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setStatus("idle"); setErrorMsg(""); }}
-                    className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm outline-none transition-all ${
-                      showDomainError
-                        ? "border-rose-300 bg-rose-50 focus:border-rose-400 focus:ring-2 focus:ring-rose-200"
-                        : emailValid
-                        ? "border-indigo-300 bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                        : "border-slate-200 bg-slate-50 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 focus:bg-white"
-                    }`}
-                  />
-                </div>
-
-                {showDomainError && (
-                  <p className="mt-1.5 text-xs text-rose-600 flex items-center gap-1 animate-fade-in">
-                    <Icon icon="lucide:alert-circle" className="w-3.5 h-3.5 shrink-0" />
-                    Solo se admiten correos @duoc.cl o @duocuc.cl
-                  </p>
-                )}
-                {emailValid && (
-                  <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1 animate-fade-in">
-                    <Icon icon="lucide:check-circle-2" className="w-3.5 h-3.5 shrink-0" />
-                    Correo institucional válido
-                  </p>
-                )}
-              </div>
-
-              {status === "error" && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2 animate-fade-in">
-                  <Icon icon="lucide:shield-x" className="w-4 h-4 shrink-0 mt-0.5" />
-                  {errorMsg}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={!emailValid || status === "loading"}
-                className="w-full py-3 rounded-xl bg-indigo-600 text-white font-semibold text-sm
-                           shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 hover:scale-[1.01]
-                           active:scale-[0.99] transition-all
-                           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100
-                           flex items-center justify-center gap-2"
-              >
-                {status === "loading" ? (
-                  <><Icon icon="lucide:loader-2" className="w-4 h-4 animate-spin" /> Enviando enlace…</>
-                ) : (
-                  <><Icon icon="lucide:send" className="w-4 h-4" /> Ingresar con Magic Link</>
-                )}
-              </button>
-
-              <p className="text-center text-xs text-slate-400 pt-1">
-                Sin contraseñas — acceso seguro vía enlace institucional
-              </p>
-            </form>
-          )}
-        </div>
-
-        <p className="text-center text-xs text-slate-400 mt-6">
-          © 2026 Sede Viña del Mar · Ley 21.719
-        </p>
-      </div>
-    </main>
-  );
-}
-
-// ============================================================
 // PANTALLA: Mis Solicitudes (usuario autenticado)
 // ============================================================
-function PortalDashboard({ user }: { user: User }) {
+function PerfilDashboard({ user }: { user: User }) {
   const { tickets, audit, addSurvey } = useApp();
   const [selectedTicket, setSelectedTicket] = useState<string | null>(null);
   const [surveyData, setSurveyData] = useState({ csat: 0, ces: 0, comment: "" });
@@ -225,13 +58,14 @@ function PortalDashboard({ user }: { user: User }) {
   };
 
   return (
-    <main className="min-h-screen pt-32 pb-12 px-4 bg-slate-50">
-      <div className="max-w-4xl mx-auto">
+    <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-[85px] pb-12 px-4">
+        <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Mis Solicitudes</h1>
+            <h1 className="text-3xl font-bold text-slate-900">Mi Perfil</h1>
             <p className="text-slate-500 mt-1 text-sm">
               {user.email} · {myTickets.length} solicitud(es)
             </p>
@@ -241,7 +75,7 @@ function PortalDashboard({ user }: { user: User }) {
               href="/solicitud"
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
             >
-              <Icon icon="lucide:plus" className="w-4 h-4" /> Nueva Solicitud
+              <Icon icon="lucide:plus" className="w-4 h-4" /> Ingresar Solicitud
             </Link>
             <button
               onClick={handleSignOut}
@@ -266,7 +100,7 @@ function PortalDashboard({ user }: { user: User }) {
               href="/solicitud"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
             >
-              <Icon icon="lucide:mail" className="w-4 h-4" /> Enviar Solicitud
+              <Icon icon="lucide:mail" className="w-4 h-4" /> Ingresar Solicitud
             </Link>
           </div>
         ) : (
@@ -421,47 +255,31 @@ function PortalDashboard({ user }: { user: User }) {
           </div>
         )}
       </div>
+      <div className="mt-20">
+        <Footer />
+      </div>
     </main>
+    </div>
   );
 }
 
 // ============================================================
 // COMPONENTE PRINCIPAL — gestiona el estado de sesión
 // ============================================================
-export default function PortalPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function PerfilPage() {
+  const { user } = useApp();
 
-  useEffect(() => {
-    // Obtener sesión inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Escuchar cambios de sesión (login via magic link, logout)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Estado de carga inicial
-  if (loading) {
+  // Si no hay usuario (aunque el middleware debería proteger), mostramos un loader o mensaje
+  if (!user) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Icon icon="lucide:loader-2" className="w-8 h-8 text-indigo-600 animate-spin" />
-          <p className="text-sm text-slate-400">Verificando sesión…</p>
+          <p className="text-sm text-slate-400">Cargando perfil…</p>
         </div>
       </main>
     );
   }
 
-  // Sin sesión → mostrar login
-  if (!user) return <LoginScreen />;
-
-  // Con sesión → mostrar el dashboard de tickets
-  return <PortalDashboard user={user} />;
+  return <PerfilDashboard user={user} />;
 }

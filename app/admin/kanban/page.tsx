@@ -22,10 +22,10 @@ const COLUMNS: { id: TicketStatus; label: string; accent: string }[] = [
 
 // ---- Kanban Card ----
 function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number; onClick: (t: Ticket) => void }) {
-  const { adminRole } = useApp();
+  const { role, agents } = useApp();
   const sla = calculateSLAStatus(ticket.slaDeadline);
   const stale = ticket.status !== "resuelto" && isTicketStale(ticket.updatedAt, 12);
-  const agent = adminUsers.find((u) => u.id === ticket.assignedTo);
+  const agent = agents.find((u) => u.id === ticket.assignedTo);
 
   const column = COLUMNS.find(c => c.id === ticket.status);
 
@@ -51,7 +51,7 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
           )}
 
           {/* RBAC Masking */}
-          {adminRole === "Administrador TI" && ticket.category === "bienestar" && (
+          {role === "Admin_TI" && ticket.category === "bienestar" && (
             <div className="flex items-center gap-1 bg-status-danger/10 text-status-danger px-2 py-1 rounded border border-status-danger/20 mb-2">
               <Icon icon="lucide:shield-alert" className="w-3 h-3 shrink-0" />
               <span className="text-[9px] font-bold uppercase tracking-wider">Dato Sensible Protegido por Ley 21.719</span>
@@ -75,7 +75,7 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
 
           {/* Title */}
           <h4 className="text-sm font-semibold leading-snug text-slate-900 mb-2 line-clamp-2">
-            {adminRole === "Administrador TI" && ticket.category === "bienestar" ? "██████ █████ ██████" : ticket.title}
+            {role === "Admin_TI" && ticket.category === "bienestar" ? "██████ █████ ██████" : ticket.title}
           </h4>
 
           {/* Subtasks (Mock for "en_revision") */}
@@ -303,10 +303,10 @@ export default function KanbanPage() {
               </div>
               
               <h3 className="text-xl font-bold mb-4">
-                {adminRole === "Administrador TI" && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
+                {role === "Admin_TI" && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
               </h3>
               
-              {adminRole === "Administrador TI" && selectedTicket.category === "bienestar" ? (
+              {role === "Admin_TI" && selectedTicket.category === "bienestar" ? (
                 <div className="bg-status-danger/10 text-status-danger p-4 rounded-xl border border-status-danger/20 mb-6 flex flex-col gap-2">
                   <div className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-wider">
                     <Icon icon="lucide:shield-alert" className="w-4 h-4" />

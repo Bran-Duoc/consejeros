@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import Footer from "@/components/Footer";
 import { useApp } from "@/context/AppContext";
 import {
   TicketCategory,
@@ -351,10 +352,10 @@ export default function SolicitudPage() {
           <div className="flex gap-3 justify-center">
 
             <Link
-              href="/portal"
+              href="/perfil"
               className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 transition-all"
             >
-              Ver Mi Portal
+              Ver Mi Perfil
             </Link>
           </div>
         </div>
@@ -363,63 +364,69 @@ export default function SolicitudPage() {
   }
 
   return (
-    <main className="min-h-screen pt-32 pb-8 px-4">
-      {/* Header */}
-      <div className="max-w-2xl mx-auto mb-8">
-
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
-            <p className="text-foreground/50 mt-1">Completa el formulario paso a paso</p>
-          </div>
-          {isOffline && (
-            <div className="flex items-center gap-2 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-3 py-1.5 rounded-xl text-xs font-medium animate-pulse-soft">
-              <Icon icon="lucide:wifi-off" />
-              <span>Modo Offline (Guardado local activo)</span>
+    <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-[85px] pb-12 px-4">
+        {/* Header */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
+              <p className="text-foreground/50 mt-1">Completa el formulario paso a paso</p>
             </div>
-          )}
+            {isOffline && (
+              <div className="flex items-center gap-2 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-3 py-1.5 rounded-xl text-xs font-medium animate-pulse-soft">
+                <Icon icon="lucide:wifi-off" />
+                <span>Modo Offline (Guardado local activo)</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Form */}
-      <div className="max-w-2xl mx-auto">
-        <StepProgress current={step} total={STEPS.length} />
+        {/* Form */}
+        <div className="max-w-2xl mx-auto">
+          <StepProgress current={step} total={STEPS.length} />
 
-        {step === 0 && (
-            <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
-        )}
-        {step === 1 && <StepDetails data={data} onChange={updateField} />}
-        {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
-        {step === 3 && <StepReview data={data} onChange={updateField} />}
-
-        {/* Navigation */}
-        <div className="flex justify-between mt-10 pt-6 border-t border-border">
-          <button
-            onClick={() => setStep((s) => Math.max(0, s - 1))}
-            disabled={step === 0}
-            className="px-6 py-3 rounded-xl border border-border text-sm font-medium hover:bg-foreground/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Anterior
-          </button>
-
-          {step < STEPS.length - 1 ? (
-            <button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={!canAdvance()}
-              className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              Siguiente
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all active:scale-[0.98]"
-            >
-              <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
-            </button>
+          {step === 0 && (
+              <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
           )}
+          {step === 1 && <StepDetails data={data} onChange={updateField} />}
+          {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
+          {step === 3 && <StepReview data={data} onChange={updateField} />}
+
+          {/* Navigation */}
+          <div className="flex justify-between mt-10 pt-6 border-t border-border">
+            <button
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              disabled={step === 0}
+              className="px-6 py-3 rounded-xl border border-border text-sm font-medium hover:bg-foreground/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Anterior
+            </button>
+
+            {step < STEPS.length - 1 ? (
+              <button
+                onClick={() => setStep((s) => s + 1)}
+                disabled={!canAdvance()}
+                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              >
+                Siguiente
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all active:scale-[0.98]"
+              >
+                <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+        
+        <div className="mt-20">
+          <Footer />
+        </div>
+      </main>
+    </div>
   );
 }
+

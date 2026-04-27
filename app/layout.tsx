@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
 import Navbar from "@/components/Navbar";
+import Script from "next/script";
+import DynamicBackground from "@/components/DynamicBackground";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,9 +52,22 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
+        {/* Top Institutional Strip (Franja 2) */}
+        <div 
+          className="absolute top-0 left-0 right-0 h-[45px] w-full z-[40] pointer-events-none"
+          style={{
+            backgroundImage: 'url("/franja2.svg")',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'top',
+            backgroundSize: 'auto 45px'
+          }}
+        />
+        <DynamicBackground />
         <AppProvider>
           <Navbar />
-          {children}
+          <div className="flex-1">
+            {children}
+          </div>
         </AppProvider>
         <ServiceWorkerRegistrar />
       </body>
@@ -62,7 +77,9 @@ export default function RootLayout({
 
 function ServiceWorkerRegistrar() {
   return (
-    <script
+    <Script
+      id="service-worker-registrar"
+      strategy="afterInteractive"
       dangerouslySetInnerHTML={{
         __html: `
           if ('serviceWorker' in navigator) {

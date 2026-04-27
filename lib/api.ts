@@ -1,36 +1,32 @@
 import { supabase } from './supabase';
 import { Ticket, AuditEntry, Survey, TicketStatus } from './data';
 
-// Helper to map snake_case from DB to camelCase for App
+// Helper to map snake_case from DB (Schema v2) to camelCase for App
 const mapTicketFromDB = (t: any): Ticket => ({
   id: t.id,
-  title: t.title,
-  description: t.description,
-  category: t.category,
-  urgency: t.urgency,
-  status: t.status,
-  assignedTo: t.assigned_to,
-  createdBy: t.created_by,
-  createdByName: t.created_by_name,
-  createdAt: t.created_at,
-  updatedAt: t.updated_at,
+  title: t.titulo || t.title, // Handle both for safety
+  description: t.descripcion || t.description,
+  category: t.categoria || t.category,
+  urgency: t.nivel_urgencia || t.urgency,
+  status: t.estado || t.status,
+  assignedTo: null, // assigned_to removed in v2 schema requirements
+  createdBy: t.estudiante_id || t.created_by,
+  createdByName: t.created_by_name || "Usuario",
+  createdAt: t.fecha_creacion || t.created_at,
+  updatedAt: t.fecha_creacion || t.updated_at,
   slaDeadline: t.sla_deadline,
-  attachments: t.attachments,
-  tags: t.tags,
+  attachments: t.attachments || [],
+  tags: t.tags || [],
 });
 
 const mapTicketToDB = (t: Partial<Ticket>) => ({
-  title: t.title,
-  description: t.description,
-  category: t.category,
-  urgency: t.urgency,
-  status: t.status,
-  assigned_to: t.assignedTo,
-  created_by: t.createdBy, // Note: must be UUID or valid string depending on DB
-  created_by_name: t.createdByName,
+  titulo: t.title,
+  descripcion: t.description,
+  categoria: t.category,
+  nivel_urgencia: t.urgency,
+  estado: t.status,
+  estudiante_id: t.createdBy,
   sla_deadline: t.slaDeadline,
-  attachments: t.attachments,
-  tags: t.tags,
 });
 
 export const db = {
@@ -39,7 +35,7 @@ export const db = {
       const { data, error } = await supabase
         .from('tickets')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('fecha_creacion', { ascending: false });
       if (error) throw error;
       return (data || []).map(mapTicketFromDB);
     },
@@ -55,7 +51,7 @@ export const db = {
     async updateStatus(id: string, status: TicketStatus) {
       const { data, error } = await supabase
         .from('tickets')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update({ estado: status })
         .eq('id', id)
         .select()
         .single();
@@ -69,7 +65,10 @@ export const db = {
         .from('ticket_history')
         .select('*')
         .order('created_at', { ascending: true });
-      if (error) throw error;
+      if (error) {
+        console.warn("Audit table fetch failed, returning empty:", error.message);
+        return [];
+      }
       return (data || []).map((a: any) => ({
         id: a.id,
         ticketId: a.ticket_id,
@@ -92,13 +91,16 @@ export const db = {
         new_state: entry.newState,
         metadata: entry.metadata,
       }]);
-      if (error) throw error;
+      if (error) console.error("Failed to log audit:", error.message);
     },
   },
   surveys: {
     async getAll() {
       const { data, error } = await supabase.from('surveys').select('*');
-      if (error) throw error;
+      if (error) {
+        console.warn("Surveys table fetch failed, returning empty:", error.message);
+        return [];
+      }
       return (data || []).map((s: any) => ({
         id: s.id,
         ticketId: s.ticket_id,
@@ -117,7 +119,21 @@ export const db = {
         ces_score: survey.ces,
         comment: survey.comment,
       }]);
+      if (error) console.error("Failed to save survey:", error.message);
+    },
+  },
+  users: {
+    async getAll() {
+      const { data, error } = await supabase.from('users').select('*');
       if (error) throw error;
+      return (data || []).map((u: any) => ({
+        id: u.id,
+        name: u.nombre || (u.email ? u.email.split('@')[0] : "Usuario"),
+        email: u.email,
+        role: u.rol,
+        department: u.departamento,
+      }));
     },
   },
 };
+

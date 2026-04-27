@@ -12,17 +12,15 @@ export default function UsersPage() {
   };
 
   const roleLabels: Record<string, string> = {
-    consejero: "Consejera de Carrera",
-    trabajador: "Trabajador de Duoc",
-    directora: "Directora de Sede",
-    admin: "Administrador",
+    Consejero: "Consejero de Sede",
+    Admin_TI: "Administrador TI",
+    Estudiante: "Estudiante",
   };
 
   const roleColors: Record<string, string> = {
-    consejero: "bg-indigo-600/15 text-indigo-600 border-indigo-600/30",
-    trabajador: "bg-status-warning/15 text-status-warning border-status-warning/30",
-    directora: "bg-indigo-500/15 text-indigo-500 border-indigo-500/30",
-    admin: "bg-foreground text-foreground border-foreground",
+    Consejero: "bg-indigo-600/15 text-indigo-600 border-indigo-600/30",
+    Admin_TI: "bg-status-danger/15 text-status-danger border-status-danger/30",
+    Estudiante: "bg-slate-100 text-slate-500 border-slate-200",
   };
 
   return (
@@ -46,7 +44,7 @@ export default function UsersPage() {
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-indigo-600/25 flex items-center justify-center text-2xl shrink-0">
-                  {agent.role === "consejero" ? "👩‍🎓" : agent.role === "trabajador" ? "👨‍💼" : agent.role === "directora" ? "👩‍💼" : "🛡️"}
+                  {agent.role === "Consejero" ? "👩‍🎓" : agent.role === "Admin_TI" ? "🛡️" : "👤"}
                 </div>
 
                 <div className="flex-1">
