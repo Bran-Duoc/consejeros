@@ -67,7 +67,7 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
           )}
 
           {/* RBAC Masking */}
-          {role === "Admin_TI" && ticket.category === "bienestar" && (
+          {(role === "Admin_TI" || role === "Admin TI") && ticket.category === "bienestar" && (
             <div className="flex items-center gap-1 bg-status-danger/10 text-status-danger px-2 py-1 rounded border border-status-danger/20 mb-2">
               <Icon icon="lucide:shield-alert" className="w-3 h-3 shrink-0" />
               <span className="text-[9px] font-bold uppercase tracking-wider">Dato Sensible Protegido por Ley 21.719</span>
@@ -324,10 +324,10 @@ export default function KanbanPage() {
               </div>
               
               <h3 className="text-xl font-bold mb-4">
-                {role === "Admin_TI" && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
+                {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
               </h3>
               
-              {role === "Admin_TI" && selectedTicket.category === "bienestar" ? (
+              {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? (
                 <div className="bg-status-danger/10 text-status-danger p-4 rounded-xl border border-status-danger/20 mb-6 flex flex-col gap-2">
                   <div className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-wider">
                     <Icon icon="lucide:shield-alert" className="w-4 h-4" />
@@ -347,9 +347,11 @@ export default function KanbanPage() {
                 <div>
                   <h4 className="font-semibold text-sm mb-3 border-b border-border pb-2">Información del Solicitante</h4>
                   <div className="text-sm space-y-2">
-                    <p><span className="text-foreground/50 w-20 inline-block">Nombre:</span> {selectedTicket.createdByName}</p>
-                    <p><span className="text-foreground/50 w-20 inline-block">Email:</span> {selectedTicket.createdBy}</p>
-                    <p><span className="text-foreground/50 w-20 inline-block">Fecha:</span> {new Date(selectedTicket.createdAt).toLocaleString("es-CL")}</p>
+                    <p><span className="text-foreground/50 w-24 inline-block">Nombre:</span> {selectedTicket.createdByName}</p>
+                    <p><span className="text-foreground/50 w-24 inline-block">Email:</span> {selectedTicket.createdBy}</p>
+                    <p><span className="text-foreground/50 w-24 inline-block">Escuela:</span> {selectedTicket.school || "No especificada"}</p>
+                    <p><span className="text-foreground/50 w-24 inline-block">Carrera:</span> {selectedTicket.career || "No especificada"}</p>
+                    <p><span className="text-foreground/50 w-24 inline-block">Fecha:</span> {new Date(selectedTicket.createdAt).toLocaleString("es-CL")}</p>
                   </div>
                 </div>
 

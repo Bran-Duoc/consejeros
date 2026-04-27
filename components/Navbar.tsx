@@ -24,6 +24,8 @@ export default function Navbar() {
   // Conditional items
   if (user) {
     navItems.push({ href: "/perfil", label: "Mi Perfil", icon: "lucide:user" });
+  } else {
+    navItems.push({ href: "/login", label: "Iniciar Sesión", icon: "lucide:log-in" });
   }
 
   if (role && role !== "Estudiante") {
