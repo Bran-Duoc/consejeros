@@ -39,7 +39,6 @@ export default function Navbar() {
           style={{
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
-            backgroundPosition: "center",
             backdropFilter: "blur(1px)",
             WebkitBackdropFilter: "blur(1px)",
           }}
@@ -97,7 +96,6 @@ export default function Navbar() {
           style={{
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
-            backgroundPosition: "center",
           }}
         >
           {/* Strong glassmorphism overlay */}
