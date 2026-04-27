@@ -1,41 +1,19 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server'
+import { updateSession } from '@/utils/supabase/middleware'
 
 /**
- * Middleware de protección de rutas.
- * Redirige a /login si no hay sesión activa de Supabase.
- * Rutas protegidas: /solicitud, /portal, /admin (y subrutas).
+ * Proxy de Next.js 16 (anteriormente Middleware).
+ * Gestiona la persistencia de sesión de Supabase y la protección de rutas.
  */
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  // IMPORTANT: Use getUser instead of getSession to ensure accurate auth state
-  const { data: { user } } = await supabase.auth.getUser();
+  const { response, supabase } = await updateSession(request)
+  
+  // Obtenemos el usuario de forma segura
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl;
 
-  // BARRERA DE SEGURIDAD SECUNDARIA (Dominio)
+  // 1. BARRERA DE SEGURIDAD: Validación de Dominio (Solo para Google)
   const isGoogleLogin = user?.app_metadata?.provider === 'google';
   if (user && isGoogleLogin && user.email && !user.email.endsWith("@duocuc.cl")) {
     await supabase.auth.signOut();
@@ -45,48 +23,43 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // PROTECCIÓN DE RUTAS DE ADMINISTRADOR
+  // 2. PROTECCIÓN DE RUTAS
   const isAdminRoute = pathname.startsWith('/admin');
   const isLoginAdminRoute = pathname === '/admin/login';
+  const isStudentProtectedRoute = ['/solicitud', '/perfil'].some((path) => pathname.startsWith(path));
 
+  // Redirección para Admin
   if (isAdminRoute && !isLoginAdminRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/admin/login';
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (isLoginAdminRoute && user) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/admin';
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // PROTECCIÓN DE RUTAS DE ESTUDIANTE
-  const isStudentProtected = ['/solicitud', '/perfil'].some((path) => pathname.startsWith(path));
-
-  if (isStudentProtected && !user) {
+  // Redirección para Estudiante
+  if (isStudentProtectedRoute && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
     loginUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname === '/login' && user) {
-    const homeUrl = request.nextUrl.clone();
-    homeUrl.pathname = '/';
-    return NextResponse.redirect(homeUrl);
+  // Evitar ir a login si ya está autenticado
+  if ((pathname === '/login' || pathname === '/admin/login') && user) {
+    const redirectPath = isAdminRoute ? '/admin' : '/';
+    return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  return supabaseResponse;
+  return response
 }
 
 export const config = {
   matcher: [
     /*
-     * Aplica el middleware a todas las rutas EXCEPTO:
+     * Aplica el proxy a todas las rutas EXCEPTO:
      * - Archivos estáticos de Next.js (_next/static, _next/image)
-     * - favicon.ico, archivos de imagen pública
+     * - favicon.ico, sitemap.xml, robots.txt
+     * - Imágenes (svg, png, jpg, etc.)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
