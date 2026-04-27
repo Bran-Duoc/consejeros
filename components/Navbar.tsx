@@ -26,7 +26,7 @@ export default function Navbar() {
     navItems.push({ href: "/perfil", label: "Mi Perfil", icon: "lucide:user" });
   }
 
-  if (role === "Consejero" || role === "Admin_TI") {
+  if (role && role !== "Estudiante") {
     navItems.push({ href: "/admin", label: "Admin", icon: "lucide:settings" });
   }
 

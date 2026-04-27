@@ -5,7 +5,7 @@ export const councilMembers: User[] = [
     id: "u1",
     name: "Valentina Rojas",
     email: "vrojas@duoc.cl",
-    role: "Consejero",
+    role: "Consejo",
     avatar: "/avatars/valentina.svg",
     department: "Académico",
     activeTickets: 0,

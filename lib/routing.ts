@@ -16,12 +16,12 @@ const routingRules: RoutingRule[] = [
   // Critical urgency → always escalate + assign to Admin_TI
   { urgency: "critico", assignToRole: "Admin_TI", autoEscalate: true },
   // Category-based routing
-  { category: "academico", assignToRole: "Consejero" },
+  { category: "academico", assignToRole: "Consejo" },
   { category: "infraestructura", assignToRole: "Admin_TI" },
-  { category: "bienestar", assignToRole: "Consejero" },
+  { category: "bienestar", assignToRole: "Consejo" },
   { category: "financiero", assignToRole: "Admin_TI" },
   // Fallback
-  { category: "otro", assignToRole: "Consejero" },
+  { category: "otro", assignToRole: "Consejo" },
 ];
 
 function getAgentsByRole(role: string, agents: User[]): User[] {
