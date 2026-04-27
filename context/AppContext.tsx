@@ -198,19 +198,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const newTicket = await db.tickets.create(ticketToCreate);
         setTickets((prev) => [newTicket, ...prev]);
 
-        const creationEntry = logTicketCreation(newTicket.id);
-        const assignmentEntry = logAssignment(
-          newTicket.id,
-          agents.find((a) => a.id === routing.assignedTo)?.name ?? "Desconocido",
-          routing.reason
-        );
+        // Audit logging is non-blocking — never fails the main operation
+        try {
+          const creationEntry = logTicketCreation(newTicket.id);
+          const assignmentEntry = logAssignment(
+            newTicket.id,
+            agents.find((a) => a.id === routing.assignedTo)?.name ?? "Desconocido",
+            routing.reason
+          );
+          await Promise.all([
+            db.audit.create(creationEntry),
+            db.audit.create(assignmentEntry)
+          ]);
+          setAudit((prev) => [...prev, creationEntry, assignmentEntry]);
+        } catch (auditErr) {
+          console.warn("Audit logging failed (non-blocking):", auditErr);
+        }
 
-        await Promise.all([
-          db.audit.create(creationEntry),
-          db.audit.create(assignmentEntry)
-        ]);
-
-        setAudit((prev) => [...prev, creationEntry, assignmentEntry]);
         toastAPI.success("¡Solicitud enviada exitosamente!");
         return newTicket;
       } catch (err: any) {
