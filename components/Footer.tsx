@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Icon } from "@iconify/react";
 
 export default function Footer() {
@@ -14,7 +15,13 @@ export default function Footer() {
         {/* Top row: Logo + Credits */}
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <img src="/logo2.svg" alt="Logo" className="w-[100px] sm:w-[140px] h-[35px] sm:h-[45px] object-contain drop-shadow-sm" />
+            <Image 
+              src="/logo2.svg" 
+              alt="Logo Duoc UC" 
+              width={140} 
+              height={45} 
+              className="object-contain drop-shadow-sm" 
+            />
             <span className="font-bold border-l border-white/20 pl-3 text-xs sm:text-sm">Sede Viña del Mar</span>
           </div>
           <p className="flex items-center gap-1.5 text-xs sm:text-sm">© 2026 — Construido con <Icon icon="lucide:heart" className="w-4 h-4 text-rose-500 fill-rose-500" /> por el Consejo</p>

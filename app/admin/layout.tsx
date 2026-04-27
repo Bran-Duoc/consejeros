@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useApp } from "@/context/AppContext";
@@ -73,13 +74,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         className={`hidden lg:flex flex-col fixed top-0 left-0 h-full z-40 transition-all duration-300 bg-white border-r border-border ${
           collapsed ? "w-[72px]" : "w-[260px]"
         }`}
+        aria-label="Barra lateral administrativa"
       >
         {/* Logo */}
         <div className={`h-16 flex items-center border-b border-border px-4 ${collapsed ? "justify-center" : "gap-3"}`}>
-          <img 
+          <Image 
             src="/logo.svg" 
-            alt="Logo" 
-            className={`${collapsed ? "w-8 h-8" : "w-[121px] h-[40px]"} object-contain drop-shadow-md transition-all duration-300`} 
+            alt="Logo Duoc UC" 
+            width={collapsed ? 32 : 121}
+            height={collapsed ? 32 : 40}
+            className="object-contain drop-shadow-md transition-all duration-300" 
+            priority
           />
           {!collapsed && (
             <div className="animate-fade-in">
@@ -137,18 +142,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-white/95 backdrop-blur-lg border-b border-border flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="Logo" className="w-[100px] h-[33px] object-contain" />
+          <Image src="/logo.svg" alt="Logo Duoc UC" width={100} height={33} className="object-contain" />
           <span className="font-bold text-sm">Admin</span>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setCmdKOpen(true)}
+            aria-label="Abrir búsqueda"
             className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-foreground/5 transition text-foreground/70"
           >
             <Icon icon="lucide:search" className="w-5 h-5" />
           </button>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Cerrar menú móvil"
             className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-foreground/5 transition text-foreground/70"
           >
             <Icon icon="lucide:menu" className="w-5 h-5" />
@@ -198,6 +205,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="hidden lg:flex h-16 border-b border-border bg-white items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
           <button
             onClick={() => setCmdKOpen(true)}
+            aria-label="Abrir panel de búsqueda"
             className="flex items-center gap-3 px-3 py-1.5 rounded-lg border border-border bg-white text-sm text-black/50 hover:bg-black/5 transition-colors group"
           >
             <Icon icon="lucide:search" className="w-4 h-4" />
@@ -230,7 +238,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Cmd+K Command Palette Modal */}
       {cmdKOpen && (
         <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] animate-fade-in">
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" onClick={() => setCmdKOpen(false)} />
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" onClick={() => setCmdKOpen(false)} aria-hidden="true" />
           <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-border overflow-hidden animate-slide-in-up">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
               <Icon icon="lucide:search" className="w-5 h-5 text-foreground/40 shrink-0" />

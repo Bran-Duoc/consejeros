@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
 import { Icon } from "@iconify/react";
@@ -32,7 +33,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Navbar — hidden on mobile */}
-      <nav className="hidden sm:block fixed top-[10px] left-[30px] right-[30px] z-50">
+      <nav className="hidden sm:block fixed top-[10px] left-[30px] right-[30px] z-50" aria-label="Navegación principal">
         <div 
           className="w-full flex items-center justify-between gap-2 p-2 rounded-full glass shadow-2xl shadow-black/10 relative overflow-hidden"
           style={{
@@ -43,8 +44,15 @@ export default function Navbar() {
         >
           {/* Subtle overlay to enhance glass effect over the image */}
           <div className="absolute inset-0 bg-white/40 backdrop-blur-md -z-10" />
-          <Link href="/" className="flex items-center gap-2.5 px-3">
-            <img src="/logo.svg" alt="Logo" className="w-[121px] h-[40px] object-contain drop-shadow-md" />
+          <Link href="/" className="flex items-center gap-2.5 px-3" aria-label="Volver al inicio">
+            <Image 
+              src="/logo.svg" 
+              alt="Logo Duoc UC" 
+              width={121} 
+              height={40} 
+              className="object-contain drop-shadow-md" 
+              priority
+            />
             <span className="font-bold text-sm hidden lg:block">Sede Viña del Mar</span>
           </Link>
           <div className="flex items-center gap-2">
@@ -59,6 +67,7 @@ export default function Navbar() {
                       ? "bg-indigo-100 border border-indigo-200 text-indigo-700 shadow-inner"
                       : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
                   }`}
+                  aria-label={`Ir a ${item.label}`}
                 >
                   <Icon 
                     icon={item.icon} 
@@ -77,7 +86,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Barra de navegación móvil">
         <div 
           className="glass border-t border-slate-200/60 shadow-[0_-4px_30px_rgba(0,0,0,0.08)] relative overflow-hidden"
           style={{
@@ -100,6 +109,7 @@ export default function Navbar() {
                       ? "text-indigo-600"
                       : "text-slate-400 active:text-slate-600"
                   }`}
+                  aria-label={item.label}
                 >
                   <Icon 
                     icon={item.icon} 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@iconify/react";
 import { useApp } from "@/context/AppContext";
@@ -53,10 +54,12 @@ export default function LoginPage() {
       {/* Left Side: Hero Image */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-indigo-900/20 z-10" />
-        <img 
+        <Image 
           src="/login-welcome.png" 
-          alt="Campus Welcome" 
-          className="absolute inset-0 w-full h-full object-cover"
+          alt="Vista del Campus Duoc UC" 
+          fill
+          className="object-cover"
+          priority
         />
         <div className="absolute bottom-12 left-12 right-12 z-20 text-white animate-fade-in-up">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
@@ -76,7 +79,7 @@ export default function LoginPage() {
       {/* Right Side: Login Form */}
       <div className="flex-1 flex flex-col justify-center items-center px-5 py-8 sm:p-8 lg:p-16 bg-transparent relative pb-24 sm:pb-8">
         <div className="absolute top-6 left-5 sm:top-8 sm:left-8 lg:hidden">
-          <img src="/logo.svg" alt="Logo" className="w-20 sm:w-24 h-auto" />
+          <Image src="/logo.svg" alt="Logo Duoc UC" width={96} height={32} className="h-auto" />
         </div>
 
         <div className="w-full max-w-md animate-fade-in">
@@ -101,10 +104,12 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full group relative flex items-center justify-center gap-3 sm:gap-4 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 sm:py-4 px-5 sm:px-6 rounded-xl sm:rounded-2xl border-2 border-slate-100 hover:border-indigo-500 transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
-              <img 
+              <Image 
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-                alt="Google" 
-                className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" 
+                alt="Google Icon" 
+                width={24}
+                height={24}
+                className="group-hover:scale-110 transition-transform" 
               />
               <span className="text-sm">Continuar con Google</span>
               {loading && (
