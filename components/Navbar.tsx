@@ -43,7 +43,10 @@ export default function Navbar() {
           }}
         >
           {/* Strong glassmorphism overlay to blur the institutional background */}
-          <div className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" />
+          <div 
+            className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" 
+            style={{ WebkitBackdropFilter: "blur(24px)" }}
+          />
           <Link href="/" className="flex items-center gap-2.5 px-3" aria-label="Volver al inicio">
             <Image 
               src="/logo.svg" 
@@ -96,7 +99,10 @@ export default function Navbar() {
           }}
         >
           {/* Strong glassmorphism overlay */}
-          <div className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" />
+          <div 
+            className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" 
+            style={{ WebkitBackdropFilter: "blur(24px)" }}
+          />
           <div className="flex items-center justify-around px-2 h-16 relative z-10">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
