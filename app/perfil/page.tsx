@@ -42,6 +42,7 @@ function PerfilDashboard({ user }: { user: User }) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    window.location.href = "/";
   };
 
   const handleSurveySubmit = (ticketId: string) => {
