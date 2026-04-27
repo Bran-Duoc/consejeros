@@ -6,11 +6,25 @@ import { Icon } from "@iconify/react";
 import { useApp } from "@/context/AppContext";
 import {
   Ticket, TicketStatus, TicketCategory, UrgencyLevel,
-  categoryLabels, categoryColors, categoryIcons, urgencyLabels, urgencyColors,
-  statusLabels, statusColors, adminUsers,
+  categoryLabels, categoryIcons, urgencyLabels,
+  statusLabels, statusColors
 } from "@/lib/data";
-import { calculateSLAStatus } from "@/lib/sla";
-import { isTicketStale } from "@/lib/sla";
+import { calculateSLAStatus, isTicketStale } from "@/lib/sla";
+
+const urgencyColors: Record<UrgencyLevel, string> = {
+  bajo: "text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded",
+  medio: "text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded",
+  alto: "text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded",
+  critico: "text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded animate-pulse-soft",
+};
+
+const categoryColors: Record<TicketCategory, string> = {
+  academico: "bg-blue-50 text-blue-700 border-blue-200",
+  infraestructura: "bg-orange-50 text-orange-700 border-orange-200",
+  bienestar: "bg-rose-50 text-rose-700 border-rose-200",
+  financiero: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  otro: "bg-slate-50 text-slate-700 border-slate-200",
+};
 
 const COLUMNS: { id: TicketStatus; label: string; accent: string }[] = [
   { id: "nuevo", label: "Nuevo", accent: "bg-sky-500" },
@@ -202,7 +216,7 @@ function KanbanColumn({
 
 // ---- Kanban Board ----
 export default function KanbanPage() {
-  const { tickets, moveTicket, adminRole } = useApp();
+  const { tickets, moveTicket, role } = useApp();
   const [filterCategory, setFilterCategory] = useState<TicketCategory | "all">("all");
   const [filterUrgency, setFilterUrgency] = useState<UrgencyLevel | "all">("all");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);

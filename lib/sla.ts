@@ -2,7 +2,8 @@
 // SLA Calculation Utilities
 // ============================================================
 
-import { SLAConfig, TicketCategory, UrgencyLevel, mockSLAConfig } from "./data";
+import { SLAConfig, TicketCategory, UrgencyLevel } from "./data";
+import { mockSLAConfig } from "./mock";
 
 export interface SLAStatus {
   remainingMs: number;
