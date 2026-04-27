@@ -44,14 +44,16 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
   const column = COLUMNS.find(c => c.id === ticket.status);
 
   return (
-    <Draggable draggableId={ticket.id} index={index}>
+    <Draggable draggableId={ticket.id} index={index} isDragDisabled={role === "Supervisor"}>
       {(provided, snapshot) => (
         <div
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={() => onClick(ticket)}
-          className={`rounded-xl border bg-white p-4 mb-3 transition-all duration-200 cursor-pointer ${
+          className={`rounded-xl border bg-white p-4 mb-3 transition-all duration-200 ${
+            role === "Supervisor" ? "cursor-default" : "cursor-pointer"
+          } ${
             snapshot.isDragging
               ? `kanban-card-dragging border-slate-300 shadow-lg`
               : `shadow-sm border-slate-200 hover:shadow-md hover:border-slate-300`
@@ -233,6 +235,7 @@ export default function KanbanPage() {
   );
 
   const onDragEnd = (result: DropResult) => {
+    if (role === "Supervisor") return; // Read-only role
     if (!result.destination) return;
     const newStatus = result.destination.droppableId as TicketStatus;
     if (newStatus === result.source.droppableId) return;
@@ -245,7 +248,11 @@ export default function KanbanPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Tablero Kanban</h1>
-          <p className="text-foreground text-sm mt-1">Arrastra las tarjetas para cambiar el estado</p>
+          <p className="text-foreground text-sm mt-1">
+            {role === "Supervisor" 
+              ? "Vista de supervisión (Lectura)" 
+              : "Arrastra las tarjetas para cambiar el estado"}
+          </p>
         </div>
         <div className="flex gap-2">
           <select

@@ -12,9 +12,9 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: "lucide:layout-dashboard", exact: true },
   { href: "/admin/kanban", label: "Kanban", icon: "lucide:kanban-square" },
   { href: "/admin/metrics", label: "Métricas", icon: "lucide:bar-chart-3" },
-  { href: "/admin/sla", label: "Config SLA", icon: "lucide:settings-2" },
-  { href: "/admin/users", label: "Usuarios", icon: "lucide:users" },
-  { href: "/admin/audit", label: "Auditoría", icon: "lucide:scroll-text" },
+  { href: "/admin/sla", label: "Config SLA", icon: "lucide:settings-2", roles: ["Admin TI", "Admin_TI"] },
+  { href: "/admin/users", label: "Usuarios", icon: "lucide:users", roles: ["Admin TI", "Admin_TI"] },
+  { href: "/admin/audit", label: "Auditoría", icon: "lucide:scroll-text", roles: ["Admin TI", "Admin_TI", "Supervisor"] },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [cmdKOpen, setCmdKOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const roleLabel = role === "Admin_TI" ? "Administrador TI" : "Consejero de Sede";
+  const filteredNavItems = navItems.filter(item => {
+    if (!item.roles) return true;
+    return role && item.roles.includes(role);
+  });
+
+  const roleLabels: Record<string, string> = {
+    Supervisor: "Supervisor General",
+    Consejo: "Consejo de Sede",
+    "Admin TI": "Administrador TI",
+    Admin_TI: "Administrador TI",
+  };
+
+  const roleLabel = role ? roleLabels[role] || "Staff" : "Cargando...";
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -95,7 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Nav */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -169,7 +181,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <div className="lg:hidden fixed top-14 left-0 bottom-0 w-[260px] z-50 bg-white border-r border-border animate-slide-in-left">
             <nav className="py-4 px-3 space-y-1">
-              {navItems.map((item) => (
+              {filteredNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
