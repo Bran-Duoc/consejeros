@@ -180,9 +180,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         return newTicket;
       } catch (err) {
         console.error("Error creating ticket:", err);
-        const fallbackTicket: Ticket = { ...ticketToCreate, id: generateId(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-        setTickets((prev) => [fallbackTicket, ...prev]);
-        return fallbackTicket;
+        throw err;
       }
     },
     [slaConfig, agents, user]

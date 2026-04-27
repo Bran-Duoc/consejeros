@@ -372,6 +372,8 @@ export default function SolicitudPage() {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>(initialFormData);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [ticketId, setTicketId] = useState("");
   const [isOffline, setIsOffline] = useState(false);
 
@@ -418,20 +420,53 @@ export default function SolicitudPage() {
   };
 
   const handleSubmit = async () => {
-    const ticket = await addTicket({
-      title: data.title,
-      description: data.description,
-      category: data.category as TicketCategory,
-      urgency: data.urgency as UrgencyLevel,
-      createdBy: data.email,
-      createdByName: data.name,
-      school: data.school,
-      career: data.career,
-    });
-    setTicketId(ticket.id);
-    setSubmitted(true);
-    localStorage.removeItem(FORM_STORAGE_KEY);
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const ticket = await addTicket({
+        title: data.title,
+        description: data.description,
+        category: data.category as TicketCategory,
+        urgency: data.urgency as UrgencyLevel,
+        createdBy: data.email,
+        createdByName: data.name,
+        school: data.school,
+        career: data.career,
+      });
+      setTicketId(ticket.id);
+      setSubmitted(true);
+      localStorage.removeItem(FORM_STORAGE_KEY);
+    } catch (err: any) {
+      console.error(err);
+      setSubmitError("Error al guardar la solicitud en la base de datos. Asegúrate de estar conectado.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!user) {
+    return (
+      <PublicLayout>
+        <div className="flex-1 flex items-center justify-center p-4 min-h-[60vh]">
+          <div className="max-w-md w-full text-center bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-3xl mb-6">
+              <Icon icon="lucide:lock" />
+            </div>
+            <h1 className="text-2xl font-bold mb-3">Autenticación Requerida</h1>
+            <p className="text-slate-500 mb-8">
+              Debes iniciar sesión con tu cuenta institucional para poder enviar solicitudes y hacerles seguimiento.
+            </p>
+            <Link
+              href="/login"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
+            >
+              Ir a Iniciar Sesión
+            </Link>
+          </div>
+        </div>
+      </PublicLayout>
+    );
+  }
 
   if (submitted) {
     return (
@@ -513,13 +548,28 @@ export default function SolicitudPage() {
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={!canAdvance()}
-                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40"
+                disabled={!canAdvance() || isSubmitting}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
+                {isSubmitting ? (
+                  <>
+                    <Icon icon="lucide:loader-2" className="w-5 h-5 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
+                  </>
+                )}
               </button>
             )}
           </div>
+          {submitError && (
+            <div className="mt-6 p-4 rounded-xl bg-status-danger/10 border border-status-danger/20 text-status-danger text-sm font-medium flex items-center gap-3 animate-fade-in-up">
+              <Icon icon="lucide:alert-circle" className="w-5 h-5 shrink-0" />
+              {submitError}
+            </div>
+          )}
         </div>
       </div>
     </PublicLayout>
