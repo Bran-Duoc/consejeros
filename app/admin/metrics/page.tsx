@@ -83,7 +83,8 @@ function BarChart({ data, width = 500, height = 260 }: {
       // Label
       ctx.fillStyle = "rgba(255,255,255,0.25)";
       ctx.font = "9px system-ui";
-      ctx.fillText(d.label.slice(0, 8), x + barWidth / 2, chartBottom + 16);
+      const labelText = (d.label || "N/A").toString();
+      ctx.fillText(labelText.slice(0, 8), x + barWidth / 2, chartBottom + 16);
     });
   }, [data, width, height]);
 
@@ -309,7 +310,7 @@ export default function MetricsPage() {
       academico: "#5483BF", infraestructura: "#F2A81D", bienestar: "#A680BF", financiero: "#B7D984", otro: "#6B7280",
     };
     return Object.entries(counts).map(([cat, val]) => ({
-      label: categoryLabels[cat as TicketCategory],
+      label: categoryLabels[cat as TicketCategory] || cat || "Otro",
       value: val,
       color: colors[cat] || "#6B7280",
     }));

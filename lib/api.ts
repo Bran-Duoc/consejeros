@@ -69,8 +69,12 @@ const STATUS_TO_DB: Record<string, string> = {
   resuelto: 'Resuelto',
 };
 
-const mkReverse = (m: Record<string, string>) =>
-  Object.fromEntries(Object.entries(m).map(([k, v]) => [v, k]));
+const mkReverse = (m: Record<string, string>) => {
+  const rev = Object.fromEntries(Object.entries(m).map(([k, v]) => [v, k]));
+  // Add some common lowercase fallbacks just in case
+  Object.keys(m).forEach(k => { rev[k] = k; });
+  return rev;
+};
 const DB_TO_CATEGORY = mkReverse(CATEGORY_TO_DB);
 const DB_TO_URGENCY = mkReverse(URGENCY_TO_DB);
 const DB_TO_STATUS = mkReverse(STATUS_TO_DB);
