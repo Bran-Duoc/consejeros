@@ -102,10 +102,38 @@ function StepCategory({
     otro: "Sugerencias, reclamos u otros temas",
   };
 
+  const categoryStyles: Record<TicketCategory, { active: string, inactive: string, icon: string }> = {
+    academico: {
+      active: "border-indigo-600 bg-indigo-600/5 shadow-lg shadow-indigo-600/10",
+      inactive: "hover:border-indigo-600/30 hover:bg-indigo-50/30",
+      icon: "text-indigo-600"
+    },
+    infraestructura: {
+      active: "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/10",
+      inactive: "hover:border-amber-500/30 hover:bg-amber-50/30",
+      icon: "text-amber-500"
+    },
+    bienestar: {
+      active: "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10",
+      inactive: "hover:border-emerald-500/30 hover:bg-emerald-50/30",
+      icon: "text-emerald-500"
+    },
+    financiero: {
+      active: "border-violet-500 bg-violet-500/5 shadow-lg shadow-violet-500/10",
+      inactive: "hover:border-violet-500/30 hover:bg-violet-50/30",
+      icon: "text-violet-500"
+    },
+    otro: {
+      active: "border-slate-500 bg-slate-500/5 shadow-lg shadow-slate-500/10",
+      inactive: "hover:border-slate-500/30 hover:bg-slate-50/30",
+      icon: "text-slate-500"
+    }
+  };
+
   return (
     <div className="animate-fade-in-up">
-      <h2 className="text-2xl font-bold mb-2">¿En qué podemos ayudarte?</h2>
-      <p className="text-foreground/50 mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
+      <h2 className="text-2xl font-bold mb-2 text-slate-800">¿En qué podemos ayudarte?</h2>
+      <p className="text-slate-500 mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories.map((cat) => (
           <button
@@ -113,13 +141,15 @@ function StepCategory({
             onClick={() => onChange(cat)}
             className={`group text-left p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
               value === cat
-                ? "border-indigo-600 bg-indigo-600/5 shadow-lg shadow-indigo-600/10"
-                : "border-border hover:border-indigo-600/30 hover:bg-foreground/[0.02]"
+                ? categoryStyles[cat].active
+                : `border-slate-200 ${categoryStyles[cat].inactive}`
             }`}
           >
-            <span className="text-3xl block mb-3"><Icon icon={categoryIcons[cat]} /></span>
-            <span className="font-semibold text-base block">{categoryLabels[cat]}</span>
-            <span className="text-sm text-foreground/40 mt-1 block">{descriptions[cat]}</span>
+            <span className={`text-3xl block mb-3 transition-colors ${value === cat ? categoryStyles[cat].icon : 'text-slate-400 group-hover:' + categoryStyles[cat].icon}`}>
+              <Icon icon={categoryIcons[cat]} />
+            </span>
+            <span className="font-bold text-slate-800 text-base block">{categoryLabels[cat]}</span>
+            <span className="text-sm font-medium text-slate-500 mt-1.5 block leading-snug">{descriptions[cat]}</span>
           </button>
         ))}
       </div>
