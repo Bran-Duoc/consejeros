@@ -94,16 +94,17 @@ export default function Navbar() {
       {/* Mobile Bottom Tab Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Barra de navegación móvil">
         <div 
-          className="glass border-t border-slate-200/60 shadow-[0_-4px_30px_rgba(0,0,0,0.08)] relative overflow-hidden"
+          className="border-t border-white/20 shadow-[0_-4px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
           style={{
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
+            backgroundPosition: "bottom",
           }}
         >
-          {/* Strong glassmorphism overlay */}
+          {/* Main blur layer */}
           <div 
-            className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" 
-            style={{ WebkitBackdropFilter: "blur(24px)" }}
+            className="absolute inset-0 bg-white/40 backdrop-blur-2xl -z-10" 
+            style={{ WebkitBackdropFilter: "blur(32px)" }}
           />
           <div className="flex items-center justify-around px-2 h-16 relative z-10">
             {navItems.map((item) => {
