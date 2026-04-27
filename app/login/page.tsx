@@ -10,8 +10,17 @@ export default function LoginPage() {
   const { user } = useApp();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check for error in URL
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("error") === "invalid_domain") {
+        setErrorMessage("Acceso denegado. Debes utilizar tu correo institucional (@duocuc.cl).");
+      }
+    }
+
     if (user) {
       router.push("/perfil");
     }
@@ -27,6 +36,7 @@ export default function LoginPage() {
           queryParams: {
             prompt: "select_account",
             access_type: "offline",
+            hd: "duocuc.cl",
           },
         },
       });
@@ -79,6 +89,13 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 shadow-xl shadow-slate-200/60 border border-slate-100">
+            {errorMessage && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 animate-fade-in">
+                <Icon icon="lucide:alert-circle" className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700 font-medium leading-relaxed">{errorMessage}</p>
+              </div>
+            )}
+
             <button
               onClick={handleGoogleLogin}
               disabled={loading}

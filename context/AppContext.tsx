@@ -47,6 +47,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Sync Auth State & Fetch Role
   useEffect(() => {
     const syncUserAndRole = async (sessionUser: AuthUser | null) => {
+      // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio
+      if (sessionUser && !sessionUser.email?.endsWith("@duocuc.cl")) {
+        await supabase.auth.signOut();
+        setUser(null);
+        setRole(null);
+        window.location.href = "/login?error=invalid_domain";
+        return;
+      }
+
       setUser(sessionUser);
       if (sessionUser) {
         const { data, error } = await supabase
