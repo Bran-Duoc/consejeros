@@ -6,7 +6,6 @@ import { useApp } from "@/context/AppContext";
 import { councilMembers } from "@/lib/mock";
 import { Icon } from "@iconify/react";
 import Footer from "@/components/Footer";
-import FranjaTop from "@/components/FranjaTop";
 
 // ---- Animated Counter ----
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -219,7 +218,6 @@ export default function HomePage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
       <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px]">
-        <FranjaTop />
         <HeroSection />
         <CouncilSection />
         <MetricsSection />

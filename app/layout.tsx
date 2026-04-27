@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://consejeros.vercel.app"),
   title: "Sede Viña del Mar",
   description:
     "Plataforma integral de gestión de solicitudes y experiencia estudiantil. Tu voz construye nuestra sede.",
@@ -38,6 +39,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import ManagedFranjaTop from "@/components/ManagedFranjaTop";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +58,7 @@ export default function RootLayout({
         <DynamicBackground />
         <AppProvider>
           <Navbar />
+          <ManagedFranjaTop />
           <div className="flex-1">
             {children}
           </div>

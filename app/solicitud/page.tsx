@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import Footer from "@/components/Footer";
-import FranjaTop from "@/components/FranjaTop";
 import { useApp } from "@/context/AppContext";
 import {
   TicketCategory,
@@ -367,7 +366,6 @@ export default function SolicitudPage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
       <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
-        <FranjaTop />
         {/* Header */}
         <div className="max-w-2xl mx-auto mb-8 px-4 sm:px-4">
           <div className="flex items-start justify-between">
