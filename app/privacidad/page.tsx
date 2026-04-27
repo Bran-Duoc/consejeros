@@ -4,11 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import Footer from "@/components/Footer";
+import FranjaTop from "@/components/FranjaTop";
 
 export default function PrivacidadPage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
       <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12 px-4 sm:px-6">
+        <FranjaTop />
         <article className="max-w-3xl mx-auto py-8 sm:py-12">
           {/* Header */}
           <div className="mb-8 sm:mb-12">
