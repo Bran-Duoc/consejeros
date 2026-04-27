@@ -16,6 +16,27 @@ import {
 const STEPS = ["Categoría", "Detalles", "Urgencia", "Revisión"];
 const FORM_STORAGE_KEY = "portal_form_draft";
 
+const SCHOOLS_DATA: Record<string, string[]> = {
+  "🏢 Escuela de Administración y Negocios": [
+    "Auditoría", "Comercio Exterior", "Contabilidad General Mención Legislación Tributaria",
+    "Ingeniería en Administración Mención Finanzas", "Ingeniería en Administración Mención Gestión de Personas",
+    "Ingeniería en Administración Mención Innovación y Emprendimiento", "Ingeniería en Comercio Exterior",
+    "Ingeniería en Gestión Logística", "Ingeniería en Marketing Digital", "Técnico en Administración",
+    "Técnico en Gestión Logística"
+  ],
+  "💻 Escuela de Informática y Telecomunicaciones": [
+    "Analista Programador", "Ingeniería en Informática", "Ingeniería en Redes y Telecomunicaciones"
+  ],
+  "🎨 Escuela de Diseño": [
+    "Desarrollo y Diseño Web", "Diseño de Ambientes", "Diseño de Vestuario", "Diseño Gráfico",
+    "Diseño Industrial e Innovación en Productos", "Ilustración para Contextos Globales"
+  ],
+  "🎬 Escuela de Comunicación": [
+    "Animación Digital", "Comunicación Audiovisual", "Ingeniería en Sonido", "Publicidad",
+    "Relaciones Públicas y Comunicación Organizacional", "Tecnología en Sonido e Iluminación"
+  ]
+};
+
 interface FormData {
   category: TicketCategory | "";
   title: string;
@@ -23,6 +44,8 @@ interface FormData {
   urgency: UrgencyLevel | "";
   name: string;
   email: string;
+  school: string;
+  career: string;
   arcoConsent: boolean;
 }
 
@@ -33,6 +56,8 @@ const initialFormData: FormData = {
   urgency: "",
   name: "",
   email: "",
+  school: "",
+  career: "",
   arcoConsent: false,
 };
 
@@ -195,6 +220,39 @@ function StepDetails({
             className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm"
           />
         </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Escuela</label>
+            <select
+              value={data.school}
+              onChange={(e) => {
+                onChange("school", e.target.value);
+                onChange("career", ""); // Reset career when school changes
+              }}
+              className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none"
+            >
+              <option value="">Selecciona tu escuela</option>
+              {Object.keys(SCHOOLS_DATA).map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Carrera</label>
+            <select
+              value={data.career}
+              disabled={!data.school}
+              onChange={(e) => onChange("career", e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none disabled:opacity-50"
+            >
+              <option value="">{data.school ? "Selecciona tu carrera" : "Primero elige escuela"}</option>
+              {data.school && SCHOOLS_DATA[data.school].map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium mb-2">Título de la solicitud</label>
           <input
@@ -276,6 +334,8 @@ function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof 
         {[
           { label: "Nombre", value: data.name },
           { label: "Email", value: data.email },
+          { label: "Escuela", value: data.school },
+          { label: "Carrera", value: data.career },
           { label: "Categoría", value: data.category ? <div className="flex items-center gap-2"><Icon icon={categoryIcons[data.category as TicketCategory]} className="w-4 h-4"/> {categoryLabels[data.category as TicketCategory]}</div> : "" },
           { label: "Urgencia", value: data.urgency ? urgencyLabels[data.urgency as UrgencyLevel] : "" },
           { label: "Título", value: data.title },
@@ -350,7 +410,7 @@ export default function SolicitudPage() {
   const canAdvance = () => {
     switch (step) {
       case 0: return !!data.category;
-      case 1: return !!data.title && !!data.description && !!data.name && !!data.email;
+      case 1: return !!data.title && !!data.description && !!data.name && !!data.email && !!data.school && !!data.career;
       case 2: return !!data.urgency;
       case 3: return data.arcoConsent;
       default: return false;
@@ -365,6 +425,8 @@ export default function SolicitudPage() {
       urgency: data.urgency as UrgencyLevel,
       createdBy: data.email,
       createdByName: data.name,
+      school: data.school,
+      career: data.career,
     });
     setTicketId(ticket.id);
     setSubmitted(true);

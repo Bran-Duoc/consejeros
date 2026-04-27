@@ -15,6 +15,8 @@ const mapTicketFromDB = (t: any): Ticket => ({
   createdAt: t.fecha_creacion || t.created_at,
   updatedAt: t.fecha_creacion || t.updated_at,
   slaDeadline: t.sla_deadline,
+  school: t.escuela,
+  career: t.carrera,
   attachments: t.attachments || [],
   tags: t.tags || [],
 });
@@ -27,6 +29,8 @@ const mapTicketToDB = (t: Partial<Ticket>) => ({
   estado: t.status,
   estudiante_id: t.createdBy,
   sla_deadline: t.slaDeadline,
+  escuela: t.school,
+  carrera: t.career,
 });
 
 export const db = {

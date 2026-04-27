@@ -30,6 +30,8 @@ export interface Ticket {
   createdAt: string;
   updatedAt: string;
   slaDeadline: string;
+  school?: string;
+  career?: string;
   attachments?: string[];
   tags?: string[];
 }
