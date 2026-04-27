@@ -13,7 +13,7 @@ export default function ManagedFranjaTop() {
   }
 
   return (
-    <div className="w-full mt-[-35px] sm:mt-[-85px] relative z-[40]">
+    <div className="w-full relative z-[40]">
       <FranjaTop />
     </div>
   );
