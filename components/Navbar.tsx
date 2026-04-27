@@ -110,8 +110,8 @@ export default function Navbar() {
                   href={item.href}
                   className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-full transition-all duration-300 relative ${
                     isActive
-                      ? "text-indigo-600 bg-white/50 shadow-sm backdrop-blur-md border border-white/40"
-                      : "text-slate-600 bg-white/15 backdrop-blur-[2px] border border-white/10 hover:bg-white/25"
+                      ? "text-indigo-700 bg-white/70 shadow-md backdrop-blur-lg border border-white/60"
+                      : "text-slate-700 bg-white/40 backdrop-blur-md border border-white/20 hover:bg-white/50"
                   }`}
                   aria-label={item.label}
                 >
