@@ -15,8 +15,8 @@ export default function AdminLoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Si ya está logueado como admin o consejero, ir al dashboard
-    if (user && (role === "Admin_TI" || role === "Consejero")) {
+    // Si ya está logueado como parte del staff, ir al dashboard
+    if (user && role && role !== "Estudiante") {
       router.push("/admin");
     } else if (user && role === "Estudiante") {
       router.push("/perfil"); // Los estudiantes no pueden entrar aquí
