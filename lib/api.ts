@@ -4,17 +4,6 @@ import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel 
 // ============================================================
 // API Layer — Portal Hub del Consejo de Sede
 // Connected to Supabase project: traweqraelgoinlrcmja
-//
-// Confirmed DB columns (tickets):
-//   id, titulo, descripcion, categoria (enum), nivel_urgencia (enum),
-//   estado (enum), estudiante_id (UUID FK), nombre_estudiante,
-//   sla_deadline, escuela, carrera, asignado_a, fecha_creacion,
-//   attachments, tags, is_stale, resolved_at, first_response_at
-//
-// Enum values:
-//   categoria: Académico, Infraestructura, Bienestar, Financiero, Otros
-//   nivel_urgencia: Bajo, Medio, Alto, Crítico
-//   estado: Nuevo, Pendiente, En revisión, Escalado, Resuelto
 // ============================================================
 
 // ---- Retry with exponential backoff ----
@@ -51,7 +40,7 @@ function friendlyError(err: any): string {
     return 'Error de conexión. Revisa tu internet e intenta de nuevo.';
   if (msg.includes('null value') || msg.includes('not-null'))
     return 'Faltan campos obligatorios. Completa todos los campos.';
-  if (msg.includes('Could not find')) return 'La estructura de la base de datos está desactualizada. Contacta al administrador.';
+  if (msg.includes('Could not find')) return `La estructura de la base de datos no coincide (Columna faltante). Contacta al administrador. Detalle: ${msg}`;
   if (msg.includes('invalid input value for enum')) return 'Valor no válido para el campo. Intenta de nuevo.';
   return msg || 'Error inesperado. Intenta de nuevo más tarde.';
 }
@@ -80,7 +69,6 @@ const STATUS_TO_DB: Record<string, string> = {
   resuelto: 'Resuelto',
 };
 
-// Reverse maps (DB display value → app key)
 const mkReverse = (m: Record<string, string>) =>
   Object.fromEntries(Object.entries(m).map(([k, v]) => [v, k]));
 const DB_TO_CATEGORY = mkReverse(CATEGORY_TO_DB);
@@ -91,25 +79,25 @@ const DB_TO_STATUS = mkReverse(STATUS_TO_DB);
 function mapTicketFromDB(row: any): Ticket {
   return {
     id: row.id,
-    title: row.titulo || '',
-    description: row.descripcion || '',
-    category: (DB_TO_CATEGORY[row.categoria] || 'otro') as TicketCategory,
-    urgency: (DB_TO_URGENCY[row.nivel_urgencia] || 'bajo') as UrgencyLevel,
-    status: (DB_TO_STATUS[row.estado] || 'nuevo') as TicketStatus,
-    assignedTo: row.asignado_a || null,
-    createdBy: row.estudiante_id || '',
-    createdByName: row.nombre_estudiante || 'Estudiante',
+    title: row.titulo || row.title || '',
+    description: row.descripcion || row.description || '',
+    category: (DB_TO_CATEGORY[row.categoria || row.category] || 'otro') as TicketCategory,
+    urgency: (DB_TO_URGENCY[row.nivel_urgencia || row.urgency] || 'bajo') as UrgencyLevel,
+    status: (DB_TO_STATUS[row.estado || row.status] || 'nuevo') as TicketStatus,
+    assignedTo: row.asignado_a || row.assigned_to || null,
+    createdBy: row.estudiante_id || row.created_by || '',
+    createdByName: row.nombre_estudiante || row.created_by_name || row.nombre || 'Estudiante',
     createdAt: row.fecha_creacion || row.created_at || new Date().toISOString(),
-    updatedAt: row.updated_at || row.fecha_creacion || new Date().toISOString(),
+    updatedAt: row.updated_at || row.fecha_creacion || row.created_at || new Date().toISOString(),
     slaDeadline: row.sla_deadline || new Date(Date.now() + 48 * 3600000).toISOString(),
-    school: row.escuela || '',
-    career: row.carrera || '',
+    school: row.escuela || row.school || '',
+    career: row.carrera || row.career || '',
     attachments: row.attachments || [],
     tags: row.tags || [],
   };
 }
 
-// ---- App Ticket → DB Row ----
+// ---- App Ticket → DB Row (Robust Mapping) ----
 function mapTicketToDB(t: Partial<Ticket>): Record<string, any> {
   const data: Record<string, any> = {};
 
@@ -122,22 +110,44 @@ function mapTicketToDB(t: Partial<Ticket>): Record<string, any> {
   if (t.school !== undefined) data.escuela = t.school;
   if (t.career !== undefined) data.carrera = t.career;
 
-  // estudiante_id must be a valid UUID (FK to auth.users)
+  // UUID checks
   if (t.createdBy && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(t.createdBy)) {
     data.estudiante_id = t.createdBy;
   }
-
-  // nombre_estudiante — always set for display
-  if (t.createdByName) {
-    data.nombre_estudiante = t.createdByName;
-  }
-
-  // asignado_a must be a valid UUID
   if (t.assignedTo && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(t.assignedTo)) {
     data.asignado_a = t.assignedTo;
   }
 
+  // Name fields (we send several as fallback)
+  if (t.createdByName) {
+    data.nombre_estudiante = t.createdByName;
+    data.created_by_name = t.createdByName;
+    data.nombre = t.createdByName;
+  }
+
   return data;
+}
+
+// ---- Safe Insert with Recursive Column Stripping ----
+// This is the key to robustness: it will strip any column the DB doesn't have.
+async function safeInsert(table: string, row: Record<string, any>): Promise<{ data: any; error: any }> {
+  const { data, error } = await supabase.from(table).insert([row]).select().maybeSingle();
+
+  if (error) {
+    const msg = error.message || '';
+    const colMatch = msg.match(/Could not find the '(\w+)' column/i) || 
+                     msg.match(/column "(\w+)" .* does not exist/i);
+    
+    if (colMatch) {
+      const badCol = colMatch[1];
+      console.warn(`[API] Column "${badCol}" not found in ${table}, stripping and retrying...`);
+      const { [badCol]: _removed, ...cleaned } = row;
+      if (Object.keys(cleaned).length === 0) return { data, error }; // Don't loop forever
+      return safeInsert(table, cleaned); // Recursive call
+    }
+  }
+
+  return { data, error };
 }
 
 // ============================================================
@@ -148,11 +158,21 @@ export const db = {
   tickets: {
     async getAll(): Promise<Ticket[]> {
       return withRetry(async () => {
+        // Try ordering by fecha_creacion, fallback to created_at
         const { data, error } = await supabase
           .from('tickets')
           .select('*')
           .order('fecha_creacion', { ascending: false });
 
+        if (error && error.message?.includes('fecha_creacion')) {
+          const { data: altData, error: altError } = await supabase
+            .from('tickets')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (altError) throw altError;
+          return (altData || []).map(mapTicketFromDB);
+        }
+        
         if (error) throw error;
         return (data || []).map(mapTicketFromDB);
       });
@@ -161,34 +181,13 @@ export const db = {
     async create(ticket: Partial<Ticket>): Promise<Ticket> {
       try {
         const dbData = mapTicketToDB(ticket);
+        const { data, error } = await safeInsert('tickets', dbData);
 
-        const { data, error } = await supabase
-          .from('tickets')
-          .insert([dbData])
-          .select()
-          .maybeSingle();
-
-        if (error) {
-          // If a specific column causes the error, strip it and retry
-          const colMatch = error.message?.match(/Could not find the '(\w+)' column/i)
-            || error.message?.match(/column "(\w+)" .* does not exist/i);
-          if (colMatch) {
-            const badCol = colMatch[1];
-            console.warn(`[API] Column "${badCol}" not found, retrying without it`);
-            const { [badCol]: _removed, ...cleaned } = dbData;
-            const { data: retryData, error: retryErr } = await supabase
-              .from('tickets')
-              .insert([cleaned])
-              .select()
-              .maybeSingle();
-            if (retryErr) throw new Error(friendlyError(retryErr));
-            if (retryData) return mapTicketFromDB(retryData);
-          }
-          throw new Error(friendlyError(error));
-        }
+        if (error) throw new Error(friendlyError(error));
 
         if (data) return mapTicketFromDB(data);
-        // Insert succeeded but no data returned — construct from input
+        
+        // If success but no row returned (RLS), return a mock with input data
         return {
           ...ticket,
           id: crypto.randomUUID(),
@@ -203,17 +202,28 @@ export const db = {
 
     async updateStatus(id: string, status: TicketStatus): Promise<Ticket> {
       return withRetry(async () => {
-        const { data, error } = await supabase
+        // Try estado then status
+        let { data, error } = await supabase
           .from('tickets')
           .update({ estado: STATUS_TO_DB[status] || status })
           .eq('id', id)
           .select()
           .maybeSingle();
 
-        if (error) throw new Error(friendlyError(error));
+        if (error && error.message?.includes('estado')) {
+          const { data: altData, error: altError } = await supabase
+            .from('tickets')
+            .update({ status: status })
+            .eq('id', id)
+            .select()
+            .maybeSingle();
+          if (altError) throw new Error(friendlyError(altError));
+          data = altData;
+          error = null;
+        }
 
+        if (error) throw new Error(friendlyError(error));
         if (data) return mapTicketFromDB(data);
-        // Update succeeded but no data returned
         return { id, status } as Ticket;
       });
     },
@@ -297,7 +307,6 @@ export const db = {
 
   users: {
     async getAll() {
-      // Try staff_users first
       const { data, error } = await supabase.from('staff_users').select('*');
       if (!error && data) {
         return data.map((u: any) => ({
@@ -308,12 +317,8 @@ export const db = {
           department: u.departamento || u.department,
         }));
       }
-      // Fallback to users
       const { data: userData, error: userError } = await supabase.from('users').select('*');
-      if (userError) {
-        console.warn('Users fetch failed:', userError.message);
-        return [];
-      }
+      if (userError) return [];
       return (userData || []).map((u: any) => ({
         id: u.id,
         name: u.nombre || u.name || u.email?.split('@')[0] || 'Usuario',
