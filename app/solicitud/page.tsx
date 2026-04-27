@@ -437,8 +437,9 @@ export default function SolicitudPage() {
       setSubmitted(true);
       localStorage.removeItem(FORM_STORAGE_KEY);
     } catch (err: any) {
-      console.error(err);
-      setSubmitError("Error al guardar la solicitud en la base de datos. Asegúrate de estar conectado.");
+      console.error("Submission error:", err);
+      const details = err.message || "Error desconocido";
+      setSubmitError(`Error al guardar la solicitud: ${details}. Asegúrate de estar conectado o contacta a soporte.`);
     } finally {
       setIsSubmitting(false);
     }
