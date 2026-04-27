@@ -35,7 +35,7 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 
 
 
-// ---- Hero Section ----
+// ---- Hero Sectionxd ----
 function HeroSection() {
   return (
     <section className="relative min-h-[85vh] flex items-center overflow-hidden">
