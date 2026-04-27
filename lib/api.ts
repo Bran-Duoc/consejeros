@@ -1,15 +1,45 @@
 import { supabase } from './supabase';
-import { Ticket, AuditEntry, Survey, TicketStatus } from './data';
+import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel } from './data';
+
+const categoryMap: Record<string, string> = {
+  academico: "Académico",
+  infraestructura: "Infraestructura",
+  bienestar: "Bienestar",
+  financiero: "Financiero",
+  otro: "Otros",
+};
+
+const urgencyMap: Record<string, string> = {
+  bajo: "Bajo",
+  medio: "Medio",
+  alto: "Alto",
+  critico: "Crítico",
+};
+
+const statusMap: Record<string, string> = {
+  nuevo: "Nuevo",
+  pendiente: "Pendiente",
+  en_revision: "En revisión",
+  escalado: "Escalado",
+  resuelto: "Resuelto",
+};
+
+const reverseMap = (obj: Record<string, string>) => 
+  Object.fromEntries(Object.entries(obj).map(([k, v]) => [v, k]));
+
+const categoryRev = reverseMap(categoryMap);
+const urgencyRev = reverseMap(urgencyMap);
+const statusRev = reverseMap(statusMap);
 
 // Helper to map snake_case from DB (Schema v2) to camelCase for App
 const mapTicketFromDB = (t: any): Ticket => ({
   id: t.id,
-  title: t.titulo || t.title, // Handle both for safety
+  title: t.titulo || t.title,
   description: t.descripcion || t.description,
-  category: t.categoria || t.category,
-  urgency: t.nivel_urgencia || t.urgency,
-  status: t.estado || t.status,
-  assignedTo: null, // assigned_to removed in v2 schema requirements
+  category: (categoryRev[t.categoria || t.category] || "otro") as TicketCategory,
+  urgency: (urgencyRev[t.nivel_urgencia || t.urgency] || "bajo") as UrgencyLevel,
+  status: (statusRev[t.estado || t.status] || "nuevo") as TicketStatus,
+  assignedTo: null,
   createdBy: t.estudiante_id || t.created_by,
   createdByName: t.created_by_name || "Usuario",
   createdAt: t.fecha_creacion || t.created_at,
@@ -24,9 +54,9 @@ const mapTicketFromDB = (t: any): Ticket => ({
 const mapTicketToDB = (t: Partial<Ticket>) => ({
   titulo: t.title,
   descripcion: t.description,
-  categoria: t.category,
-  nivel_urgencia: t.urgency,
-  estado: t.status,
+  categoria: t.category ? categoryMap[t.category] : undefined,
+  nivel_urgencia: t.urgency ? urgencyMap[t.urgency] : undefined,
+  estado: t.status ? statusMap[t.status] : undefined,
   estudiante_id: t.createdBy,
   sla_deadline: t.slaDeadline,
   escuela: t.school,
@@ -55,7 +85,7 @@ export const db = {
     async updateStatus(id: string, status: TicketStatus) {
       const { data, error } = await supabase
         .from('tickets')
-        .update({ estado: status })
+        .update({ estado: statusMap[status] })
         .eq('id', id)
         .select()
         .single();
