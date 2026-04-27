@@ -116,10 +116,9 @@ body {
 
 /* ---- Glassmorphism ---- */
 .glass {
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 .glass-dark {
   background: rgba(26, 29, 46, 0.75);
