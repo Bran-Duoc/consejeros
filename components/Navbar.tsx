@@ -94,7 +94,7 @@ export default function Navbar() {
       {/* Mobile Bottom Tab Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Barra de navegación móvil">
         <div 
-          className="border-t border-white/20 shadow-[0_-4px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
+          className="glass border-t border-white/20 shadow-[0_-4px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
           style={{
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
