@@ -108,10 +108,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col items-center justify-center gap-0.5 py-1 px-3 rounded-xl transition-all duration-200 ${
+                  className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 rounded-full transition-all duration-300 relative ${
                     isActive
-                      ? "text-indigo-600"
-                      : "text-slate-400 active:text-slate-600"
+                      ? "text-indigo-600 bg-white/40 shadow-sm backdrop-blur-md border border-white/30"
+                      : "text-slate-500 hover:text-slate-700 active:bg-white/20"
                   }`}
                   aria-label={item.label}
                 >
