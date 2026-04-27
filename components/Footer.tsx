@@ -6,7 +6,10 @@ import { Icon } from "@iconify/react";
 
 export default function Footer() {
   return (
-    <footer className="bg-black text-white pt-5 pb-16 sm:pb-16 mt-auto relative">
+    <footer 
+      className="bg-black text-white pt-5 pb-16 sm:pb-16 mt-auto relative"
+      style={{ paddingBottom: 'revert-layer' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center gap-4 sm:gap-6 text-sm text-white/70">
         {/* Top row: Logo + Credits */}
         <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -51,7 +51,7 @@ function HeroSection() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20">
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="max-w-3xl glass p-8 sm:p-12 rounded-[2.5rem] border border-white/40 shadow-2xl backdrop-blur-md relative overflow-hidden">
           {/* Internal glow for the glass effect */}
           <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 blur-3xl rounded-full" />

@@ -33,7 +33,16 @@ export default function Navbar() {
     <>
       {/* Desktop Navbar — hidden on mobile */}
       <nav className="hidden sm:block fixed top-[10px] left-[30px] right-[30px] z-50">
-        <div className="w-full flex items-center justify-between gap-2 p-2 rounded-full glass shadow-2xl shadow-black/10">
+        <div 
+          className="w-full flex items-center justify-between gap-2 p-2 rounded-full glass shadow-2xl shadow-black/10 relative overflow-hidden"
+          style={{
+            backgroundImage: "url('/franja2.svg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Subtle overlay to enhance glass effect over the image */}
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-md -z-10" />
           <Link href="/" className="flex items-center gap-2.5 px-3">
             <img src="/logo.svg" alt="Logo" className="w-[121px] h-[40px] object-contain drop-shadow-md" />
             <span className="font-bold text-sm hidden lg:block">Sede Viña del Mar</span>
@@ -69,8 +78,17 @@ export default function Navbar() {
 
       {/* Mobile Bottom Tab Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]">
-        <div className="glass border-t border-slate-200/60 shadow-[0_-4px_30px_rgba(0,0,0,0.08)]">
-          <div className="flex items-center justify-around px-2 h-16">
+        <div 
+          className="glass border-t border-slate-200/60 shadow-[0_-4px_30px_rgba(0,0,0,0.08)] relative overflow-hidden"
+          style={{
+            backgroundImage: "url('/franja2.svg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          {/* Subtle overlay */}
+          <div className="absolute inset-0 bg-white/40 backdrop-blur-md -z-10" />
+          <div className="flex items-center justify-around px-2 h-16 relative z-10">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
