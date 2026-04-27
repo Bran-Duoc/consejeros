@@ -40,6 +40,8 @@ export default function Navbar() {
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backdropFilter: "blur(1px)",
+            WebkitBackdropFilter: "blur(1px)",
           }}
         >
           {/* Strong glassmorphism overlay to blur the institutional background */}
