@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import Footer from "@/components/Footer";
+import PublicLayout from "@/components/PublicLayout";
 import { supabase } from "@/lib/supabase";
 import { useApp } from "@/context/AppContext";
 import {
@@ -59,9 +59,8 @@ function PerfilDashboard({ user }: { user: User }) {
   };
 
   return (
-    <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20 pb-20 sm:pb-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+    <PublicLayout>
+      <div className="pb-20 sm:pb-12 max-w-4xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
@@ -287,14 +286,11 @@ function PerfilDashboard({ user }: { user: User }) {
                 </div>
               );
             })}
+            </button>
           </div>
         )}
       </div>
-      <div className="mt-20">
-        <Footer />
-      </div>
-    </main>
-    </div>
+    </PublicLayout>
   );
 }
 

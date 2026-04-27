@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import Footer from "@/components/Footer";
+import PublicLayout from "@/components/PublicLayout";
 import { useApp } from "@/context/AppContext";
 import {
   TicketCategory,
@@ -375,35 +375,36 @@ export default function SolicitudPage() {
 
   if (submitted) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center animate-fade-in-up">
-          <div className="w-20 h-20 mx-auto rounded-full bg-status-success/15 flex items-center justify-center text-4xl mb-6 text-status-success">
-            <Icon icon="lucide:check-circle-2" />
-          </div>
-          <h1 className="text-3xl font-bold mb-3">¡Solicitud Enviada!</h1>
-          <p className="text-foreground/50 mb-2">
-            Tu solicitud ha sido registrada y asignada automáticamente.
-          </p>
-          <p className="text-sm text-foreground/30 mb-8">
-            ID: <code className="px-2 py-0.5 bg-foreground/5 rounded text-xs">{ticketId}</code>
-          </p>
-          <div className="flex gap-3 justify-center">
-
-            <Link
-              href="/perfil"
-              className="px-6 py-3 rounded-xl bg-indigo-600 text-white text-sm font-medium shadow-lg shadow-indigo-600/25 hover:bg-indigo-700 transition-all"
-            >
-              Ver Mi Perfil
-            </Link>
+      <PublicLayout>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center animate-fade-in-up">
+            <div className="w-20 h-20 mx-auto rounded-full bg-status-success/15 flex items-center justify-center text-4xl mb-6 text-status-success">
+              <Icon icon="lucide:check-circle-2" />
+            </div>
+            <h1 className="text-3xl font-bold mb-3 text-slate-900">¡Solicitud Enviada!</h1>
+            <p className="text-slate-500 mb-2">
+              Tu solicitud ha sido registrada y asignada automáticamente.
+            </p>
+            <p className="text-sm text-slate-400 mb-8">
+              Folio: <code className="px-2 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold text-slate-900">{ticketId?.slice(0, 8)}</code>
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Link
+                href="/perfil"
+                className="px-8 py-4 rounded-2xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
+              >
+                Ver Mi Perfil
+              </Link>
+            </div>
           </div>
         </div>
-      </main>
+      </PublicLayout>
     );
   }
 
   return (
-    <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20 pb-20 sm:pb-12">
+    <PublicLayout>
+      <div className="pb-20 sm:pb-12">
         {/* Header */}
         <div className="max-w-2xl mx-auto mb-8 px-4 sm:px-4">
           <div className="flex items-start justify-between">
@@ -459,12 +460,9 @@ export default function SolicitudPage() {
             )}
           </div>
         </div>
-        
-        <div className="mt-20">
-          <Footer />
         </div>
-      </main>
-    </div>
+      </div>
+    </PublicLayout>
   );
 }
 

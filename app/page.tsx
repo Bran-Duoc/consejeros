@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { councilMembers } from "@/lib/mock";
 import { Icon } from "@iconify/react";
-import Footer from "@/components/Footer";
 
 // ---- Animated Counter ----
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
@@ -52,43 +51,45 @@ function HeroSection() {
         }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20 sm:py-32">
-        <div className="max-w-3xl">
-          <div className="animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
-              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse-soft" />
-              Portal Activo — Semestre 2026-1
+      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 py-20">
+        <div className="max-w-3xl glass p-8 sm:p-12 rounded-[2.5rem] border border-white/40 shadow-2xl backdrop-blur-md relative overflow-hidden">
+          {/* Internal glow for the glass effect */}
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 blur-3xl rounded-full" />
+          
+          <div className="relative z-10">
+            <div className="animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-indigo-100/80 text-indigo-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse-soft" />
+                Portal Activo — Semestre 2026-1
+              </div>
             </div>
-          </div>
 
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight animate-fade-in-up delay-100">
-            Tu voz construye <br />
-            <span className="text-indigo-600">
-              nuestra sede
-            </span>
-          </h1>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
+              Tu voz construye <br />
+              <span className="text-indigo-600">
+                Nuestra Sede.
+              </span>
+            </h1>
 
-          <p className="mt-4 sm:mt-6 text-base sm:text-xl text-foreground/60 max-w-2xl leading-relaxed animate-fade-in-up delay-200">
-            El puente digital entre el alumnado y el Consejo de Sede. Envía
-            solicitudes, haz seguimiento en tiempo real y sé parte del cambio.
-          </p>
+            <p className="mt-6 sm:mt-8 text-lg sm:text-2xl text-slate-600 max-w-2xl font-medium leading-relaxed animate-fade-in-up delay-200">
+              Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
+            </p>
 
-          <div className="mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-300">
-            <Link
-              href="/solicitud"
-              className="group px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-indigo-600 text-white font-semibold text-sm sm:text-base shadow-xl shadow-indigo-600/25 hover:bg-indigo-700 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              Ingresar Solicitud
-              <svg className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
-            <Link
-              href="/perfil"
-              className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl border border-foreground/15 text-foreground/80 font-semibold text-sm sm:text-base hover:bg-foreground/5 hover:border-foreground/25 transition-all text-center"
-            >
-              Ver Mi Perfil
-            </Link>
+            <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-300">
+              <Link
+                href="/solicitud"
+                className="group px-8 py-4 sm:py-5 rounded-2xl bg-indigo-600 text-white font-bold text-base sm:text-lg shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 hover:shadow-indigo-600/50 hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+              >
+                Ingresar Solicitud
+                <Icon icon="lucide:arrow-right" className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link
+                href="/perfil"
+                className="px-8 py-4 sm:py-5 rounded-2xl bg-white/60 border border-slate-200 text-slate-700 font-bold text-base sm:text-lg hover:bg-white/90 hover:border-indigo-200 transition-all text-center backdrop-blur-sm shadow-sm"
+              >
+                Ver Mi Perfil
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -214,16 +215,15 @@ function CTASection() {
   );
 }
 
+import PublicLayout from "@/components/PublicLayout";
+
 export default function HomePage() {
   return (
-    <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20">
-        <HeroSection />
-        <CouncilSection />
-        <MetricsSection />
-        <CTASection />
-        <Footer />
-      </main>
-    </div>
+    <PublicLayout>
+      <HeroSection />
+      <CouncilSection />
+      <MetricsSection />
+      <CTASection />
+    </PublicLayout>
   );
 }
