@@ -286,7 +286,8 @@ function PerfilDashboard({ user }: { user: User }) {
                 </div>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
     </PublicLayout>
   );
