@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="h-[100dvh] pt-[85px] flex flex-col lg:flex-row bg-transparent overflow-hidden">
+    <main className="h-[100dvh] pt-0 sm:pt-[85px] flex flex-col lg:flex-row bg-transparent overflow-hidden">
       {/* Left Side: Hero Image */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-indigo-900/20 z-10" />
@@ -64,51 +64,51 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side: Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center p-8 lg:p-16 bg-transparent relative">
-        <div className="absolute top-8 left-8 lg:hidden">
-          <img src="/logo.svg" alt="Logo" className="w-24 h-auto" />
+      <div className="flex-1 flex flex-col justify-center items-center px-5 py-8 sm:p-8 lg:p-16 bg-transparent relative pb-24 sm:pb-8">
+        <div className="absolute top-6 left-5 sm:top-8 sm:left-8 lg:hidden">
+          <img src="/logo.svg" alt="Logo" className="w-20 sm:w-24 h-auto" />
         </div>
 
         <div className="w-full max-w-md animate-fade-in">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white mb-6 shadow-xl shadow-indigo-200 rotate-3">
-              <Icon icon="lucide:shield-check" className="w-8 h-8" />
+          <div className="text-center mb-6 sm:mb-10">
+            <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-600 text-white mb-4 sm:mb-6 shadow-xl shadow-indigo-200 rotate-3">
+              <Icon icon="lucide:shield-check" className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
-            <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">Bienvenido</h2>
-            <p className="text-slate-500 font-medium">Inicia sesión con tu cuenta institucional</p>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1 sm:mb-2 tracking-tight">Bienvenido</h2>
+            <p className="text-slate-500 font-medium text-sm sm:text-base">Inicia sesión con tu cuenta institucional</p>
           </div>
 
-          <div className="bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-xl shadow-slate-200/60 border border-slate-100">
+          <div className="bg-white rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 shadow-xl shadow-slate-200/60 border border-slate-100">
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full group relative flex items-center justify-center gap-4 bg-white hover:bg-slate-50 text-slate-700 font-bold py-4 px-6 rounded-2xl border-2 border-slate-100 hover:border-indigo-500 transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+              className="w-full group relative flex items-center justify-center gap-3 sm:gap-4 bg-white hover:bg-slate-50 text-slate-700 font-bold py-3.5 sm:py-4 px-5 sm:px-6 rounded-xl sm:rounded-2xl border-2 border-slate-100 hover:border-indigo-500 transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
             >
               <img 
                 src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
                 alt="Google" 
-                className="w-6 h-6 group-hover:scale-110 transition-transform" 
+                className="w-5 h-5 sm:w-6 sm:h-6 group-hover:scale-110 transition-transform" 
               />
-              <span className="text-sm lg:text-base">Continuar con Google</span>
+              <span className="text-sm">Continuar con Google</span>
               {loading && (
-                <Icon icon="lucide:loader-2" className="absolute right-6 w-5 h-5 animate-spin text-indigo-600" />
+                <Icon icon="lucide:loader-2" className="absolute right-5 sm:right-6 w-5 h-5 animate-spin text-indigo-600" />
               )}
             </button>
 
-            <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-4">
+            <div className="mt-5 sm:mt-8 pt-5 sm:pt-8 border-t border-slate-100 flex flex-col gap-3 sm:gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                  <Icon icon="lucide:lock" className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:lock" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <p className="text-[11px] text-slate-500 leading-normal">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-normal">
                   Acceso seguro mediante <strong>Microsoft SSO / Google Workspace</strong> institucional.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                  <Icon icon="lucide:info" className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:info" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <p className="text-[11px] text-slate-500 leading-normal">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-normal">
                   Tus datos personales están protegidos bajo la <strong>Ley 21.719</strong> y políticas de privacidad Duoc UC.
                 </p>
               </div>
@@ -116,8 +116,8 @@ export default function LoginPage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-10 text-center">
-             <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">
+          <div className="mt-6 sm:mt-10 text-center">
+             <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest">
               © 2026 Sede Viña del Mar · Hub Estudiantil
             </p>
           </div>

@@ -52,9 +52,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {/* Top Institutional Strip (Franja 2) */}
+        {/* Top Institutional Strip (Franja 2) — hidden on mobile where nav is bottom */}
         <div 
-          className="absolute top-0 left-0 right-0 h-[45px] w-full z-[40] pointer-events-none"
+          className="hidden sm:block absolute top-0 left-0 right-0 h-[35px] sm:h-[45px] w-full z-[40] pointer-events-none"
           style={{
             backgroundImage: 'url("/franja2.svg")',
             backgroundRepeat: 'repeat-x',
