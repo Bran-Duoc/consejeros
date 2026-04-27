@@ -46,7 +46,7 @@ export function logAssignment(
   assignedToName: string,
   reason: string
 ): AuditEntry {
-  return createAuditEntry(ticketId, "system", "Sistema", "Asignación automática", {
+  return createAuditEntry(ticketId, null as any, "Sistema", "Asignación automática", {
     newState: assignedToName,
     metadata: reason,
   });
@@ -61,7 +61,7 @@ export function logTicketView(
 }
 
 export function logTicketCreation(ticketId: string): AuditEntry {
-  return createAuditEntry(ticketId, "system", "Sistema", "Ticket creado");
+  return createAuditEntry(ticketId, null as any, "Sistema", "Ticket creado");
 }
 
 export function formatAuditAction(entry: AuditEntry): string {

@@ -191,7 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const updatedTicket = await db.tickets.updateStatus(ticketId, newStatus);
         setTickets((prev) => prev.map((t) => (t.id === ticketId ? updatedTicket : t)));
-        const auditEntry = logStatusChange(ticketId, user?.id || "system", user?.email || "Sistema", "status_change", newStatus);
+        const auditEntry = logStatusChange(ticketId, (user?.id || null) as any, user?.email || "Sistema", "status_change", newStatus);
         await db.audit.create(auditEntry);
         setAudit((prevAudit) => [...prevAudit, auditEntry]);
       } catch (err) {
