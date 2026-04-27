@@ -60,7 +60,7 @@ function HeroSection() {
             </div>
           </div>
 
-          <div className="p-2 sm:p-4 -ml-2 sm:-ml-4 rounded-[2.5rem] bg-white/10 backdrop-blur-sm border border-white/20 inline-block max-w-4xl">
+          <div className="p-6 -ml-6 rounded-[2.5rem] bg-white/10 backdrop-blur-2xl border border-white/20 inline-block max-w-4xl">
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
               Tu voz construye <br />
               <span className="text-indigo-600">
