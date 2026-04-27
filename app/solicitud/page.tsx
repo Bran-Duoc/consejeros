@@ -318,7 +318,6 @@ export default function SolicitudPage() {
   useEffect(() => {
     const draft = loadDraft();
     
-    // Si hay un usuario logueado y no hay datos en el borrador, pre-llenamos
     if (user && !draft.email) {
       draft.email = user.email || "";
       draft.name = user.user_metadata?.full_name || user.email?.split('@')[0] || "";
@@ -326,7 +325,6 @@ export default function SolicitudPage() {
     
     setData(draft);
     
-    // Offline-first detection
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
     
@@ -337,7 +335,7 @@ export default function SolicitudPage() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -406,7 +404,7 @@ export default function SolicitudPage() {
     <PublicLayout>
       <div className="pb-20 sm:pb-12">
         {/* Header */}
-        <div className="max-w-2xl mx-auto mb-8 px-4 sm:px-4">
+        <div className="max-w-2xl mx-auto mb-8 px-4">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
@@ -415,19 +413,18 @@ export default function SolicitudPage() {
             {isOffline && (
               <div className="flex items-center gap-2 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-3 py-1.5 rounded-xl text-xs font-medium animate-pulse-soft">
                 <Icon icon="lucide:wifi-off" />
-                <span>Modo Offline (Guardado local activo)</span>
+                <span>Modo Offline</span>
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Form */}
-        <div className="max-w-2xl mx-auto px-4 sm:px-4">
+        {/* Form */}
+        <div className="max-w-2xl mx-auto px-4">
           <StepProgress current={step} total={STEPS.length} />
 
           {step === 0 && (
-              <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
+            <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
           )}
           {step === 1 && <StepDetails data={data} onChange={updateField} />}
           {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
@@ -447,14 +444,15 @@ export default function SolicitudPage() {
               <button
                 onClick={() => setStep((s) => s + 1)}
                 disabled={!canAdvance()}
-                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Siguiente
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] transition-all active:scale-[0.98]"
+                disabled={!canAdvance()}
+                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40"
               >
                 <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
               </button>
