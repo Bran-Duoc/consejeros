@@ -139,10 +139,10 @@ function StepCategory({
           <button
             key={cat}
             onClick={() => onChange(cat)}
-            className={`group text-left p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+            className={`group text-left p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm ${
               value === cat
-                ? categoryStyles[cat].active
-                : `border-slate-200 ${categoryStyles[cat].inactive}`
+                ? categoryStyles[cat].active + " bg-white/40"
+                : `border-white/40 bg-white/20 ${categoryStyles[cat].inactive}`
             }`}
           >
             <span className={`text-3xl block mb-3 transition-colors ${value === cat ? categoryStyles[cat].icon : 'text-slate-400 group-hover:' + categoryStyles[cat].icon}`}>
