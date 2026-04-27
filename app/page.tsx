@@ -217,7 +217,7 @@ function CTASection() {
 export default function HomePage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px]">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20">
         <HeroSection />
         <CouncilSection />
         <MetricsSection />

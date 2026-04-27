@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 export default function ServicioPage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20 pb-20 sm:pb-12">
         <article className="max-w-3xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
           {/* Header */}
           <div className="mb-8 sm:mb-12">

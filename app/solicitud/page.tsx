@@ -373,7 +373,7 @@ export default function SolicitudPage() {
 
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20 pb-20 sm:pb-12">
         {/* Header */}
         <div className="max-w-2xl mx-auto mb-8 px-4 sm:px-4">
           <div className="flex items-start justify-between">

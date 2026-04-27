@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 export default function NotFound() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-20 pb-20 sm:pb-12">
         
         <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
           <div className="animate-fade-in-up">
