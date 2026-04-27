@@ -106,7 +106,7 @@ export default function Navbar() {
             className="absolute inset-0 bg-white/40 backdrop-blur-2xl -z-10" 
             style={{ WebkitBackdropFilter: "blur(32px)" }}
           />
-          <div className="flex items-center justify-around px-2 h-16 relative z-10">
+          <div className="flex items-center justify-around px-2 h-16 relative z-10" style={{ backdropFilter: "blur(1px)", WebkitBackdropFilter: "blur(1px)" }}>
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (

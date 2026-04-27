@@ -1,6 +1,39 @@
 import { supabase } from './supabase';
 import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel } from './data';
 
+// ---- Retry helper with exponential backoff ----
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, baseDelay = 500): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err: any) {
+      lastError = err;
+      // Don't retry on auth or validation errors
+      const code = err?.code || '';
+      const msg = err?.message || '';
+      if (code === '42501' || code === '23505' || msg.includes('JWT') || msg.includes('schema cache')) {
+        throw err;
+      }
+      if (attempt < maxRetries) {
+        await new Promise((r) => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError;
+}
+
+// ---- User-friendly error messages ----
+function friendlyError(err: any): string {
+  const msg = err?.message || '';
+  if (msg.includes('schema cache')) return 'La base de datos necesita actualizarse. Contacta al administrador.';
+  if (msg.includes('JWT')) return 'Tu sesión ha expirado. Vuelve a iniciar sesión.';
+  if (msg.includes('duplicate')) return 'Esta solicitud ya fue registrada.';
+  if (msg.includes('violates row-level security')) return 'No tienes permisos para realizar esta acción.';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return 'Error de conexión. Revisa tu internet e intenta de nuevo.';
+  return msg || 'Error inesperado. Intenta de nuevo más tarde.';
+}
+
 const categoryMap: Record<string, string> = {
   academico: "Académico",
   infraestructura: "Infraestructura",
@@ -51,47 +84,78 @@ const mapTicketFromDB = (t: any): Ticket => ({
   tags: t.tags || [],
 });
 
-const mapTicketToDB = (t: Partial<Ticket>) => ({
-  titulo: t.title,
-  descripcion: t.description,
-  categoria: t.category ? categoryMap[t.category] : undefined,
-  nivel_urgencia: t.urgency ? urgencyMap[t.urgency] : undefined,
-  estado: t.status ? statusMap[t.status] : undefined,
-  asignado_a: t.assignedTo,
-  estudiante_id: t.createdBy,
-  sla_deadline: t.slaDeadline,
-  escuela: t.school,
-  carrera: t.career,
-});
+const mapTicketToDB = (t: Partial<Ticket>) => {
+  const data: Record<string, unknown> = {
+    titulo: t.title,
+    descripcion: t.description,
+    categoria: t.category ? categoryMap[t.category] : undefined,
+    nivel_urgencia: t.urgency ? urgencyMap[t.urgency] : undefined,
+    estado: t.status ? statusMap[t.status] : undefined,
+    estudiante_id: t.createdBy,
+    sla_deadline: t.slaDeadline,
+    escuela: t.school,
+    carrera: t.career,
+  };
+
+  // Only include asignado_a if it's a valid UUID (defensive: avoids schema cache error)
+  if (t.assignedTo && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(t.assignedTo)) {
+    data.asignado_a = t.assignedTo;
+  }
+
+  // Remove undefined values to avoid Supabase sending nulls for missing columns
+  return Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+};
 
 export const db = {
   tickets: {
     async getAll() {
-      const { data, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .order('fecha_creacion', { ascending: false });
-      if (error) throw error;
-      return (data || []).map(mapTicketFromDB);
+      return withRetry(async () => {
+        const { data, error } = await supabase
+          .from('tickets')
+          .select('*')
+          .order('fecha_creacion', { ascending: false });
+        if (error) throw error;
+        return (data || []).map(mapTicketFromDB);
+      });
     },
     async create(ticket: Omit<Ticket, 'id' | 'createdAt' | 'updatedAt'>) {
-      const { data, error } = await supabase
-        .from('tickets')
-        .insert([mapTicketToDB(ticket)])
-        .select()
-        .single();
-      if (error) throw error;
-      return mapTicketFromDB(data);
+      try {
+        const dbData = mapTicketToDB(ticket);
+        const { data, error } = await supabase
+          .from('tickets')
+          .insert([dbData])
+          .select()
+          .single();
+        if (error) {
+          // If asignado_a column doesn't exist, retry without it
+          if (error.message?.includes('asignado_a') && 'asignado_a' in dbData) {
+            const { asignado_a, ...withoutAsignado } = dbData as any;
+            const { data: retryData, error: retryError } = await supabase
+              .from('tickets')
+              .insert([withoutAsignado])
+              .select()
+              .single();
+            if (retryError) throw new Error(friendlyError(retryError));
+            return mapTicketFromDB(retryData);
+          }
+          throw new Error(friendlyError(error));
+        }
+        return mapTicketFromDB(data);
+      } catch (err: any) {
+        throw new Error(err.message || friendlyError(err));
+      }
     },
     async updateStatus(id: string, status: TicketStatus) {
-      const { data, error } = await supabase
-        .from('tickets')
-        .update({ estado: statusMap[status] })
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return mapTicketFromDB(data);
+      return withRetry(async () => {
+        const { data, error } = await supabase
+          .from('tickets')
+          .update({ estado: statusMap[status] })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw new Error(friendlyError(error));
+        return mapTicketFromDB(data);
+      });
     },
   },
   audit: {

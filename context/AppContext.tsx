@@ -13,6 +13,8 @@ import { routeTicket } from "@/lib/routing";
 import { supabase } from "@/lib/supabase";
 import { User as AuthUser } from "@supabase/supabase-js";
 import { db } from "@/lib/api";
+import { useToast, type ToastAPI } from "@/lib/useToast";
+import { ToastContainer } from "@/components/Toast";
 
 export type AdminRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
@@ -25,6 +27,8 @@ interface AppState {
   user: AuthUser | null;
   role: AdminRole | null;
   profile: any | null;
+  isLoading: boolean;
+  toastAPI: ToastAPI;
   addTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">) => Promise<Ticket>;
   moveTicket: (ticketId: string, newStatus: TicketStatus) => Promise<void>;
   addAuditEntry: (entry: AuditEntry) => void;
@@ -45,6 +49,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<any | null>(null);
   const [agents, setAgents] = useState<User[]>(adminUsers);
   const [initialized, setInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const toastAPI = useToast();
 
   // Sync Auth State & Fetch Role
   useEffect(() => {
@@ -107,6 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Load data from Supabase on mount
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
         const [dbTickets, dbAudit, dbSurveys, dbUsers] = await Promise.all([
           db.tickets.getAll(),
@@ -135,9 +142,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAgents(adminUsers);
         setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         setInitialized(true);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadData();
+  }, []);
+
+  // Supabase Realtime — subscribe to ticket changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('tickets-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tickets' },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            // Import mapTicketFromDB is internal to api.ts, so we re-fetch
+            db.tickets.getAll().then((fresh) => setTickets(fresh)).catch(console.error);
+          } else if (payload.eventType === 'UPDATE') {
+            db.tickets.getAll().then((fresh) => setTickets(fresh)).catch(console.error);
+          } else if (payload.eventType === 'DELETE') {
+            setTickets((prev) => prev.filter((t) => t.id !== payload.old?.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const addAuditEntry = useCallback((entry: AuditEntry) => {
@@ -177,28 +211,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ]);
 
         setAudit((prev) => [...prev, creationEntry, assignmentEntry]);
+        toastAPI.success("¡Solicitud enviada exitosamente!");
         return newTicket;
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error creating ticket:", err);
+        toastAPI.error(err.message || "Error al crear la solicitud.");
         throw err;
       }
     },
-    [slaConfig, agents, user]
+    [slaConfig, agents, user, toastAPI]
   );
 
   const moveTicket = useCallback(
     async (ticketId: string, newStatus: TicketStatus) => {
+      // Optimistic update
+      const previousTickets = tickets;
+      setTickets((prev) => prev.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t)));
+
       try {
         const updatedTicket = await db.tickets.updateStatus(ticketId, newStatus);
         setTickets((prev) => prev.map((t) => (t.id === ticketId ? updatedTicket : t)));
         const auditEntry = logStatusChange(ticketId, (user?.id || null) as any, user?.email || "Sistema", "status_change", newStatus);
         await db.audit.create(auditEntry);
         setAudit((prevAudit) => [...prevAudit, auditEntry]);
-      } catch (err) {
+        toastAPI.success("Estado actualizado correctamente.");
+      } catch (err: any) {
+        // Revert optimistic update
+        setTickets(previousTickets);
+        toastAPI.error(err.message || "Error al mover el ticket.");
         console.error("Error moving ticket:", err);
       }
     },
-    [user]
+    [user, tickets, toastAPI]
   );
 
   const addSurvey = useCallback(async (surveyData: Omit<Survey, "id" | "createdAt">) => {
@@ -206,10 +250,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       await db.surveys.create(surveyData);
       const newSurvey: Survey = { ...surveyData, id: generateId(), createdAt: new Date().toISOString() };
       setSurveys((prev) => [...prev, newSurvey]);
-    } catch (err) {
+      toastAPI.success("¡Gracias por tu feedback!");
+    } catch (err: any) {
       console.error("Error adding survey:", err);
+      toastAPI.error("No se pudo enviar la encuesta. Intenta de nuevo.");
     }
-  }, []);
+  }, [toastAPI]);
 
   const getTicketsByStatus = useCallback(
     (status: TicketStatus) => tickets.filter((t) => t.status === status),
@@ -232,6 +278,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         user,
         role,
         profile,
+        isLoading,
+        toastAPI,
         addTicket,
         moveTicket,
         addAuditEntry,
@@ -241,6 +289,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
+      <ToastContainer toasts={toastAPI.toasts} onDismiss={toastAPI.dismiss} />
     </AppContext.Provider>
   );
 }

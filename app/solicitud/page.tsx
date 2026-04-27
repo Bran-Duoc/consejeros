@@ -12,6 +12,7 @@ import {
   categoryIcons,
   urgencyLabels,
 } from "@/lib/data";
+import { validateStep, sanitizeInput } from "@/lib/validation";
 
 const STEPS = ["Categoría", "Detalles", "Urgencia", "Revisión"];
 const FORM_STORAGE_KEY = "portal_form_draft";
@@ -183,12 +184,24 @@ function StepCategory({
 }
 
 // ---- Step 2: Details ----
+function FieldError({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <p className="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1" role="alert">
+      <Icon icon="lucide:alert-circle" className="w-3.5 h-3.5 shrink-0" />
+      {error}
+    </p>
+  );
+}
+
 function StepDetails({
   data,
   onChange,
+  errors,
 }: {
   data: FormData;
   onChange: (key: keyof FormData, val: any) => void;
+  errors: Record<string, string>;
 }) {
   return (
     <div className="animate-fade-in-up space-y-6">
@@ -201,77 +214,107 @@ function StepDetails({
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-2">Tu nombre</label>
+          <label htmlFor="field-name" className="block text-sm font-medium mb-2">Tu nombre <span className="text-red-400">*</span></label>
           <input
+            id="field-name"
             type="text"
             value={data.name}
             onChange={(e) => onChange("name", e.target.value)}
             placeholder="Ej: María González"
-            className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm"
+            aria-required="true"
+            aria-invalid={!!errors.name}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.name ? 'border-red-300' : 'border-border'}`}
           />
+          <FieldError error={errors.name} />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Correo electrónico</label>
+          <label htmlFor="field-email" className="block text-sm font-medium mb-2">Correo electrónico <span className="text-red-400">*</span></label>
           <input
+            id="field-email"
             type="email"
             value={data.email}
             onChange={(e) => onChange("email", e.target.value)}
-            placeholder="tu.correo@duoc.cl"
-            className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm"
+            placeholder="tu.correo@duocuc.cl"
+            aria-required="true"
+            aria-invalid={!!errors.email}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.email ? 'border-red-300' : 'border-border'}`}
           />
+          <FieldError error={errors.email} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Escuela</label>
+            <label htmlFor="field-school" className="block text-sm font-medium mb-2">Escuela <span className="text-red-400">*</span></label>
             <select
+              id="field-school"
               value={data.school}
               onChange={(e) => {
                 onChange("school", e.target.value);
-                onChange("career", ""); // Reset career when school changes
+                onChange("career", "");
               }}
-              className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none"
+              aria-required="true"
+              className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none ${errors.school ? 'border-red-300' : 'border-border'}`}
             >
               <option value="">Selecciona tu escuela</option>
               {Object.keys(SCHOOLS_DATA).map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>
+            <FieldError error={errors.school} />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2">Carrera</label>
+            <label htmlFor="field-career" className="block text-sm font-medium mb-2">Carrera <span className="text-red-400">*</span></label>
             <select
+              id="field-career"
               value={data.career}
               disabled={!data.school}
               onChange={(e) => onChange("career", e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none disabled:opacity-50"
+              aria-required="true"
+              className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none disabled:opacity-50 ${errors.career ? 'border-red-300' : 'border-border'}`}
             >
               <option value="">{data.school ? "Selecciona tu carrera" : "Primero elige escuela"}</option>
               {data.school && SCHOOLS_DATA[data.school].map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+            <FieldError error={errors.career} />
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Título de la solicitud</label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="field-title" className="text-sm font-medium">Título de la solicitud <span className="text-red-400">*</span></label>
+            <span className={`text-xs font-mono ${data.title.length > 90 ? 'text-red-400' : 'text-slate-400'}`}>{data.title.length}/100</span>
+          </div>
           <input
+            id="field-title"
             type="text"
             value={data.title}
-            onChange={(e) => onChange("title", e.target.value)}
+            onChange={(e) => onChange("title", sanitizeInput(e.target.value))}
             placeholder="Ej: Certificado de Alumno Regular"
-            className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm"
+            maxLength={100}
+            aria-required="true"
+            aria-invalid={!!errors.title}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.title ? 'border-red-300' : 'border-border'}`}
           />
+          <FieldError error={errors.title} />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-2">Descripción</label>
+          <div className="flex items-center justify-between mb-2">
+            <label htmlFor="field-desc" className="text-sm font-medium">Descripción <span className="text-red-400">*</span></label>
+            <span className={`text-xs font-mono ${data.description.length > 1800 ? 'text-red-400' : 'text-slate-400'}`}>{data.description.length}/2000</span>
+          </div>
           <textarea
+            id="field-desc"
             value={data.description}
-            onChange={(e) => onChange("description", e.target.value)}
+            onChange={(e) => onChange("description", sanitizeInput(e.target.value))}
             placeholder="Detalla lo que necesitas..."
             rows={4}
-            className="w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border border-border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm resize-none"
+            maxLength={2000}
+            aria-required="true"
+            aria-invalid={!!errors.description}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm resize-none ${errors.description ? 'border-red-300' : 'border-border'}`}
           />
+          <FieldError error={errors.description} />
         </div>
       </div>
     </div>
@@ -376,6 +419,7 @@ export default function SolicitudPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ticketId, setTicketId] = useState("");
   const [isOffline, setIsOffline] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const draft = loadDraft();
@@ -407,16 +451,25 @@ export default function SolicitudPage() {
 
   const updateField = (key: keyof FormData, value: any) => {
     setData((prev) => ({ ...prev, [key]: value }));
+    // Clear field error on change
+    if (fieldErrors[key]) {
+      setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
+    }
   };
 
   const canAdvance = () => {
-    switch (step) {
-      case 0: return !!data.category;
-      case 1: return !!data.title && !!data.description && !!data.name && !!data.email && !!data.school && !!data.career;
-      case 2: return !!data.urgency;
-      case 3: return data.arcoConsent;
-      default: return false;
+    const errors = validateStep(step, data);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNext = () => {
+    const errors = validateStep(step, data);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
     }
+    setFieldErrors({});
+    setStep((s) => s + 1);
   };
 
   const handleSubmit = async () => {
@@ -524,7 +577,7 @@ export default function SolicitudPage() {
           {step === 0 && (
             <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
           )}
-          {step === 1 && <StepDetails data={data} onChange={updateField} />}
+          {step === 1 && <StepDetails data={data} onChange={updateField} errors={fieldErrors} />}
           {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
           {step === 3 && <StepReview data={data} onChange={updateField} />}
 
@@ -540,8 +593,7 @@ export default function SolicitudPage() {
 
             {step < STEPS.length - 1 ? (
               <button
-                onClick={() => setStep((s) => s + 1)}
-                disabled={!canAdvance()}
+                onClick={handleNext}
                 className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Siguiente
