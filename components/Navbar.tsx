@@ -94,19 +94,16 @@ export default function Navbar() {
       {/* Mobile Bottom Tab Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)]" aria-label="Barra de navegación móvil">
         <div 
-          className="glass border-t border-white/20 shadow-[0_-4px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
+          className="border-t border-white/20 shadow-[0_-4px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
           style={{
             backgroundImage: "url('/franja2.svg')",
             backgroundSize: "cover",
             backgroundPosition: "bottom",
+            backdropFilter: "blur(1px)",
+            WebkitBackdropFilter: "blur(1px)"
           }}
         >
-          {/* Main blur layer */}
-          <div 
-            className="absolute inset-0 bg-white/40 -z-10" 
-            style={{ backdropFilter: "blur(1px)", WebkitBackdropFilter: "blur(1px)" }}
-          />
-          <div className="flex items-center justify-around px-2 h-16 relative z-10" style={{ backdropFilter: "blur(1px)", WebkitBackdropFilter: "blur(1px)" }}>
+          <div className="flex items-center justify-around px-2 h-16 relative z-10">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
