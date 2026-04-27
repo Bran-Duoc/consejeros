@@ -48,7 +48,7 @@ export default function UsersPage() {
               <div className="flex items-start gap-4">
                 {/* Avatar */}
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/25 to-indigo-600/25 flex items-center justify-center text-2xl shrink-0">
-                  {agent.role === "Consejero" ? "👩‍🎓" : agent.role === "Admin_TI" ? "🛡️" : "👤"}
+                  {agent.role === "Supervisor" ? "👁️" : agent.role === "Consejo" ? "🏛️" : (agent.role === "Admin TI" || agent.role === "Admin_TI") ? "🛡️" : "👤"}
                 </div>
 
                 <div className="flex-1">
