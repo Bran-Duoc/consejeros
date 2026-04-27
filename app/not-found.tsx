@@ -8,7 +8,7 @@ import FranjaTop from "@/components/FranjaTop";
 export default function NotFound() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12 px-4">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
         <FranjaTop />
         
         <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] text-center px-4">

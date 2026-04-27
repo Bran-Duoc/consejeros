@@ -60,9 +60,9 @@ function PerfilDashboard({ user }: { user: User }) {
 
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12 px-4 sm:px-4">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
         <FranjaTop />
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">

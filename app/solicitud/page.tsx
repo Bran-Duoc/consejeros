@@ -366,10 +366,10 @@ export default function SolicitudPage() {
 
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12 px-4 sm:px-4">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
         <FranjaTop />
         {/* Header */}
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-8 px-4 sm:px-4">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
@@ -385,7 +385,7 @@ export default function SolicitudPage() {
         </div>
 
         {/* Form */}
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto px-4 sm:px-4">
           <StepProgress current={step} total={STEPS.length} />
 
           {step === 0 && (

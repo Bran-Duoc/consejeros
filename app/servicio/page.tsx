@@ -9,9 +9,9 @@ import FranjaTop from "@/components/FranjaTop";
 export default function ServicioPage() {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col bg-transparent">
-      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12 px-4 sm:px-6">
+      <main className="flex-1 overflow-y-auto custom-scrollbar pt-4 sm:pt-[85px] pb-20 sm:pb-12">
         <FranjaTop />
-        <article className="max-w-3xl mx-auto py-8 sm:py-12">
+        <article className="max-w-3xl mx-auto py-8 sm:py-12 px-4 sm:px-6">
           {/* Header */}
           <div className="mb-8 sm:mb-12">
             <Link href="/" className="inline-flex items-center gap-2 text-sm text-indigo-600 font-medium hover:text-indigo-700 transition-colors mb-6">
