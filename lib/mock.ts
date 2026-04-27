@@ -1,16 +1,6 @@
 import { Ticket, AuditEntry, Survey, SLAConfig, User } from "./data";
 
-export const councilMembers: User[] = [
-  {
-    id: "u1",
-    name: "Valentina Rojas",
-    email: "vrojas@duoc.cl",
-    role: "Consejo",
-    avatar: "/avatars/valentina.svg",
-    department: "Académico",
-    activeTickets: 0,
-  }
-];
+export const councilMembers: User[] = [];
 
 export const adminUsers: User[] = [
   ...councilMembers,
