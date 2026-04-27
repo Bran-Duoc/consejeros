@@ -133,7 +133,7 @@ function StepCategory({
   return (
     <div className="animate-fade-in-up">
       <h2 className="text-2xl font-bold mb-2 text-slate-800">¿En qué podemos ayudarte?</h2>
-      <p className="text-slate-500 mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
+      <p className="text-slate-600 font-medium mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories.map((cat) => (
           <button
@@ -149,7 +149,7 @@ function StepCategory({
               <Icon icon={categoryIcons[cat]} />
             </span>
             <span className="font-bold text-slate-800 text-base block">{categoryLabels[cat]}</span>
-            <span className="text-sm font-medium text-slate-500 mt-1.5 block leading-snug">{descriptions[cat]}</span>
+            <span className="text-sm font-semibold text-slate-600 mt-1.5 block leading-snug">{descriptions[cat]}</span>
           </button>
         ))}
       </div>
