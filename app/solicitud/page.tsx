@@ -420,8 +420,9 @@ export default function SolicitudPage() {
             )}
           </div>
         </div>
+      </div>
 
-        {/* Form */}
+      {/* Form */}
         <div className="max-w-2xl mx-auto px-4 sm:px-4">
           <StepProgress current={step} total={STEPS.length} />
 
@@ -459,7 +460,6 @@ export default function SolicitudPage() {
               </button>
             )}
           </div>
-        </div>
         </div>
       </div>
     </PublicLayout>

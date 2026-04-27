@@ -284,11 +284,9 @@ function PerfilDashboard({ user }: { user: User }) {
                     </div>
                   )}
                 </div>
-              );
-            })}
-            </button>
-          </div>
-        )}
+            );
+          })}
+        </div>
       </div>
     </PublicLayout>
   );
