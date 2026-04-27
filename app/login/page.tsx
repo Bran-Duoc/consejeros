@@ -66,13 +66,16 @@ export default function LoginPage() {
             <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
             <span className="text-xs font-bold uppercase tracking-widest">Sede Viña del Mar</span>
           </div>
-          <h1 className="text-5xl font-black mb-4 leading-tight drop-shadow-lg">
-            Tu voz construye <br />
-            <span className="text-indigo-400">Nuestra Sede.</span>
-          </h1>
-          <p className="text-lg text-white/80 max-w-md leading-relaxed drop-shadow-md">
-            Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
-          </p>
+          
+          <div className="p-6 -ml-6 rounded-[2.5rem] bg-white/10 backdrop-blur-md border border-white/20">
+            <h1 className="text-5xl font-black mb-4 leading-tight drop-shadow-lg">
+              Tu voz construye <br />
+              <span className="text-indigo-400">Nuestra Sede.</span>
+            </h1>
+            <p className="text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium">
+              Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
+            </p>
+          </div>
         </div>
       </div>
 

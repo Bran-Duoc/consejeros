@@ -54,22 +54,24 @@ function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
         <div className="relative z-10">
           <div className="animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-indigo-100/80 text-indigo-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+            <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-indigo-100/80 text-indigo-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6 backdrop-blur-md border border-indigo-200/50">
               <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse-soft" />
               Portal Activo — Semestre 2026-1
             </div>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
-            Tu voz construye <br />
-            <span className="text-indigo-600">
-              Nuestra Sede.
-            </span>
-          </h1>
+          <div className="p-2 sm:p-4 -ml-2 sm:-ml-4 rounded-[2.5rem] bg-white/10 backdrop-blur-sm border border-white/20 inline-block max-w-4xl">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
+              Tu voz construye <br />
+              <span className="text-indigo-600">
+                Nuestra Sede.
+              </span>
+            </h1>
 
-          <p className="mt-6 sm:mt-8 text-lg sm:text-2xl text-slate-600 max-w-2xl font-medium leading-relaxed animate-fade-in-up delay-200">
-            Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
-          </p>
+            <p className="mt-6 sm:mt-8 text-lg sm:text-2xl text-slate-700 max-w-2xl font-semibold leading-relaxed animate-fade-in-up delay-200">
+              Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
+            </p>
+          </div>
 
           <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-300">
             <Link
