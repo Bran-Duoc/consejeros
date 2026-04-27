@@ -47,8 +47,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Sync Auth State & Fetch Role
   useEffect(() => {
     const syncUserAndRole = async (sessionUser: AuthUser | null) => {
-      // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio
-      if (sessionUser && !sessionUser.email?.endsWith("@duocuc.cl")) {
+      // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio (Solo para Google)
+      const isGoogleLogin = sessionUser?.app_metadata?.provider === 'google';
+      if (sessionUser && isGoogleLogin && !sessionUser.email?.endsWith("@duocuc.cl")) {
         await supabase.auth.signOut();
         setUser(null);
         setRole(null);

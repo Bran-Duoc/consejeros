@@ -38,10 +38,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const router = require("next/navigation").useRouter();
+
+  useEffect(() => {
+    if (role === "Estudiante") {
+      router.push("/perfil");
+    }
+  }, [role, router]);
+
   const isActive = (item: typeof navItems[0]) => {
     if (item.exact) return pathname === item.href;
     return pathname.startsWith(item.href);
   };
+
+  // Skip the admin shell for the login page
+  if (pathname === "/admin/login") {
+    return <div className="min-h-screen bg-slate-50">{children}</div>;
+  }
+
+  // Si el usuario no tiene rol aún (cargando) o es estudiante, no mostrar el contenido del panel.
+  // El middleware ya se encarga de redirigir si no hay usuario del todo.
+  if (!role || role === "Estudiante") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Icon icon="lucide:loader-2" className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white text-black flex">

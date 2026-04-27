@@ -30,30 +30,48 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Obtener la sesión actual (no lanza error, devuelve null si no hay sesión)
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // IMPORTANT: Use getUser instead of getSession to ensure accurate auth state
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  // Rutas que requieren sesión activa
-  const protectedPaths = ['/solicitud', '/perfil', '/admin'];
-  const isProtected = protectedPaths.some((path) =>
-    pathname.startsWith(path)
-  );
-
-  // Si la ruta está protegida y no hay sesión, redirigir a /login
-  if (isProtected && !session) {
+  // BARRERA DE SEGURIDAD SECUNDARIA (Dominio)
+  const isGoogleLogin = user?.app_metadata?.provider === 'google';
+  if (user && isGoogleLogin && user.email && !user.email.endsWith("@duocuc.cl")) {
+    await supabase.auth.signOut();
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
-    // Guardar la ruta de origen para redirigir después del login
+    loginUrl.searchParams.set('error', 'invalid_domain');
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // PROTECCIÓN DE RUTAS DE ADMINISTRADOR
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isLoginAdminRoute = pathname === '/admin/login';
+
+  if (isAdminRoute && !isLoginAdminRoute && !user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/admin/login';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (isLoginAdminRoute && user) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/admin';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // PROTECCIÓN DE RUTAS DE ESTUDIANTE
+  const isStudentProtected = ['/solicitud', '/perfil'].some((path) => pathname.startsWith(path));
+
+  if (isStudentProtected && !user) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
     loginUrl.searchParams.set('redirectTo', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Si ya hay sesión y se intenta acceder a /login, redirigir al inicio
-  if (pathname === '/login' && session) {
+  if (pathname === '/login' && user) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = '/';
     return NextResponse.redirect(homeUrl);
