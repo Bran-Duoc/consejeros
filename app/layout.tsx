@@ -39,8 +39,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-import ManagedFranjaTop from "@/components/ManagedFranjaTop";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -58,7 +56,6 @@ export default function RootLayout({
         <DynamicBackground />
         <AppProvider>
           <Navbar />
-          <ManagedFranjaTop />
           <div className="flex-1">
             {children}
           </div>
