@@ -124,11 +124,22 @@ export const db = {
   },
   users: {
     async getAll() {
-      const { data, error } = await supabase.from('users').select('*');
-      if (error) throw error;
+      const { data, error } = await supabase.from('staff_users').select('*');
+      if (error) {
+        console.warn("staff_users table fetch failed, trying users:", error.message);
+        const { data: userData, error: userError } = await supabase.from('users').select('*');
+        if (userError) throw userError;
+        return (userData || []).map((u: any) => ({
+          id: u.id,
+          name: u.nombre || (u.email ? u.email.split('@')[0] : "Usuario"),
+          email: u.email,
+          role: u.rol,
+          department: u.departamento,
+        }));
+      }
       return (data || []).map((u: any) => ({
         id: u.id,
-        name: u.nombre || (u.email ? u.email.split('@')[0] : "Usuario"),
+        name: u.nombre || "Staff Member",
         email: u.email,
         role: u.rol,
         department: u.departamento,

@@ -61,18 +61,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setUser(sessionUser);
       if (sessionUser) {
-        const { data, error } = await supabase
-          .from("users")
+        // Primero intentamos buscar en staff_users
+        const { data: staffData, error: staffError } = await supabase
+          .from("staff_users")
           .select("*")
           .eq("id", sessionUser.id)
           .single();
         
-        if (data && !error) {
-          setRole(data.rol as AdminRole);
-          setProfile(data);
+        if (staffData && !staffError) {
+          setRole(staffData.rol as AdminRole);
+          setProfile(staffData);
         } else {
-          setRole("Estudiante"); // Fallback
-          setProfile(null);
+          // Si no es staff, buscamos en users (estudiantes)
+          const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", sessionUser.id)
+            .single();
+
+          if (userData && !userError) {
+            setRole(userData.rol as AdminRole);
+            setProfile(userData);
+          } else {
+            setRole("Estudiante"); // Fallback
+            setProfile(null);
+          }
         }
       } else {
         setRole(null);
