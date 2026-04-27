@@ -14,7 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { User as AuthUser } from "@supabase/supabase-js";
 import { db } from "@/lib/api";
 
-export type AdminRole = "Estudiante" | "Consejero" | "Admin_TI";
+export type AdminRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
 interface AppState {
   tickets: Ticket[];

@@ -12,14 +12,18 @@ export default function UsersPage() {
   };
 
   const roleLabels: Record<string, string> = {
-    Consejero: "Consejero de Sede",
+    Supervisor: "Supervisor General",
+    Consejo: "Consejo de Sede",
+    "Admin TI": "Administrador TI",
     Admin_TI: "Administrador TI",
     Estudiante: "Estudiante",
   };
 
   const roleColors: Record<string, string> = {
-    Consejero: "bg-indigo-600/15 text-indigo-600 border-indigo-600/30",
-    Admin_TI: "bg-status-danger/15 text-status-danger border-status-danger/30",
+    Supervisor: "bg-amber-100 text-amber-700 border-amber-200",
+    Consejo: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    "Admin TI": "bg-rose-100 text-rose-700 border-rose-200",
+    Admin_TI: "bg-rose-100 text-rose-700 border-rose-200",
     Estudiante: "bg-slate-100 text-slate-500 border-slate-200",
   };
 

@@ -5,7 +5,7 @@
 export type TicketStatus = "nuevo" | "pendiente" | "en_revision" | "escalado" | "resuelto";
 export type TicketCategory = "academico" | "infraestructura" | "bienestar" | "financiero" | "otro";
 export type UrgencyLevel = "bajo" | "medio" | "alto" | "critico";
-export type UserRole = "Estudiante" | "Consejero" | "Admin_TI";
+export type UserRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
 export interface User {
   id: string;
