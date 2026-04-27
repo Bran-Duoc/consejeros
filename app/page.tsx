@@ -60,18 +60,16 @@ function HeroSection() {
             </div>
           </div>
 
-          <div className="p-6 -ml-6 rounded-[2.5rem] bg-white/10 backdrop-blur-2xl border border-white/20 inline-block max-w-4xl">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
-              Tu voz construye <br />
-              <span className="text-indigo-600">
-                Nuestra Sede.
-              </span>
-            </h1>
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-fade-in-up delay-100 text-slate-900">
+            Tu voz construye <br />
+            <span className="text-indigo-600">
+              Nuestra Sede.
+            </span>
+          </h1>
 
-            <p className="mt-6 sm:mt-8 text-lg sm:text-2xl text-slate-700 max-w-2xl font-semibold leading-relaxed animate-fade-in-up delay-200">
-              Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
-            </p>
-          </div>
+          <p className="mt-6 sm:mt-8 text-lg sm:text-2xl text-slate-700 max-w-2xl font-semibold leading-relaxed animate-fade-in-up delay-200">
+            Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
+          </p>
 
           <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 animate-fade-in-up delay-300">
             <Link

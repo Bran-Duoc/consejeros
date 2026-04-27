@@ -67,7 +67,10 @@ export default function LoginPage() {
             <span className="text-xs font-bold uppercase tracking-widest">Sede Viña del Mar</span>
           </div>
           
-          <div className="p-6 -ml-6 rounded-[2.5rem] bg-white/10 backdrop-blur-2xl border border-white/20">
+          <div 
+            className="p-6 -ml-6 rounded-[2.5rem] bg-white/5 border border-white/10"
+            style={{ backdropFilter: "blur(60px)", WebkitBackdropFilter: "blur(60px)" }}
+          >
             <h1 className="text-5xl font-black mb-4 leading-tight drop-shadow-lg">
               Tu voz construye <br />
               <span className="text-indigo-400">Nuestra Sede.</span>
