@@ -35,6 +35,8 @@ interface AppState {
   addSurvey: (survey: Omit<Survey, "id" | "createdAt">) => Promise<void>;
   getTicketsByStatus: (status: TicketStatus) => Ticket[];
   getAuditForTicket: (ticketId: string) => AuditEntry[];
+  isServerOnline: boolean;
+  isInitializing: boolean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -48,7 +50,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<AdminRole | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [agents, setAgents] = useState<User[]>(adminUsers);
-  const [initialized, setInitialized] = useState(false);
+  const [isServerOnline, setIsServerOnline] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const toastAPI = useToast();
 
@@ -115,6 +118,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     async function loadData() {
       setIsLoading(true);
       try {
+        // Ping Supabase to check connectivity
+        const { error: pingError } = await supabase.from('tickets').select('id').limit(1);
+        if (pingError) throw pingError;
+
         const [dbTickets, dbAudit, dbSurveys, dbUsers] = await Promise.all([
           db.tickets.getAll(),
           db.audit.getAll(),
@@ -122,27 +129,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
           db.users.getAll()
         ]);
         
-        if (dbTickets.length > 0) {
-          setTickets(dbTickets);
-          setAudit(dbAudit);
-          setSurveys(dbSurveys);
-          setAgents(dbUsers);
-        } else {
-          // Si no hay datos, inicializamos con los fallbacks
-          setTickets([]);
-          setAudit([]);
-          setSurveys([]);
-          setAgents(adminUsers);
-        }
+        setTickets(dbTickets);
+        setAudit(dbAudit);
+        setSurveys(dbSurveys);
+        setAgents(dbUsers.length > 0 ? dbUsers : adminUsers);
+        setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         
-        setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
-        setInitialized(true);
+        setIsServerOnline(true);
       } catch (err) {
-        console.error("Supabase load error, falling back to minimal state:", err);
-        setAgents(adminUsers);
-        setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
-        setInitialized(true);
+        console.error("Critical: Server is offline or connection failed:", err);
+        setIsServerOnline(false);
       } finally {
+        setIsInitializing(false);
         setIsLoading(false);
       }
     }
@@ -290,10 +288,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addSurvey,
         getTicketsByStatus,
         getAuditForTicket,
+        isServerOnline,
+        isInitializing,
       }}
     >
-      {children}
-      <ToastContainer toasts={toastAPI.toasts} onDismiss={toastAPI.dismiss} />
+      {isInitializing ? (
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-brand-blue animate-pulse flex items-center justify-center">
+            <Icon icon="lucide:server" className="w-6 h-6 text-white" />
+          </div>
+          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Sincronizando con el servidor...</p>
+        </div>
+      ) : !isServerOnline ? (
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-brand-red-light flex items-center justify-center mb-6">
+            <Icon icon="lucide:server-off" className="w-10 h-10 text-brand-red" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Servidor no disponible</h2>
+          <p className="text-slate-500 max-w-sm mb-8">No hemos podido establecer conexión con el sistema central. Por favor, verifica tu conexión a internet o intenta más tarde.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-8 py-4 bg-brand-blue text-white font-bold rounded-2xl shadow-lg shadow-brand-blue/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          >
+            Reintentar Conexión
+          </button>
+        </div>
+      ) : (
+        <>
+          {children}
+          <ToastContainer toasts={toastAPI.toasts} onDismiss={toastAPI.dismiss} />
+        </>
+      )}
     </AppContext.Provider>
   );
 }

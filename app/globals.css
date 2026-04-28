@@ -3,20 +3,26 @@
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-primary-blue: #4f46e5;
-  --color-primary-blue-light: #6366f1;
-  --color-primary-blue-dark: #3730a3;
-  --color-primary-purple: #2563eb;
-  --color-primary-purple-light: #3b82f6;
-  --color-primary-purple-dark: #1d4ed8;
+  --color-brand-blue: #5483BF;
+  --color-brand-blue-light: #E8F1FA;
+  --color-brand-blue-dark: #003366;
+  --color-brand-yellow: #F2A81D;
+  --color-brand-yellow-light: #FEF7E6;
+  --color-brand-yellow-dark: #D48B00;
+  --color-brand-purple: #A680BF;
+  --color-brand-purple-light: #F4EFFF;
+  --color-brand-purple-dark: #6B4C85;
+  --color-brand-green: #B7D984;
+  --color-brand-green-light: #F2F9E9;
+  --color-brand-green-dark: #6C8B3D;
+  --color-brand-red: #EE4036;
+  --color-brand-red-light: #FEECEB;
+  --color-brand-red-dark: #A11F18;
   --color-status-info: #94a3b8;
   --color-status-info-dark: #64748b;
-  --color-status-success: #10b981;
-  --color-status-success-dark: #059669;
-  --color-status-warning: #f59e0b;
-  --color-status-warning-dark: #d97706;
-  --color-status-danger: #ef4444;
-  --color-status-danger-dark: #b91c1c;
+  --color-status-success: var(--color-brand-green);
+  --color-status-warning: var(--color-brand-yellow);
+  --color-status-danger: var(--color-brand-red);
   --color-surface: #ffffff;
   --color-surface-card: #ffffff;
   --color-border: #e2e8f0;
@@ -120,11 +126,34 @@ body {
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
 }
+.glass-premium {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
 .glass-dark {
   background: rgba(26, 29, 46, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Interactive Effects ---- */
+.hover-premium {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-premium:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.bento-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.bento-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
 }
 
 /* ---- Custom scrollbar ---- */
@@ -141,7 +170,7 @@ body {
 
 /* ---- Kanban specific ---- */
 .kanban-card-dragging {
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 2px var(--color-primary-purple);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 2px var(--color-brand-blue);
   transform: rotate(2deg) scale(1.03);
 }
 
@@ -174,7 +203,7 @@ body {
 
 /* ---- Accessibility: Focus-visible ring ---- */
 *:focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-brand-blue);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -184,7 +213,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-brand-blue);
   outline-offset: 2px;
 }
 
