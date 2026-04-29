@@ -12,6 +12,7 @@ import { logStatusChange, logAssignment, logTicketCreation } from "@/lib/audit";
 import { routeTicket } from "@/lib/routing";
 import { supabase } from "@/lib/supabase";
 import { User as AuthUser } from "@supabase/supabase-js";
+import { Icon } from "@iconify/react";
 import { db } from "@/lib/api";
 import { useToast, type ToastAPI } from "@/lib/useToast";
 import { ToastContainer } from "@/components/Toast";
