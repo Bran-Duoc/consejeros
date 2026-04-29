@@ -294,11 +294,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }}
     >
       {isInitializing ? (
-        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-brand-blue animate-pulse flex items-center justify-center">
-            <Icon icon="lucide:server" className="w-6 h-6 text-white" />
+        <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center splash-container">
+          <div className="flex flex-col items-center gap-6">
+            <div className="splash-logo">
+              <img src="/logo.svg" alt="Logo" className="w-24 h-24 object-contain" />
+            </div>
+            <div className="flex flex-col items-center text-center">
+              <h2 className="splash-text text-xl font-black text-slate-800 tracking-tight">Sede Viña del Mar</h2>
+              <p className="splash-subtext text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Sincronizando Sistema</p>
+            </div>
           </div>
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">Sincronizando con el servidor...</p>
         </div>
       ) : !isServerOnline ? (
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 text-center">
