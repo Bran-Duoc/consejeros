@@ -53,8 +53,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [agents, setAgents] = useState<User[]>(adminUsers);
   const [isServerOnline, setIsServerOnline] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isSplashComplete, setIsSplashComplete] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const toastAPI = useToast();
+
+  // Handle Splash Screen Delayed Exit
+  useEffect(() => {
+    if (!isInitializing) {
+      const exitTimer = setTimeout(() => {
+        setIsExiting(true);
+        const completeTimer = setTimeout(() => {
+          setIsSplashComplete(true);
+        }, 800); // Match splash-exit duration
+        return () => clearTimeout(completeTimer);
+      }, 1000); // Minimum 1s after loading
+      return () => clearTimeout(exitTimer);
+    }
+  }, [isInitializing]);
 
   // Sync Auth State & Fetch Role
   useEffect(() => {
@@ -293,15 +309,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isInitializing,
       }}
     >
-      {isInitializing ? (
-        <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center splash-container">
-          <div className="flex flex-col items-center gap-6">
+      {!isSplashComplete ? (
+        <div className={`fixed inset-0 z-[9999] bg-white flex items-center justify-center splash-container ${isExiting ? "exit" : ""}`}>
+          <div className="flex flex-col items-center gap-8">
             <div className="splash-logo">
-              <img src="/logo.svg" alt="Logo" className="w-24 h-24 object-contain" />
+              <img src="/logo.svg" alt="Logo" className="w-40 h-40 object-contain" />
             </div>
             <div className="flex flex-col items-center text-center">
-              <h2 className="splash-text text-xl font-black text-slate-800 tracking-tight">Sede Viña del Mar</h2>
-              <p className="splash-subtext text-xs font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Sincronizando Sistema</p>
+              <h2 className="splash-text text-2xl font-black text-slate-800 tracking-tight">Sede Viña del Mar</h2>
+              {/* Color Squares Loader */}
+              <div className="squares-loader">
+                <div className="square" />
+                <div className="square" />
+                <div className="square" />
+                <div className="square" />
+                <div className="square" />
+                <div className="square" />
+                <div className="square" />
+              </div>
             </div>
           </div>
         </div>
