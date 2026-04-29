@@ -8,7 +8,7 @@ import PublicLayout from "@/components/PublicLayout";
 // ---- Hero Section ----
 function HeroSection() {
   return (
-    <section className="relative min-h-[50vh] sm:min-h-[85vh] flex items-center overflow-hidden py-4 sm:py-0">
+    <section className="relative min-h-0 sm:min-h-[85vh] flex items-center overflow-hidden py-6 sm:py-0">
       {/* Background elements (subtle) */}
       <div className="absolute top-20 right-10 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] rounded-full bg-indigo-100/20 blur-[80px] sm:blur-[120px]" />
       <div className="absolute bottom-10 left-10 w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] rounded-full bg-indigo-500/5 blur-[60px] sm:blur-[100px]" />
