@@ -61,9 +61,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Handle Splash Screen Delayed Exit
   useEffect(() => {
     if (!isInitializing && !isSplashComplete) {
-      // Damos tiempo a que la animación de construcción del logo termine (aprox 3.5s)
-      const timer = setTimeout(() => setIsExiting(true), 4500); 
-      const completeTimer = setTimeout(() => setIsSplashComplete(true), 5500); 
+      // Tiempo para apreciar la animación completa del logo (1.8s) y la carga
+      const timer = setTimeout(() => setIsExiting(true), 2500); 
+      const completeTimer = setTimeout(() => setIsSplashComplete(true), 3500); 
       return () => {
         clearTimeout(timer);
         clearTimeout(completeTimer);
