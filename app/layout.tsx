@@ -56,7 +56,7 @@ export default function RootLayout({
         <DynamicBackground />
         <AppProvider>
           <Navbar />
-          <div className="flex-1">
+          <div className="flex-1 pt-[70px] sm:pt-[80px]">
             {children}
           </div>
         </AppProvider>
