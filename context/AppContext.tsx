@@ -62,8 +62,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!isInitializing && !isSplashComplete) {
       // Tiempo para apreciar la animación completa del logo (1.8s) y la carga
-      const timer = setTimeout(() => setIsExiting(true), 2500); 
-      const completeTimer = setTimeout(() => setIsSplashComplete(true), 3500); 
+      const timer = setTimeout(() => setIsExiting(true), 3500); 
+      const completeTimer = setTimeout(() => setIsSplashComplete(true), 4500); 
       return () => {
         clearTimeout(timer);
         clearTimeout(completeTimer);
