@@ -40,6 +40,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import Footer from "@/components/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,14 +55,15 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="flex flex-col bg-background text-foreground">
+      <body className="grid grid-rows-[auto_1fr_auto] min-h-[100vh] m-0 bg-background text-foreground box-border">
         <DynamicBackground />
         <AppProvider>
           <FormbricksProvider />
           <Navbar />
-          <div className="pt-[70px] sm:pt-[80px]">
+          <main className="w-full">
             {children}
-          </div>
+          </main>
+          <Footer />
         </AppProvider>
         <ServiceWorkerRegistrar />
       </body>
