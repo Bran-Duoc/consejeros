@@ -55,12 +55,12 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="grid grid-rows-[1fr_auto] min-h-[100vh] m-0 bg-background text-foreground box-border">
+      <body className="h-screen w-full overflow-hidden grid grid-rows-[auto_1fr_auto] bg-background text-foreground m-0 p-0 box-border">
         <DynamicBackground />
         <AppProvider>
           <FormbricksProvider />
           <Navbar />
-          <main className="w-full pt-[70px] sm:pt-[80px]">
+          <main className="w-full overflow-y-auto overflow-x-hidden relative custom-scrollbar">
             {children}
           </main>
           <Footer />
