@@ -19,22 +19,40 @@ const FORM_STORAGE_KEY = "portal_form_draft";
 
 const SCHOOLS_DATA: Record<string, string[]> = {
   "🏢 Escuela de Administración y Negocios": [
-    "Auditoría", "Comercio Exterior", "Contabilidad General Mención Legislación Tributaria",
-    "Ingeniería en Administración Mención Finanzas", "Ingeniería en Administración Mención Gestión de Personas",
-    "Ingeniería en Administración Mención Innovación y Emprendimiento", "Ingeniería en Comercio Exterior",
-    "Ingeniería en Gestión Logística", "Ingeniería en Marketing Digital", "Técnico en Administración",
+    "Auditoría",
+    "Comercio Exterior",
+    "Contabilidad General Mención Legislación Tributaria",
+    "Ingeniería en Administración Mención Finanzas",
+    "Ingeniería en Administración Mención Gestión de Personas",
+    "Ingeniería en Administración Mención Innovación y Emprendimiento",
+    "Ingeniería en Comercio Exterior",
+    "Ingeniería en Gestión Logística",
+    "Ingeniería en Marketing Digital",
+    "Técnico en Administración",
     "Técnico en Gestión Logística"
   ],
   "💻 Escuela de Informática y Telecomunicaciones": [
-    "Analista Programador", "Ingeniería en Informática", "Ingeniería en Redes y Telecomunicaciones"
+    "Analista Programador",
+    "Ingeniería en Informática",
+    "Ingeniería en Redes y Telecomunicaciones"
   ],
   "🎨 Escuela de Diseño": [
-    "Desarrollo y Diseño Web", "Diseño de Ambientes", "Diseño de Vestuario", "Diseño Gráfico",
-    "Diseño Industrial e Innovación en Productos", "Ilustración para Contextos Globales"
+    "Diseño de Ambientes",
+    "Diseño de Vestuario",
+    "Diseño Gráfico",
+    "Diseño Industrial e Innovación en Productos",
+    "Ilustración para Contextos Globales"
   ],
   "🎬 Escuela de Comunicación": [
-    "Animación Digital", "Comunicación Audiovisual", "Ingeniería en Sonido", "Publicidad",
-    "Relaciones Públicas y Comunicación Organizacional", "Tecnología en Sonido e Iluminación"
+    "Actuación",
+    "Animación Digital",
+    "Comunicación Audiovisual",
+    "Ingeniería en Sonido",
+    "Publicidad",
+    "Relaciones Públicas y Comunicación Organizacional"
+  ],
+  "🏥 Escuela de Salud y Bienestar": [
+    "Preparador Físico"
   ]
 };
 
