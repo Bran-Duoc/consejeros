@@ -82,17 +82,17 @@ function StepProgress({ current, total }: { current: number; total: number }) {
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
                 i < current
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30"
+                  ? "bg-[#E07A5F] text-white shadow-lg shadow-[#E07A5F]/30"
                   : i === current
-                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 scale-110"
+                  ? "bg-[#E07A5F] text-white shadow-lg shadow-[#E07A5F]/30 scale-110"
                   : "bg-foreground/5 text-foreground/30 border border-foreground/10"
               }`}
             >
               {i < current ? "✓" : i + 1}
             </div>
             <span
-              className={`text-[11px] font-medium hidden sm:block ${
-                i <= current ? "text-foreground/70" : "text-foreground/30"
+              className={`text-[11px] font-bold hidden sm:block ${
+                i <= current ? "text-[#2B2D42]" : "text-foreground/30"
               }`}
             >
               {STEPS[i]}
@@ -130,9 +130,9 @@ function StepCategory({
 
   const categoryStyles: Record<TicketCategory, { active: string, inactive: string, icon: string }> = {
     academico: {
-      active: "border-indigo-600 bg-indigo-600/5 shadow-lg shadow-indigo-600/10",
-      inactive: "hover:border-indigo-600/30 hover:bg-indigo-50/30",
-      icon: "text-indigo-600"
+      active: "border-[#E07A5F] bg-[#E07A5F]/5 shadow-lg shadow-[#E07A5F]/10",
+      inactive: "hover:border-[#E07A5F]/30 hover:bg-[#E07A5F]/5",
+      icon: "text-[#E07A5F]"
     },
     infraestructura: {
       active: "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/10",
@@ -140,14 +140,14 @@ function StepCategory({
       icon: "text-amber-500"
     },
     bienestar: {
-      active: "border-emerald-500 bg-emerald-500/5 shadow-lg shadow-emerald-500/10",
-      inactive: "hover:border-emerald-500/30 hover:bg-emerald-50/30",
-      icon: "text-emerald-500"
+      active: "border-[#84A59D] bg-[#84A59D]/5 shadow-lg shadow-[#84A59D]/10",
+      inactive: "hover:border-[#84A59D]/30 hover:bg-[#84A59D]/5",
+      icon: "text-[#84A59D]"
     },
     financiero: {
-      active: "border-violet-500 bg-violet-500/5 shadow-lg shadow-violet-500/10",
-      inactive: "hover:border-violet-500/30 hover:bg-violet-50/30",
-      icon: "text-violet-500"
+      active: "border-[#2B2D42] bg-[#2B2D42]/5 shadow-lg shadow-[#2B2D42]/10",
+      inactive: "hover:border-[#2B2D42]/30 hover:bg-[#2B2D42]/5",
+      icon: "text-[#2B2D42]"
     },
     otro: {
       active: "border-slate-500 bg-slate-500/5 shadow-lg shadow-slate-500/10",
@@ -223,7 +223,7 @@ function StepDetails({
             placeholder="Ej: María González"
             aria-required="true"
             aria-invalid={!!errors.name}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.name ? 'border-red-300' : 'border-border'}`}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-[#E07A5F] focus:ring-2 focus:ring-[#E07A5F]/20 outline-none transition-all text-sm ${errors.name ? 'border-red-300' : 'border-border'}`}
           />
           <FieldError error={errors.name} />
         </div>
@@ -237,7 +237,7 @@ function StepDetails({
             placeholder="tu.correo@duocuc.cl"
             aria-required="true"
             aria-invalid={!!errors.email}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.email ? 'border-red-300' : 'border-border'}`}
+            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-[#E07A5F] focus:ring-2 focus:ring-[#E07A5F]/20 outline-none transition-all text-sm ${errors.email ? 'border-red-300' : 'border-border'}`}
           />
           <FieldError error={errors.email} />
         </div>
@@ -392,15 +392,15 @@ function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof 
       </div>
 
       {/* Normativa de Consentimiento (Ley 21.719) */}
-      <div className="p-4 rounded-xl border border-indigo-600/20 bg-indigo-600/5">
+      <div className="p-4 rounded-xl border border-[#E07A5F]/20 bg-[#E07A5F]/5">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
             type="checkbox"
             checked={data.arcoConsent}
             onChange={(e) => onChange("arcoConsent", e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            className="mt-1 w-4 h-4 rounded border-gray-300 text-[#E07A5F] focus:ring-[#E07A5F]"
           />
-          <span className="text-sm text-foreground/70 leading-relaxed">
+          <span className="text-sm text-[#2B2D42]/70 leading-relaxed">
             Consiento expresamente el tratamiento de mis datos personales y sensibles ingresados en este formulario, en conformidad con la <strong>Ley N° 21.719</strong> sobre protección de datos personales. Comprendo que mis datos serán utilizados exclusivamente para gestionar esta solicitud y puedo ejercer mis derechos ARCO comunicándome con la institución.
           </span>
         </label>
@@ -489,6 +489,16 @@ export default function SolicitudPage() {
       setTicketId(ticket.id);
       setSubmitted(true);
       localStorage.removeItem(FORM_STORAGE_KEY);
+      
+      // ---- Formbricks Trigger ----
+      // Disparamos un evento personalizado para que Formbricks muestre la encuesta de satisfacción
+      if (typeof window !== "undefined" && (window as any).formbricks) {
+        (window as any).formbricks.track("ticket_submitted", {
+          category: data.category,
+          urgency: data.urgency,
+          school: data.school
+        });
+      }
     } catch (err: any) {
       console.error("Submission error:", err);
       const details = err.message || "Error desconocido";
@@ -540,7 +550,7 @@ export default function SolicitudPage() {
             <div className="flex gap-3 justify-center">
               <Link
                 href="/perfil"
-                className="px-8 py-4 rounded-2xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:scale-[1.02] transition-all"
+                className="px-8 py-4 rounded-2xl bg-[#E07A5F] text-white font-semibold shadow-lg shadow-[#E07A5F]/20 hover:bg-[#2B2D42] hover:scale-[1.02] transition-all"
               >
                 Ver Mi Perfil
               </Link>
@@ -602,7 +612,7 @@ export default function SolicitudPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!canAdvance() || isSubmitting}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#E07A5F] hover:bg-[#2B2D42] text-white text-sm font-semibold shadow-lg shadow-[#E07A5F]/25 hover:shadow-[#2B2D42]/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>

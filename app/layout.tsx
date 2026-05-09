@@ -4,6 +4,7 @@ import { AppProvider } from "@/context/AppContext";
 import Navbar from "@/components/Navbar";
 import Script from "next/script";
 import DynamicBackground from "@/components/DynamicBackground";
+import FormbricksProvider from "@/components/FormbricksProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default function RootLayout({
       <body className="flex flex-col bg-background text-foreground">
         <DynamicBackground />
         <AppProvider>
+          <FormbricksProvider />
           <Navbar />
           <div className="pt-[70px] sm:pt-[80px]">
             {children}
