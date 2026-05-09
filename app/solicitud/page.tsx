@@ -49,7 +49,8 @@ const SCHOOLS_DATA: Record<string, string[]> = {
     "Comunicación Audiovisual",
     "Ingeniería en Sonido",
     "Publicidad",
-    "Relaciones Públicas y Comunicación Organizacional"
+    "Relaciones Públicas y Comunicación Organizacional",
+    "Tecnología en Sonido e Iluminación"
   ],
   "🏥 Escuela de Salud y Bienestar": [
     "Preparador Físico"
