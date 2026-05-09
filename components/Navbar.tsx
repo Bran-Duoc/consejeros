@@ -34,32 +34,22 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Unified Top Navbar */}
-      <nav className="fixed top-[10px] left-[10px] right-[10px] sm:left-[30px] sm:right-[30px] z-50" aria-label="Navegación principal">
-        <div 
-          className="w-full flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-full glass shadow-2xl shadow-black/10 relative overflow-hidden"
-          style={{
-            backgroundImage: "url('/franja2.svg')",
-            backgroundSize: "cover",
-            backdropFilter: "blur(1px)",
-            WebkitBackdropFilter: "blur(1px)",
-          }}
-        >
-          {/* Strong glassmorphism overlay */}
-          <div 
-            className="absolute inset-0 bg-white/30 backdrop-blur-xl -z-10" 
-            style={{ WebkitBackdropFilter: "blur(24px)" }}
-          />
-          <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 px-2 sm:px-3" aria-label="Volver al inicio">
+      {/* Standard Top Navbar */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200" aria-label="Navegación principal">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 sm:h-20 px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3 sm:gap-4 shrink-0" aria-label="Volver al inicio">
             <Image 
               src="/logo.svg" 
               alt="Logo Duoc UC" 
-              width={100} 
-              height={32} 
-              className="object-contain drop-shadow-md sm:w-[121px] sm:h-[40px]" 
+              width={120} 
+              height={40} 
+              className="object-contain w-[100px] h-[32px] sm:w-[140px] sm:h-[45px]" 
               priority
             />
-            <span className="font-bold text-xs sm:text-sm hidden lg:block">Sede Viña del Mar</span>
+            <div className="hidden md:flex flex-col border-l border-slate-200 pl-4">
+              <span className="font-black text-slate-800 text-sm tracking-tight leading-none">Consejo de Carrera</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Sede Viña del Mar</span>
+            </div>
           </Link>
           <div className="flex items-center gap-1 sm:gap-2">
             {navItems.map((item) => {
@@ -68,20 +58,18 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`group relative flex items-center justify-center h-9 sm:h-10 rounded-full transition-all duration-300 ease-out px-3 sm:px-4 ${
+                  className={`group flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? "bg-indigo-100 border border-indigo-200 text-indigo-700 shadow-inner"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                      ? "bg-[#E07A5F] text-white shadow-md shadow-[#E07A5F]/20"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-800 font-bold"
                   }`}
                   aria-label={`Ir a ${item.label}`}
                 >
                   <Icon 
                     icon={item.icon} 
-                    className={`shrink-0 w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${
-                      isActive ? "scale-110" : "scale-100 group-hover:scale-110"
-                    } ${item.label === "Inicio" ? "" : "sm:mr-2"}`} 
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? "text-white" : "text-slate-400 group-hover:text-slate-800"}`} 
                   />
-                  <span className={`font-semibold text-[10px] sm:text-sm whitespace-nowrap ${item.label === "Inicio" ? "hidden sm:block" : "block"}`}>
+                  <span className="text-xs sm:text-sm font-bold whitespace-nowrap">
                     {item.label}
                   </span>
                 </Link>
