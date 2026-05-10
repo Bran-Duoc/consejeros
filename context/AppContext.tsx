@@ -53,23 +53,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [agents, setAgents] = useState<User[]>(adminUsers);
   const [isServerOnline, setIsServerOnline] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const [isSplashComplete, setIsSplashComplete] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const toastAPI = useToast();
-
-  // Handle Splash Screen Delayed Exit
-  useEffect(() => {
-    if (!isInitializing && !isSplashComplete) {
-      // Tiempo para apreciar la animación completa del logo (1.8s) y la carga
-      const timer = setTimeout(() => setIsExiting(true), 3500); 
-      const completeTimer = setTimeout(() => setIsSplashComplete(true), 4500); 
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(completeTimer);
-      };
-    }
-  }, [isInitializing, isSplashComplete]);
 
   // Sync Auth State & Fetch Role
   useEffect(() => {
@@ -308,28 +293,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isInitializing,
       }}
     >
-      {!isSplashComplete ? (
-        <div className={`fixed inset-0 z-[9999] bg-white flex items-center justify-center splash-container ${isExiting ? "exit" : ""}`}>
-          <div className="flex flex-col items-center gap-8">
-            <div className="splash-logo">
-              <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <h2 className="splash-text text-2xl font-black text-slate-800 tracking-tight">Sede Viña del Mar</h2>
-              {/* Color Squares Loader */}
-              <div className="squares-loader">
-                <div className="square" />
-                <div className="square" />
-                <div className="square" />
-                <div className="square" />
-                <div className="square" />
-                <div className="square" />
-                <div className="square" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : !isServerOnline ? (
+      {isInitializing ? null : !isServerOnline ? (
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 text-center">
           <div className="w-20 h-20 rounded-3xl bg-brand-red-light flex items-center justify-center mb-6">
             <Icon icon="lucide:server-off" className="w-10 h-10 text-brand-red" />
