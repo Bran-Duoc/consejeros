@@ -12,6 +12,11 @@ export default function FormbricksProvider() {
   const isInitialized = useRef(false);
 
   useEffect(() => {
+    // Si no hay ID configurado, no cargar el script para evitar errores en consola
+    if (!FORMBRICKS_ENVIRONMENT_ID || FORMBRICKS_ENVIRONMENT_ID === "YOUR_ENVIRONMENT_ID") {
+      return;
+    }
+
     if (typeof window !== "undefined" && !isInitialized.current) {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/npm/@formbricks/js@latest/dist/index.umd.js";
