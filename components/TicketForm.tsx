@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { useApp } from "@/context/AppContext";
 import { supabase } from "@/lib/supabase";
@@ -10,52 +10,16 @@ import {
   categoryLabels,
   categoryIcons,
   urgencyLabels,
+  SCHOOLS_DATA,
 } from "@/lib/data";
-import { validateStep, sanitizeInput } from "@/lib/validation";
+import { validateStep, sanitizeInput, sanitizeForSubmit } from "@/lib/validation";
 
-const STEPS = ["Categoría", "Detalles", "Urgencia", "Revisión"];
+// ---- Constants ----
+const STEPS = ["Categoría", "Detalles", "Urgencia", "Revisión"] as const;
 const FORM_STORAGE_KEY = "portal_form_draft";
+const DRAFT_SAVE_DELAY = 400; // ms debounce
 
-const SCHOOLS_DATA: Record<string, string[]> = {
-  "🏢 Escuela de Administración y Negocios": [
-    "Auditoría",
-    "Comercio Exterior",
-    "Contabilidad General Mención Legislación Tributaria",
-    "Ingeniería en Administración Mención Finanzas",
-    "Ingeniería en Administración Mención Gestión de Personas",
-    "Ingeniería en Administración Mención Innovación y Emprendimiento",
-    "Ingeniería en Comercio Exterior",
-    "Ingeniería en Gestión Logística",
-    "Ingeniería en Marketing Digital",
-    "Técnico en Administración",
-    "Técnico en Gestión Logística"
-  ],
-  "💻 Escuela de Informática y Telecomunicaciones": [
-    "Analista Programador",
-    "Ingeniería en Informática",
-    "Ingeniería en Redes y Telecomunicaciones"
-  ],
-  "🎨 Escuela de Diseño": [
-    "Diseño de Ambientes",
-    "Diseño de Vestuario",
-    "Diseño Gráfico",
-    "Diseño Industrial e Innovación en Productos",
-    "Ilustración para Contextos Globales"
-  ],
-  "🎬 Escuela de Comunicación": [
-    "Actuación",
-    "Animación Digital",
-    "Comunicación Audiovisual",
-    "Ingeniería en Sonido",
-    "Publicidad",
-    "Relaciones Públicas y Comunicación Organizacional",
-    "Tecnología en Sonido e Iluminación"
-  ],
-  "🏥 Escuela de Salud y Bienestar": [
-    "Preparador Físico"
-  ]
-};
-
+// ---- Types ----
 interface FormData {
   category: TicketCategory | "";
   title: string;
@@ -90,46 +54,41 @@ function loadDraft(): FormData {
   }
 }
 
-// ---- Step Progress Bar ----
-function StepProgress({ current, total }: { current: number; total: number }) {
+// ---- Progress Bar (linear) ----
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  const pct = ((current + 1) / total) * 100;
   return (
-    <div className="flex items-center gap-2 mb-6">
-      {Array.from({ length: total }).map((_, i) => (
-        <React.Fragment key={i}>
-          <div className="flex flex-col items-center gap-1.5">
-            <div
-              className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${
-                i < current
-                  ? "bg-[#E07A5F] text-white shadow-lg shadow-[#E07A5F]/30"
-                  : i === current
-                  ? "bg-[#E07A5F] text-white shadow-lg shadow-[#E07A5F]/30 scale-110"
-                  : "bg-foreground/5 text-foreground/30 border border-foreground/10"
-              }`}
-            >
-              {i < current ? "✓" : i + 1}
-            </div>
-            <span
-              className={`text-[11px] font-bold hidden sm:block ${
-                i <= current ? "text-[#2B2D42]" : "text-foreground/30"
-              }`}
-            >
-              {STEPS[i]}
-            </span>
-          </div>
-          {i < total - 1 && (
-            <div
-              className={`flex-1 h-[2px] rounded-full transition-all duration-500 ${
-                i < current ? "bg-indigo-600" : "bg-foreground/10"
-              }`}
-            />
-          )}
-        </React.Fragment>
-      ))}
+    <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-5">
+      <div
+        className="h-full bg-brand-blue rounded-full transition-all duration-500 ease-out"
+        style={{ width: `${pct}%` }}
+      />
     </div>
   );
 }
 
 // ---- Step 1: Category ----
+const CATEGORIES: {
+  key: TicketCategory;
+  color: string;
+  activeBg: string;
+  activeBorder: string;
+}[] = [
+  { key: "academico", color: "text-brand-red", activeBg: "bg-brand-red-light", activeBorder: "border-brand-red" },
+  { key: "infraestructura", color: "text-brand-yellow-dark", activeBg: "bg-brand-yellow-light", activeBorder: "border-brand-yellow" },
+  { key: "bienestar", color: "text-brand-green-dark", activeBg: "bg-brand-green-light", activeBorder: "border-brand-green" },
+  { key: "financiero", color: "text-brand-purple-dark", activeBg: "bg-brand-purple-light", activeBorder: "border-brand-purple" },
+  { key: "otro", color: "text-slate-500", activeBg: "bg-slate-50", activeBorder: "border-slate-400" },
+];
+
+const CATEGORY_DESCRIPTIONS: Record<TicketCategory, string> = {
+  academico: "Inscripción, notas, certificados, convalidaciones",
+  infraestructura: "Salas, equipos, WiFi, espacios físicos",
+  bienestar: "Salud mental, orientación, apoyo social",
+  financiero: "Becas, pagos, aranceles, beneficios",
+  otro: "Sugerencias, reclamos u otros temas",
+};
+
 function StepCategory({
   value,
   onChange,
@@ -137,167 +96,149 @@ function StepCategory({
   value: TicketCategory | "";
   onChange: (v: TicketCategory) => void;
 }) {
-  const categories: TicketCategory[] = ["academico", "infraestructura", "bienestar", "financiero", "otro"];
-  const descriptions: Record<TicketCategory, string> = {
-    academico: "Inscripción, notas, certificados, convalidaciones",
-    infraestructura: "Salas, equipos, WiFi, espacios físicos",
-    bienestar: "Salud mental, orientación, apoyo social",
-    financiero: "Becas, pagos, aranceles, beneficios",
-    otro: "Sugerencias, reclamos u otros temas",
-  };
-
-  const categoryStyles: Record<TicketCategory, { active: string, inactive: string, icon: string }> = {
-    academico: {
-      active: "border-[#E07A5F] bg-[#E07A5F]/5 shadow-lg shadow-[#E07A5F]/10",
-      inactive: "hover:border-[#E07A5F]/30 hover:bg-[#E07A5F]/5",
-      icon: "text-[#E07A5F]"
-    },
-    infraestructura: {
-      active: "border-amber-500 bg-amber-500/5 shadow-lg shadow-amber-500/10",
-      inactive: "hover:border-amber-500/30 hover:bg-amber-50/30",
-      icon: "text-amber-500"
-    },
-    bienestar: {
-      active: "border-[#84A59D] bg-[#84A59D]/5 shadow-lg shadow-[#84A59D]/10",
-      inactive: "hover:border-[#84A59D]/30 hover:bg-[#84A59D]/5",
-      icon: "text-[#84A59D]"
-    },
-    financiero: {
-      active: "border-[#2B2D42] bg-[#2B2D42]/5 shadow-lg shadow-[#2B2D42]/10",
-      inactive: "hover:border-[#2B2D42]/30 hover:bg-[#2B2D42]/5",
-      icon: "text-[#2B2D42]"
-    },
-    otro: {
-      active: "border-slate-500 bg-slate-500/5 shadow-lg shadow-slate-500/10",
-      inactive: "hover:border-slate-500/30 hover:bg-slate-50/30",
-      icon: "text-slate-500"
-    }
-  };
-
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2 text-slate-800">¿En qué podemos ayudarte?</h2>
-      <p className="text-slate-600 font-medium mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => onChange(cat)}
-            className={`group text-left p-5 rounded-2xl border-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm ${
-              value === cat
-                ? categoryStyles[cat].active + " bg-white/40"
-                : `border-white/40 bg-white/20 ${categoryStyles[cat].inactive}`
-            }`}
-          >
-            <span className={`text-3xl block mb-3 transition-colors ${value === cat ? categoryStyles[cat].icon : 'text-slate-400 group-hover:' + categoryStyles[cat].icon}`}>
-              <Icon icon={categoryIcons[cat]} />
-            </span>
-            <span className="font-bold text-slate-800 text-base block">{categoryLabels[cat]}</span>
-            <span className="text-sm font-semibold text-slate-600 mt-1.5 block leading-snug">{descriptions[cat]}</span>
-          </button>
-        ))}
+      <h2 className="text-lg sm:text-xl font-bold mb-1 text-slate-800">¿En qué podemos ayudarte?</h2>
+      <p className="text-slate-500 text-xs sm:text-sm mb-4">Selecciona la categoría de tu solicitud.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {CATEGORIES.map((cat) => {
+          const isActive = value === cat.key;
+          return (
+            <button
+              key={cat.key}
+              type="button"
+              onClick={() => onChange(cat.key)}
+              className={`group text-left p-3 rounded-xl border-2 transition-all duration-150 ${
+                isActive
+                  ? `${cat.activeBorder} ${cat.activeBg} shadow-sm`
+                  : "border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm"
+              }`}
+            >
+              <div className="flex items-center gap-2.5 mb-1">
+                <Icon
+                  icon={categoryIcons[cat.key]}
+                  className={`w-5 h-5 ${isActive ? cat.color : "text-slate-400 group-hover:" + cat.color}`}
+                />
+                <span className="font-semibold text-slate-800 text-sm">{categoryLabels[cat.key]}</span>
+              </div>
+              <span className="text-[11px] text-slate-400 leading-tight block">{CATEGORY_DESCRIPTIONS[cat.key]}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// ---- Step 2: Details ----
+// ---- Reusable Field Error ----
 function FieldError({ error }: { error?: string }) {
   if (!error) return null;
   return (
-    <p className="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1" role="alert">
-      <Icon icon="lucide:alert-circle" className="w-3.5 h-3.5 shrink-0" />
+    <p className="text-red-500 text-[11px] font-medium mt-1 flex items-center gap-1" role="alert">
+      <Icon icon="lucide:alert-circle" className="w-3 h-3 shrink-0" />
       {error}
     </p>
   );
 }
 
+// ---- Step 2: Details ----
 function StepDetails({
   data,
   onChange,
   errors,
 }: {
   data: FormData;
-  onChange: (key: keyof FormData, val: any) => void;
+  onChange: (key: keyof FormData, val: string) => void;
   errors: Record<string, string>;
 }) {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Completa tu solicitud</h2>
-        <p className="text-foreground/50">
-          Ingresa los detalles de tu solicitud para que podamos ayudarte mejor.
-        </p>
-      </div>
+    <div>
+      <h2 className="text-lg sm:text-xl font-bold mb-1 text-slate-800">Completa tu solicitud</h2>
+      <p className="text-slate-500 text-xs sm:text-sm mb-4">Ingresa los detalles para que podamos ayudarte.</p>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3">
+        {/* Nombre */}
         <div>
-          <label htmlFor="field-name" className="block text-sm font-medium mb-2">Tu nombre <span className="text-red-400">*</span></label>
+          <label htmlFor="field-name" className="block text-xs font-semibold text-slate-600 mb-1">
+            Nombre completo <span className="text-red-400">*</span>
+          </label>
           <input
             id="field-name"
             type="text"
             value={data.name}
             onChange={(e) => onChange("name", e.target.value)}
             placeholder="Ej: María González"
-            aria-required="true"
-            aria-invalid={!!errors.name}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-[#E07A5F] focus:ring-2 focus:ring-[#E07A5F]/20 outline-none transition-all text-sm ${errors.name ? 'border-red-300' : 'border-border'}`}
+            autoComplete="name"
+            className={`w-full px-3.5 py-2 rounded-lg bg-white border text-sm outline-none transition-colors focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/20 ${errors.name ? "border-red-300" : "border-slate-200"}`}
           />
           <FieldError error={errors.name} />
         </div>
+
+        {/* Email (readonly) */}
         <div>
-          <label htmlFor="field-email" className="block text-sm font-medium mb-2">Correo electrónico <span className="text-red-400">*</span></label>
+          <label htmlFor="field-email" className="block text-xs font-semibold text-slate-600 mb-1">
+            Correo institucional
+          </label>
           <input
             id="field-email"
             type="email"
             value={data.email}
             disabled
-            className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 outline-none transition-all text-sm opacity-80"
+            className="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-400 text-sm"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="field-school" className="block text-sm font-medium mb-2">Escuela <span className="text-red-400">*</span></label>
-            <select
-              id="field-school"
-              value={data.school}
-              onChange={(e) => {
-                onChange("school", e.target.value);
-                onChange("career", "");
-              }}
-              aria-required="true"
-              className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none ${errors.school ? 'border-red-300' : 'border-border'}`}
-            >
-              <option value="">Selecciona tu escuela</option>
-              {Object.keys(SCHOOLS_DATA).map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <FieldError error={errors.school} />
-          </div>
-          <div>
-            <label htmlFor="field-career" className="block text-sm font-medium mb-2">Carrera <span className="text-red-400">*</span></label>
-            <select
-              id="field-career"
-              value={data.career}
-              disabled={!data.school}
-              onChange={(e) => onChange("career", e.target.value)}
-              aria-required="true"
-              className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm appearance-none disabled:opacity-50 ${errors.career ? 'border-red-300' : 'border-border'}`}
-            >
-              <option value="">{data.school ? "Selecciona tu carrera" : "Primero elige escuela"}</option>
-              {data.school && SCHOOLS_DATA[data.school].map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <FieldError error={errors.career} />
-          </div>
-        </div>
+        {/* Escuela */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="field-title" className="text-sm font-medium">Título de la solicitud <span className="text-red-400">*</span></label>
-            <span className={`text-xs font-mono ${data.title.length > 90 ? 'text-red-400' : 'text-slate-400'}`}>{data.title.length}/100</span>
+          <label htmlFor="field-school" className="block text-xs font-semibold text-slate-600 mb-1">
+            Escuela <span className="text-red-400">*</span>
+          </label>
+          <select
+            id="field-school"
+            value={data.school}
+            onChange={(e) => {
+              onChange("school", e.target.value);
+              onChange("career", "");
+            }}
+            className={`w-full px-3.5 py-2 rounded-lg bg-white border text-sm outline-none transition-colors focus:border-brand-blue appearance-none ${errors.school ? "border-red-300" : "border-slate-200"}`}
+          >
+            <option value="">Selecciona tu escuela</option>
+            {Object.keys(SCHOOLS_DATA).map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <FieldError error={errors.school} />
+        </div>
+
+        {/* Carrera */}
+        <div>
+          <label htmlFor="field-career" className="block text-xs font-semibold text-slate-600 mb-1">
+            Carrera <span className="text-red-400">*</span>
+          </label>
+          <select
+            id="field-career"
+            value={data.career}
+            disabled={!data.school}
+            onChange={(e) => onChange("career", e.target.value)}
+            className={`w-full px-3.5 py-2 rounded-lg bg-white border text-sm outline-none transition-colors focus:border-brand-blue appearance-none disabled:opacity-50 disabled:bg-slate-50 ${errors.career ? "border-red-300" : "border-slate-200"}`}
+          >
+            <option value="">{data.school ? "Selecciona tu carrera" : "Primero elige escuela"}</option>
+            {data.school && SCHOOLS_DATA[data.school]?.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <FieldError error={errors.career} />
+        </div>
+
+        {/* Título */}
+        <div className="md:col-span-2">
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="field-title" className="text-xs font-semibold text-slate-600">
+              Asunto de la solicitud <span className="text-red-400">*</span>
+            </label>
+            <span className={`text-[10px] font-mono tabular-nums ${data.title.length > 90 ? "text-red-400" : "text-slate-300"}`}>
+              {data.title.length}/100
+            </span>
           </div>
           <input
             id="field-title"
@@ -306,27 +247,29 @@ function StepDetails({
             onChange={(e) => onChange("title", sanitizeInput(e.target.value))}
             placeholder="Ej: Certificado de Alumno Regular"
             maxLength={100}
-            aria-required="true"
-            aria-invalid={!!errors.title}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm ${errors.title ? 'border-red-300' : 'border-border'}`}
+            className={`w-full px-3.5 py-2 rounded-lg bg-white border text-sm outline-none transition-colors focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/20 ${errors.title ? "border-red-300" : "border-slate-200"}`}
           />
           <FieldError error={errors.title} />
         </div>
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="field-desc" className="text-sm font-medium">Descripción <span className="text-red-400">*</span></label>
-            <span className={`text-xs font-mono ${data.description.length > 1800 ? 'text-red-400' : 'text-slate-400'}`}>{data.description.length}/2000</span>
+
+        {/* Descripción */}
+        <div className="md:col-span-2">
+          <div className="flex items-center justify-between mb-1">
+            <label htmlFor="field-desc" className="text-xs font-semibold text-slate-600">
+              Descripción <span className="text-red-400">*</span>
+            </label>
+            <span className={`text-[10px] font-mono tabular-nums ${data.description.length > 1800 ? "text-red-400" : "text-slate-300"}`}>
+              {data.description.length}/2000
+            </span>
           </div>
           <textarea
             id="field-desc"
             value={data.description}
             onChange={(e) => onChange("description", sanitizeInput(e.target.value))}
-            placeholder="Detalla lo que necesitas..."
-            rows={4}
+            placeholder="Describe tu situación con el mayor detalle posible..."
+            rows={3}
             maxLength={2000}
-            aria-required="true"
-            aria-invalid={!!errors.description}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none transition-all text-sm resize-none ${errors.description ? 'border-red-300' : 'border-border'}`}
+            className={`w-full px-3.5 py-2 rounded-lg bg-white border text-sm outline-none transition-colors focus:border-brand-blue focus:ring-1 focus:ring-brand-blue/20 resize-none ${errors.description ? "border-red-300" : "border-slate-200"}`}
           />
           <FieldError error={errors.description} />
         </div>
@@ -336,6 +279,18 @@ function StepDetails({
 }
 
 // ---- Step 3: Urgency ----
+const URGENCY_LEVELS: {
+  key: UrgencyLevel;
+  icon: string;
+  desc: string;
+  activeClass: string;
+}[] = [
+  { key: "bajo", icon: "lucide:circle", desc: "Puede esperar unos días", activeClass: "border-brand-green bg-brand-green-light" },
+  { key: "medio", icon: "lucide:clock", desc: "Importante, 24-48h", activeClass: "border-brand-yellow bg-brand-yellow-light" },
+  { key: "alto", icon: "lucide:alert-triangle", desc: "Atención pronto, 8-12h", activeClass: "border-brand-red bg-brand-red-light" },
+  { key: "critico", icon: "lucide:alert-circle", desc: "Atención inmediata", activeClass: "border-brand-red bg-brand-red-light ring-2 ring-brand-red/20" },
+];
+
 function StepUrgency({
   value,
   onChange,
@@ -343,32 +298,24 @@ function StepUrgency({
   value: UrgencyLevel | "";
   onChange: (v: UrgencyLevel) => void;
 }) {
-  const levels: { key: UrgencyLevel; icon: string; desc: string; color: string }[] = [
-    { key: "bajo", icon: "lucide:circle", desc: "No es urgente, puede esperar unos días", color: "border-status-success/40 bg-status-success/5" },
-    { key: "medio", icon: "lucide:circle-dashed", desc: "Importante pero no inmediato (24-48h)", color: "border-status-warning/40 bg-status-warning/5" },
-    { key: "alto", icon: "lucide:circle-dot", desc: "Necesita atención pronto (8-12h)", color: "border-status-danger/30 bg-status-danger/5" },
-    { key: "critico", icon: "lucide:alert-circle", desc: "Urgencia máxima — atención inmediata", color: "border-status-danger bg-status-danger/10 text-white" },
-  ];
-
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2">Nivel de urgencia</h2>
-      <p className="text-foreground/50 mb-8">
-        Selecciona qué tan urgente es tu solicitud. Esto afecta el tiempo de respuesta.
-      </p>
-      <div className="space-y-3">
-        {levels.map((l) => (
+      <h2 className="text-lg sm:text-xl font-bold mb-1 text-slate-800">Nivel de urgencia</h2>
+      <p className="text-slate-500 text-xs sm:text-sm mb-4">Esto determina la prioridad y tiempo de respuesta.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {URGENCY_LEVELS.map((l) => (
           <button
             key={l.key}
+            type="button"
             onClick={() => onChange(l.key)}
-            className={`w-full text-left p-5 rounded-2xl border-2 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center gap-4 ${
-              value === l.key ? l.color + " shadow-md" : "border-border hover:border-foreground/20"
+            className={`w-full text-left p-3.5 rounded-xl border-2 transition-all duration-150 flex items-center gap-3 ${
+              value === l.key ? l.activeClass + " shadow-sm" : "border-slate-100 bg-white hover:border-slate-200"
             }`}
           >
-            <span className="text-2xl"><Icon icon={l.icon} /></span>
-            <div>
-              <span className="font-semibold block">{urgencyLabels[l.key]}</span>
-              <span className="text-sm text-foreground/40">{l.desc}</span>
+            <Icon icon={l.icon} className="w-5 h-5 shrink-0 text-slate-600" />
+            <div className="min-w-0">
+              <span className="font-semibold text-sm text-slate-800 block">{urgencyLabels[l.key]}</span>
+              <span className="text-[11px] text-slate-400">{l.desc}</span>
             </div>
           </button>
         ))}
@@ -379,42 +326,52 @@ function StepUrgency({
 
 // ---- Step 4: Review ----
 function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof FormData, val: boolean) => void }) {
+  const reviewItems = [
+    { label: "Nombre", value: data.name },
+    { label: "Email", value: data.email },
+    { label: "Escuela", value: data.school },
+    { label: "Carrera", value: data.career },
+    {
+      label: "Categoría",
+      value: data.category ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Icon icon={categoryIcons[data.category as TicketCategory]} className="w-3.5 h-3.5" />
+          {categoryLabels[data.category as TicketCategory]}
+        </span>
+      ) : "—",
+    },
+    { label: "Urgencia", value: data.urgency ? urgencyLabels[data.urgency as UrgencyLevel] : "—" },
+    { label: "Asunto", value: data.title },
+    { label: "Descripción", value: data.description },
+  ];
+
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2">Revisa tu solicitud</h2>
-      <p className="text-foreground/50 mb-8">Confirma que toda la información sea correcta antes de enviar.</p>
+      <h2 className="text-lg sm:text-xl font-bold mb-1 text-slate-800">Revisa tu solicitud</h2>
+      <p className="text-slate-500 text-xs sm:text-sm mb-4">Confirma que la información sea correcta.</p>
 
-      <div className="space-y-4 rounded-2xl border border-border p-6 bg-foreground/[0.01] mb-6">
-        {[
-          { label: "Nombre", value: data.name },
-          { label: "Email", value: data.email },
-          { label: "Escuela", value: data.school },
-          { label: "Carrera", value: data.career },
-          { label: "Categoría", value: data.category ? <div className="flex items-center gap-2"><Icon icon={categoryIcons[data.category as TicketCategory]} className="w-4 h-4"/> {categoryLabels[data.category as TicketCategory]}</div> : "" },
-          { label: "Urgencia", value: data.urgency ? urgencyLabels[data.urgency as UrgencyLevel] : "" },
-          { label: "Título", value: data.title },
-          { label: "Descripción", value: data.description },
-        ].map((item) => (
-          <div key={item.label} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-            <span className="text-sm text-foreground/40 font-medium sm:w-32 shrink-0">{item.label}</span>
-            <span className="text-sm">{item.value || "—"}</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 rounded-xl border border-slate-100 p-4 bg-slate-50/50 mb-4">
+        {reviewItems.map((item) => (
+          <div key={item.label} className={`py-1 ${item.label === "Descripción" ? "sm:col-span-2" : ""}`}>
+            <span className="text-[11px] text-slate-400 font-medium block">{item.label}</span>
+            <span className="text-sm text-slate-800 break-words">{item.value || "—"}</span>
           </div>
         ))}
       </div>
 
-      <div className="p-4 rounded-xl border border-[#E07A5F]/20 bg-[#E07A5F]/5">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={data.arcoConsent}
-            onChange={(e) => onChange("arcoConsent", e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-gray-300 text-[#E07A5F] focus:ring-[#E07A5F]"
-          />
-          <span className="text-sm text-[#2B2D42]/70 leading-relaxed">
-            Consiento expresamente el tratamiento de mis datos personales y sensibles ingresados en este formulario, en conformidad con la <strong>Ley N° 21.719</strong> sobre protección de datos personales. Comprendo que mis datos serán utilizados exclusivamente para gestionar esta solicitud y puedo ejercer mis derechos ARCO comunicándome con la institución.
-          </span>
-        </label>
-      </div>
+      <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl border border-brand-blue/15 bg-brand-blue-light/30">
+        <input
+          type="checkbox"
+          checked={data.arcoConsent}
+          onChange={(e) => onChange("arcoConsent", e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-brand-blue focus:ring-brand-blue accent-brand-blue"
+        />
+        <span className="text-xs text-slate-600 leading-relaxed">
+          Consiento el tratamiento de mis datos personales conforme a la <strong>Ley N° 21.719</strong>. 
+          Mis datos serán usados exclusivamente para gestionar esta solicitud. 
+          Puedo ejercer mis derechos ARCO contactando a la institución.
+        </span>
+      </label>
     </div>
   );
 }
@@ -430,20 +387,19 @@ export default function TicketForm() {
   const [ticketId, setTicketId] = useState("");
   const [isOffline, setIsOffline] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const draftTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+  // Load draft + set user info
   useEffect(() => {
     const draft = loadDraft();
-    
     if (user && !draft.email) {
       draft.email = user.email || "";
-      draft.name = user.user_metadata?.full_name || user.email?.split('@')[0] || "";
+      draft.name = user.user_metadata?.full_name || user.email?.split("@")[0] || "";
     }
-    
     setData(draft);
-    
+
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-    
     setIsOffline(!navigator.onLine);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -453,25 +409,31 @@ export default function TicketForm() {
     };
   }, [user]);
 
+  // Debounced draft save
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window === "undefined") return;
+    clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
       localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
-    }
+    }, DRAFT_SAVE_DELAY);
+    return () => clearTimeout(draftTimer.current);
   }, [data]);
 
-  const updateField = (key: keyof FormData, value: any) => {
-    setData((prev) => ({ ...prev, [key]: value }));
-    if (fieldErrors[key]) {
-      setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
-    }
-  };
+  const updateField = useCallback((key: keyof FormData, val: string | boolean) => {
+    setData((prev) => ({ ...prev, [key]: val }));
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
 
-  const canAdvance = () => {
-    const errors = validateStep(step, data);
-    return Object.keys(errors).length === 0;
-  };
+  const canAdvance = useCallback(() => {
+    return Object.keys(validateStep(step, data)).length === 0;
+  }, [step, data]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     const errors = validateStep(step, data);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -479,37 +441,28 @@ export default function TicketForm() {
     }
     setFieldErrors({});
     setStep((s) => s + 1);
-  };
+  }, [step, data]);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
       const ticket = await addTicket({
-        title: data.title,
-        description: data.description,
+        title: sanitizeForSubmit(data.title),
+        description: sanitizeForSubmit(data.description),
         category: data.category as TicketCategory,
         urgency: data.urgency as UrgencyLevel,
         createdBy: data.email,
-        createdByName: data.name,
+        createdByName: sanitizeForSubmit(data.name),
         school: data.school,
         career: data.career,
       });
       setTicketId(ticket.id);
       setSubmitted(true);
       localStorage.removeItem(FORM_STORAGE_KEY);
-      
-      if (typeof window !== "undefined" && (window as any).formbricks) {
-        (window as any).formbricks.track("ticket_submitted", {
-          category: data.category,
-          urgency: data.urgency,
-          school: data.school
-        });
-      }
-    } catch (err: any) {
-      console.error("Submission error:", err);
-      const details = err.message || "Error desconocido";
-      setSubmitError(`Error al guardar la solicitud: ${details}.`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Error desconocido";
+      setSubmitError(`Error al guardar: ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -520,21 +473,36 @@ export default function TicketForm() {
     window.location.reload();
   };
 
+  const handleCategorySelect = useCallback((cat: TicketCategory) => {
+    updateField("category", cat);
+    // Auto-advance after selection
+    setTimeout(() => {
+      setFieldErrors({});
+      setStep(1);
+    }, 300);
+  }, [updateField]);
+
+  // ── Success Screen ──
   if (submitted) {
     return (
       <div className="h-full flex items-center justify-center p-4">
-        <div className="max-w-md w-full text-center bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-status-success/15 flex items-center justify-center text-3xl sm:text-4xl mb-5 text-status-success">
+        <div className="max-w-sm w-full text-center bg-white p-8 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="w-14 h-14 mx-auto rounded-full bg-brand-green-light flex items-center justify-center text-2xl mb-4 text-brand-green-dark">
             <Icon icon="lucide:check-circle-2" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-slate-900">¡Solicitud Enviada!</h1>
-          <p className="text-slate-500 mb-1 text-sm">Tu solicitud ha sido registrada y asignada automáticamente.</p>
-          <p className="text-sm text-slate-400 mb-6">
-            Folio: <code className="px-2 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold text-slate-900">{ticketId?.slice(0, 8)}</code>
+          <h1 className="text-xl font-bold mb-1 text-slate-900">¡Solicitud Enviada!</h1>
+          <p className="text-slate-500 text-sm mb-1">Tu solicitud fue registrada y asignada.</p>
+          <p className="text-xs text-slate-400 mb-5">
+            Folio: <code className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-800">{ticketId?.slice(0, 8)}</code>
           </p>
           <button
-            onClick={() => { setSubmitted(false); setStep(0); setData(initialFormData); }}
-            className="px-8 py-3 rounded-2xl bg-[#E07A5F] text-white font-semibold shadow-lg shadow-[#E07A5F]/20 hover:bg-[#2B2D42] transition-all"
+            type="button"
+            onClick={() => {
+              setSubmitted(false);
+              setStep(0);
+              setData({ ...initialFormData, email: user?.email || "", name: user?.user_metadata?.full_name || "" });
+            }}
+            className="px-6 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold shadow-md shadow-brand-blue/20 hover:bg-brand-blue-dark transition-colors"
           >
             Nueva Solicitud
           </button>
@@ -543,86 +511,94 @@ export default function TicketForm() {
     );
   }
 
+  // ── Form Shell ──
   return (
     <div className="h-full flex flex-col overflow-hidden">
-      {/* ── Fixed Header ── */}
-      <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+      {/* Fixed Header */}
+      <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-slate-100 bg-white/90 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl font-bold truncate">Nueva Solicitud</h1>
-            <p className="text-foreground/50 text-xs sm:text-sm mt-0.5">Paso {step + 1} de {STEPS.length} · {STEPS[step]}</p>
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 truncate">Nueva Solicitud</h1>
+            <p className="text-slate-400 text-xs mt-0.5">
+              Paso {step + 1} de {STEPS.length} — <span className="text-slate-600 font-medium">{STEPS[step]}</span>
+            </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {isOffline && (
-              <div className="flex items-center gap-1.5 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-2.5 py-1 rounded-lg text-[11px] font-medium">
-                <Icon icon="lucide:wifi-off" className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Offline</span>
+              <div className="flex items-center gap-1 bg-brand-yellow-light text-brand-yellow-dark border border-brand-yellow/30 px-2 py-1 rounded-lg text-[11px] font-medium">
+                <Icon icon="lucide:wifi-off" className="w-3 h-3" />
+                <span className="hidden sm:inline">Sin conexión</span>
               </div>
             )}
             <button
+              type="button"
               onClick={handleSignOut}
-              className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium bg-white px-2.5 py-1.5 rounded-lg border border-slate-200"
+              className="text-xs text-slate-400 hover:text-slate-700 flex items-center gap-1 font-medium px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+              title="Cerrar sesión"
             >
               <Icon icon="lucide:log-out" className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Salir</span>
             </button>
           </div>
         </div>
+        <div className="max-w-3xl mx-auto mt-2">
+          <ProgressBar current={step} total={STEPS.length} />
+        </div>
       </div>
 
-      {/* ── Scrollable Content ── */}
+      {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-          <StepProgress current={step} total={STEPS.length} />
-
-          {step === 0 && (
-            <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
-          )}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+          {step === 0 && <StepCategory value={data.category as TicketCategory | ""} onChange={handleCategorySelect} />}
           {step === 1 && <StepDetails data={data} onChange={updateField} errors={fieldErrors} />}
           {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
           {step === 3 && <StepReview data={data} onChange={updateField} />}
 
           {submitError && (
-            <div className="mt-4 p-3 rounded-xl bg-status-danger/10 border border-status-danger/20 text-status-danger text-sm font-medium flex items-center gap-3">
-              <Icon icon="lucide:alert-circle" className="w-5 h-5 shrink-0" />
+            <div className="mt-3 p-3 rounded-lg bg-brand-red-light border border-brand-red/20 text-brand-red text-sm font-medium flex items-center gap-2">
+              <Icon icon="lucide:alert-circle" className="w-4 h-4 shrink-0" />
               {submitError}
             </div>
           )}
         </div>
       </div>
 
-      {/* ── Fixed Bottom Navigation ── */}
-      <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 bg-white/80 backdrop-blur-md">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
+      {/* Fixed Bottom Navigation */}
+      <div className="shrink-0 px-4 sm:px-6 py-3 border-t border-slate-100 bg-white/90 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto flex justify-between items-center">
           <button
+            type="button"
             onClick={() => setStep((s) => Math.max(0, s - 1))}
             disabled={step === 0}
-            className="px-5 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-slate-50 bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
           >
             Anterior
           </button>
 
           {step < STEPS.length - 1 ? (
             <button
+              type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 transition-all active:scale-[0.98]"
+              className="px-5 py-2 rounded-lg bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold shadow-sm transition-colors"
             >
               Siguiente
             </button>
           ) : (
             <button
+              type="button"
               onClick={handleSubmit}
               disabled={!canAdvance() || isSubmitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#E07A5F] hover:bg-[#2B2D42] text-white text-sm font-semibold shadow-lg shadow-[#E07A5F]/25 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2 rounded-lg bg-brand-blue hover:bg-brand-blue-dark text-white text-sm font-semibold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <Icon icon="lucide:loader-2" className="w-5 h-5 animate-spin" />
-                  Guardando...
+                  <Icon icon="lucide:loader-2" className="w-4 h-4 animate-spin" />
+                  Enviando…
                 </>
               ) : (
                 <>
-                  <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar
+                  <Icon icon="lucide:send" className="w-4 h-4" />
+                  Enviar Solicitud
                 </>
               )}
             </button>

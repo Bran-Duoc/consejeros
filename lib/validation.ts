@@ -61,9 +61,12 @@ export function validateStep(step: number, data: Record<string, any>): Record<st
   return errors;
 }
 
-// ---- Sanitize text input ----
+// ---- Sanitize text input (real-time: strip dangerous chars only, no trim) ----
 export function sanitizeInput(text: string): string {
-  return text
-    .replace(/[<>{}]/g, '') // Remove potential XSS characters
-    .trim();
+  return text.replace(/[<>{}]/g, '');
+}
+
+// ---- Sanitize at submit time (trim + strip) ----
+export function sanitizeForSubmit(text: string): string {
+  return text.replace(/[<>{}]/g, '').trim();
 }

@@ -142,3 +142,44 @@ export function saveToStorage<T>(key: string, data: T): void {
     console.warn("Failed to save to localStorage");
   }
 }
+
+// ---- Schools & Careers (Sede Viña del Mar) ----
+export const SCHOOLS_DATA: Record<string, string[]> = {
+  "🏢 Escuela de Administración y Negocios": [
+    "Auditoría",
+    "Comercio Exterior",
+    "Contabilidad General Mención Legislación Tributaria",
+    "Ingeniería en Administración Mención Finanzas",
+    "Ingeniería en Administración Mención Gestión de Personas",
+    "Ingeniería en Administración Mención Innovación y Emprendimiento",
+    "Ingeniería en Comercio Exterior",
+    "Ingeniería en Gestión Logística",
+    "Ingeniería en Marketing Digital",
+    "Técnico en Administración",
+    "Técnico en Gestión Logística",
+  ],
+  "💻 Escuela de Informática y Telecomunicaciones": [
+    "Analista Programador",
+    "Ingeniería en Informática",
+    "Ingeniería en Redes y Telecomunicaciones",
+  ],
+  "🎨 Escuela de Diseño": [
+    "Diseño de Ambientes",
+    "Diseño de Vestuario",
+    "Diseño Gráfico",
+    "Diseño Industrial e Innovación en Productos",
+    "Ilustración para Contextos Globales",
+  ],
+  "🎬 Escuela de Comunicación": [
+    "Actuación",
+    "Animación Digital",
+    "Comunicación Audiovisual",
+    "Ingeniería en Sonido",
+    "Publicidad",
+    "Relaciones Públicas y Comunicación Organizacional",
+    "Tecnología en Sonido e Iluminación",
+  ],
+  "🏥 Escuela de Salud y Bienestar": [
+    "Preparador Físico",
+  ],
+};
