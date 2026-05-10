@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { Icon } from "@iconify/react";
-import PublicLayout from "@/components/PublicLayout";
 import { useApp } from "@/context/AppContext";
+import { supabase } from "@/lib/supabase";
 import {
   TicketCategory,
   UrgencyLevel,
@@ -176,7 +175,7 @@ function StepCategory({
   };
 
   return (
-    <div className="animate-fade-in-up">
+    <div>
       <h2 className="text-2xl font-bold mb-2 text-slate-800">¿En qué podemos ayudarte?</h2>
       <p className="text-slate-600 font-medium mb-8">Selecciona la categoría que mejor describe tu solicitud.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -223,7 +222,7 @@ function StepDetails({
   errors: Record<string, string>;
 }) {
   return (
-    <div className="animate-fade-in-up space-y-6">
+    <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold mb-2">Completa tu solicitud</h2>
         <p className="text-foreground/50">
@@ -252,13 +251,9 @@ function StepDetails({
             id="field-email"
             type="email"
             value={data.email}
-            onChange={(e) => onChange("email", e.target.value)}
-            placeholder="tu.correo@duocuc.cl"
-            aria-required="true"
-            aria-invalid={!!errors.email}
-            className={`w-full px-4 py-3 rounded-xl bg-foreground/[0.03] border focus:border-[#E07A5F] focus:ring-2 focus:ring-[#E07A5F]/20 outline-none transition-all text-sm ${errors.email ? 'border-red-300' : 'border-border'}`}
+            disabled
+            className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 outline-none transition-all text-sm opacity-80"
           />
-          <FieldError error={errors.email} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -356,7 +351,7 @@ function StepUrgency({
   ];
 
   return (
-    <div className="animate-fade-in-up">
+    <div>
       <h2 className="text-2xl font-bold mb-2">Nivel de urgencia</h2>
       <p className="text-foreground/50 mb-8">
         Selecciona qué tan urgente es tu solicitud. Esto afecta el tiempo de respuesta.
@@ -382,13 +377,10 @@ function StepUrgency({
   );
 }
 
-
-
-
 // ---- Step 4: Review ----
 function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof FormData, val: boolean) => void }) {
   return (
-    <div className="animate-fade-in-up">
+    <div>
       <h2 className="text-2xl font-bold mb-2">Revisa tu solicitud</h2>
       <p className="text-foreground/50 mb-8">Confirma que toda la información sea correcta antes de enviar.</p>
 
@@ -410,7 +402,6 @@ function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof 
         ))}
       </div>
 
-      {/* Normativa de Consentimiento (Ley 21.719) */}
       <div className="p-4 rounded-xl border border-[#E07A5F]/20 bg-[#E07A5F]/5">
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -428,8 +419,8 @@ function StepReview({ data, onChange }: { data: FormData; onChange: (key: keyof 
   );
 }
 
-// ---- Main Page ----
-export default function SolicitudPage() {
+// ---- Main Component ----
+export default function TicketForm() {
   const { addTicket, user } = useApp();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>(initialFormData);
@@ -470,7 +461,6 @@ export default function SolicitudPage() {
 
   const updateField = (key: keyof FormData, value: any) => {
     setData((prev) => ({ ...prev, [key]: value }));
-    // Clear field error on change
     if (fieldErrors[key]) {
       setFieldErrors((prev) => { const next = { ...prev }; delete next[key]; return next; });
     }
@@ -509,8 +499,6 @@ export default function SolicitudPage() {
       setSubmitted(true);
       localStorage.removeItem(FORM_STORAGE_KEY);
       
-      // ---- Formbricks Trigger ----
-      // Disparamos un evento personalizado para que Formbricks muestre la encuesta de satisfacción
       if (typeof window !== "undefined" && (window as any).formbricks) {
         (window as any).formbricks.track("ticket_submitted", {
           category: data.category,
@@ -521,140 +509,128 @@ export default function SolicitudPage() {
     } catch (err: any) {
       console.error("Submission error:", err);
       const details = err.message || "Error desconocido";
-      setSubmitError(`Error al guardar la solicitud: ${details}. Asegúrate de estar conectado o contacta a soporte.`);
+      setSubmitError(`Error al guardar la solicitud: ${details}.`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (!user) {
-    return (
-      <PublicLayout>
-        <div className="flex-1 flex items-center justify-center p-4 min-h-[60vh]">
-          <div className="max-w-md w-full text-center bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 text-3xl mb-6">
-              <Icon icon="lucide:lock" />
-            </div>
-            <h1 className="text-2xl font-bold mb-3">Autenticación Requerida</h1>
-            <p className="text-slate-500 mb-8">
-              Debes iniciar sesión con tu cuenta institucional para poder enviar solicitudes y hacerles seguimiento.
-            </p>
-            <Link
-              href="/login"
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-all"
-            >
-              Ir a Iniciar Sesión
-            </Link>
-          </div>
-        </div>
-      </PublicLayout>
-    );
-  }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
 
   if (submitted) {
     return (
-      <PublicLayout>
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-md w-full text-center animate-fade-in-up">
-            <div className="w-20 h-20 mx-auto rounded-full bg-status-success/15 flex items-center justify-center text-4xl mb-6 text-status-success">
-              <Icon icon="lucide:check-circle-2" />
-            </div>
-            <h1 className="text-3xl font-bold mb-3 text-slate-900">¡Solicitud Enviada!</h1>
-            <p className="text-slate-500 mb-2">
-              Tu solicitud ha sido registrada y asignada automáticamente.
-            </p>
-            <p className="text-sm text-slate-400 mb-8">
-              Folio: <code className="px-2 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold text-slate-900">{ticketId?.slice(0, 8)}</code>
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Link
-                href="/perfil"
-                className="px-8 py-4 rounded-2xl bg-[#E07A5F] text-white font-semibold shadow-lg shadow-[#E07A5F]/20 hover:bg-[#2B2D42] hover:scale-[1.02] transition-all"
-              >
-                Ver Mi Perfil
-              </Link>
-            </div>
+      <div className="flex-1 flex items-center justify-center p-4 min-h-[60vh]">
+        <div className="max-w-md w-full text-center bg-white p-10 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+          <div className="w-20 h-20 mx-auto rounded-full bg-status-success/15 flex items-center justify-center text-4xl mb-6 text-status-success">
+            <Icon icon="lucide:check-circle-2" />
+          </div>
+          <h1 className="text-3xl font-bold mb-3 text-slate-900">¡Solicitud Enviada!</h1>
+          <p className="text-slate-500 mb-2">
+            Tu solicitud ha sido registrada y asignada automáticamente.
+          </p>
+          <p className="text-sm text-slate-400 mb-8">
+            Folio: <code className="px-2 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold text-slate-900">{ticketId?.slice(0, 8)}</code>
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setStep(0);
+                setData(initialFormData);
+              }}
+              className="px-8 py-4 rounded-2xl bg-[#E07A5F] text-white font-semibold shadow-lg shadow-[#E07A5F]/20 hover:bg-[#2B2D42] hover:scale-[1.02] transition-all"
+            >
+              Nueva Solicitud
+            </button>
           </div>
         </div>
-      </PublicLayout>
+      </div>
     );
   }
 
   return (
-    <PublicLayout>
-      <div className="pb-20 sm:pb-12">
-        {/* Header */}
-        <div className="max-w-2xl mx-auto mb-8 px-4">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
-              <p className="text-foreground/50 mt-1">Completa el formulario paso a paso</p>
-            </div>
+    <div className="pb-20 sm:pb-12 pt-10">
+      {/* Header */}
+      <div className="max-w-2xl mx-auto mb-8 px-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Nueva Solicitud</h1>
+            <p className="text-foreground/50 mt-1">Completa el formulario paso a paso</p>
+          </div>
+          <div className="flex items-center gap-3">
             {isOffline && (
-              <div className="flex items-center gap-2 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-3 py-1.5 rounded-xl text-xs font-medium animate-pulse-soft">
+              <div className="flex items-center gap-2 bg-status-warning/10 text-status-warning-dark border border-status-warning/30 px-3 py-1.5 rounded-xl text-xs font-medium">
                 <Icon icon="lucide:wifi-off" />
                 <span>Modo Offline</span>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="max-w-2xl mx-auto px-4">
-          <StepProgress current={step} total={STEPS.length} />
-
-          {step === 0 && (
-            <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
-          )}
-          {step === 1 && <StepDetails data={data} onChange={updateField} errors={fieldErrors} />}
-          {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
-          {step === 3 && <StepReview data={data} onChange={updateField} />}
-
-          {/* Navigation */}
-          <div className="flex justify-between mt-10 pt-6 border-t border-border">
             <button
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
-              disabled={step === 0}
-              className="px-6 py-3 rounded-xl border border-border text-sm font-medium hover:bg-foreground/5 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              onClick={handleSignOut}
+              className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium bg-white px-3 py-1.5 rounded-lg border border-slate-200"
             >
-              Anterior
+              <Icon icon="lucide:log-out" /> Salir
             </button>
-
-            {step < STEPS.length - 1 ? (
-              <button
-                onClick={handleNext}
-                className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
-            ) : (
-              <button
-                onClick={handleSubmit}
-                disabled={!canAdvance() || isSubmitting}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#E07A5F] hover:bg-[#2B2D42] text-white text-sm font-semibold shadow-lg shadow-[#E07A5F]/25 hover:shadow-[#2B2D42]/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Icon icon="lucide:loader-2" className="w-5 h-5 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
-                  </>
-                )}
-              </button>
-            )}
           </div>
-          {submitError && (
-            <div className="mt-6 p-4 rounded-xl bg-status-danger/10 border border-status-danger/20 text-status-danger text-sm font-medium flex items-center gap-3 animate-fade-in-up">
-              <Icon icon="lucide:alert-circle" className="w-5 h-5 shrink-0" />
-              {submitError}
-            </div>
-          )}
         </div>
       </div>
-    </PublicLayout>
+
+      {/* Form */}
+      <div className="max-w-2xl mx-auto px-4 bg-white/50 backdrop-blur-md p-6 sm:p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50">
+        <StepProgress current={step} total={STEPS.length} />
+
+        {step === 0 && (
+          <StepCategory value={data.category as TicketCategory | ""} onChange={(v) => updateField("category", v)} />
+        )}
+        {step === 1 && <StepDetails data={data} onChange={updateField} errors={fieldErrors} />}
+        {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
+        {step === 3 && <StepReview data={data} onChange={updateField} />}
+
+        {/* Navigation */}
+        <div className="flex justify-between mt-10 pt-6 border-t border-border">
+          <button
+            onClick={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+            className="px-6 py-3 rounded-xl border border-border text-sm font-medium hover:bg-slate-50 bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Anterior
+          </button>
+
+          {step < STEPS.length - 1 ? (
+            <button
+              onClick={handleNext}
+              className="px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Siguiente
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!canAdvance() || isSubmitting}
+              className="flex items-center gap-2 px-8 py-3 rounded-xl bg-[#E07A5F] hover:bg-[#2B2D42] text-white text-sm font-semibold shadow-lg shadow-[#E07A5F]/25 hover:shadow-[#2B2D42]/40 hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <Icon icon="lucide:loader-2" className="w-5 h-5 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Icon icon="lucide:mail" className="w-5 h-5" /> Enviar Solicitud
+                </>
+              )}
+            </button>
+          )}
+        </div>
+        {submitError && (
+          <div className="mt-6 p-4 rounded-xl bg-status-danger/10 border border-status-danger/20 text-status-danger text-sm font-medium flex items-center gap-3">
+            <Icon icon="lucide:alert-circle" className="w-5 h-5 shrink-0" />
+            {submitError}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
-

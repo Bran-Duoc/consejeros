@@ -123,7 +123,7 @@ export default function AdminDashboard() {
             <div className="space-y-2 max-h-[240px] overflow-y-auto custom-scrollbar">
               {slaAlerts.slice(0, 5).map((t) => (
                 <div key={t.id} className="flex items-center gap-3 p-3 rounded-xl bg-foreground/[0.02] border border-foreground">
-                  <div className={`w-2 h-8 rounded-full shrink-0 ${t.sla.level === "expired" ? "bg-status-danger animate-blink-danger" : "bg-status-warning"}`} />
+                  <div className={`w-2 h-8 rounded-full shrink-0 ${t.sla.level === "expired" ? "bg-status-danger" : "bg-status-warning"}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{t.title}</p>
                     <p className="text-xs text-foreground">{categoryLabels[t.category as TicketCategory]}</p>

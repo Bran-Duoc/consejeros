@@ -1,15 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@iconify/react";
-import { useApp } from "@/context/AppContext";
 
-export default function LoginPage() {
-  const { user } = useApp();
-  const router = useRouter();
+export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -21,11 +17,7 @@ export default function LoginPage() {
         setErrorMessage("Acceso denegado. Debes utilizar tu correo institucional (@duocuc.cl).");
       }
     }
-
-    if (user) {
-      router.push("/perfil");
-    }
-  }, [user, router]);
+  }, []);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -50,7 +42,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="h-[100dvh] pt-0 sm:pt-[85px] flex flex-col lg:flex-row bg-transparent overflow-hidden">
+    <main className="min-h-[100dvh] flex flex-col lg:flex-row bg-slate-50 overflow-hidden">
       {/* Left Side: Hero Image */}
       <div className="hidden lg:block lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-indigo-900/20 z-10" />
@@ -61,9 +53,9 @@ export default function LoginPage() {
           className="object-cover"
           priority
         />
-        <div className="absolute bottom-12 left-12 right-12 z-20 text-white animate-fade-in-up">
+        <div className="absolute bottom-12 left-12 right-12 z-20 text-white">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6">
-            <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-indigo-400" />
             <span className="text-xs font-bold uppercase tracking-widest">Sede Viña del Mar</span>
           </div>
           
@@ -72,23 +64,43 @@ export default function LoginPage() {
             style={{ backdropFilter: "blur(60px)", WebkitBackdropFilter: "blur(60px)" }}
           >
             <h1 className="text-5xl font-black mb-4 leading-tight drop-shadow-lg">
-              Tu voz construye <br />
-              <span className="text-indigo-400">Nuestra Sede.</span>
+              Portal Único de <br />
+              <span className="text-indigo-400">Solicitudes.</span>
             </h1>
-            <p className="text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium">
-              Accede al portal oficial de solicitudes y mejora la experiencia estudiantil en Duoc UC.
+            <p className="text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-5">
+              El canal oficial del Consejo de Sede para canalizar y resolver tus requerimientos de forma centralizada.
             </p>
+            <ul className="text-sm sm:text-base text-white/80 space-y-3 font-medium">
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:check" className="w-4 h-4 text-indigo-300" />
+                </div>
+                Reporta problemas académicos o de infraestructura.
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:check" className="w-4 h-4 text-indigo-300" />
+                </div>
+                Solicita beneficios y apoyo estudiantil.
+              </li>
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:check" className="w-4 h-4 text-indigo-300" />
+                </div>
+                Tu solicitud llega directo a tu Consejero de Carrera.
+              </li>
+            </ul>
           </div>
         </div>
       </div>
 
       {/* Right Side: Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center px-5 py-8 sm:p-8 lg:p-16 bg-transparent relative pb-24 sm:pb-8">
+      <div className="flex-1 flex flex-col justify-center items-center px-5 py-8 sm:p-8 lg:p-16 relative">
         <div className="absolute top-6 left-5 sm:top-8 sm:left-8 lg:hidden">
           <Image src="/logo.svg" alt="Logo Duoc UC" width={96} height={32} className="h-auto" />
         </div>
 
-        <div className="w-full max-w-md animate-fade-in">
+        <div className="w-full max-w-md">
           <div className="text-center mb-6 sm:mb-10">
             <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-indigo-600 text-white mb-4 sm:mb-6 shadow-xl shadow-indigo-200 rotate-3">
               <Icon icon="lucide:shield-check" className="w-7 h-7 sm:w-8 sm:h-8" />
@@ -99,7 +111,7 @@ export default function LoginPage() {
 
           <div className="bg-white rounded-2xl sm:rounded-[2.5rem] p-5 sm:p-8 lg:p-10 shadow-xl shadow-slate-200/60 border border-slate-100">
             {errorMessage && (
-              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 animate-fade-in">
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
                 <Icon icon="lucide:alert-circle" className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-700 font-medium leading-relaxed">{errorMessage}</p>
               </div>
@@ -143,7 +155,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="mt-6 sm:mt-10 text-center">
              <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest">
               © 2026 Sede Viña del Mar · Hub Estudiantil
