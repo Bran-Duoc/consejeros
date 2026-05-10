@@ -51,10 +51,10 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="min-h-screen bg-background text-foreground m-0 p-0 box-border">
+      <body className="h-[100dvh] bg-background text-foreground m-0 p-0 box-border overflow-hidden">
         <AppProvider>
           <FormbricksProvider />
-          <main className="w-full min-h-screen flex flex-col">
+          <main className="w-full h-[100dvh] flex flex-col overflow-hidden">
             {children}
           </main>
         </AppProvider>
