@@ -43,7 +43,7 @@ export default function LoginForm() {
 
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden">
-      {/* Left Side: Hero Image — hidden on mobile */}
+      {/* Left Side: Hero Image — desktop only */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
         <div className="absolute inset-0 bg-indigo-900/20 z-10" />
         <Image 
@@ -102,7 +102,36 @@ export default function LoginForm() {
         </div>
 
         <div className="w-full max-w-md">
-          <div className="text-center mb-5 sm:mb-8">
+          {/* ── Mobile-only: Platform info ── */}
+          <div className="lg:hidden mb-5">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand-blue/10 border border-brand-blue/20 mb-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-brand-blue">Sede Viña del Mar</span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 leading-tight">
+              Portal Único de <span className="text-brand-blue">Solicitudes</span>
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-3">
+              El canal oficial del Consejo de Sede para resolver tus requerimientos.
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-slate-500 font-medium">
+              <span className="flex items-center gap-1.5">
+                <Icon icon="lucide:check-circle-2" className="w-3.5 h-3.5 text-brand-green-dark" />
+                Problemas académicos
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Icon icon="lucide:check-circle-2" className="w-3.5 h-3.5 text-brand-green-dark" />
+                Beneficios estudiantiles
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Icon icon="lucide:check-circle-2" className="w-3.5 h-3.5 text-brand-green-dark" />
+                Contacto directo con Consejero
+              </span>
+            </div>
+          </div>
+
+          {/* ── Desktop-only: Simple header ── */}
+          <div className="hidden lg:block text-center mb-5 sm:mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-indigo-600 text-white mb-3 sm:mb-5 shadow-xl shadow-indigo-200 rotate-3">
               <Icon icon="lucide:shield-check" className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
@@ -117,6 +146,11 @@ export default function LoginForm() {
                 <p className="text-sm text-red-700 font-medium leading-relaxed">{errorMessage}</p>
               </div>
             )}
+
+            {/* Mobile: brief instruction */}
+            <p className="lg:hidden text-sm font-semibold text-slate-700 mb-3">
+              Inicia sesión con tu correo institucional
+            </p>
 
             <button
               onClick={handleGoogleLogin}
