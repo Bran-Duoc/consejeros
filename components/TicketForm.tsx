@@ -18,8 +18,14 @@ import { validateStep, sanitizeInput, sanitizeForSubmit } from "@/lib/validation
 const STEPS = ["Categoría", "Detalles", "Urgencia", "Revisión"] as const;
 const FORM_STORAGE_KEY = "portal_form_draft";
 const DRAFT_SAVE_DELAY = 400; // ms debounce
+const DRAFT_EXPIRATION_MS = 5 * 60 * 1000; // 5 minutos
 
 // ---- Types ----
+interface FormDraft {
+  data: FormData;
+  timestamp: number;
+}
+
 interface FormData {
   category: TicketCategory | "";
   title: string;
@@ -47,8 +53,19 @@ const initialFormData: FormData = {
 function loadDraft(): FormData {
   if (typeof window === "undefined") return initialFormData;
   try {
-    const d = localStorage.getItem(FORM_STORAGE_KEY);
-    return d ? JSON.parse(d) : initialFormData;
+    const raw = localStorage.getItem(FORM_STORAGE_KEY);
+    if (!raw) return initialFormData;
+
+    const draft = JSON.parse(raw) as FormDraft;
+    const now = Date.now();
+
+    // Si pasaron más de 5 minutos, ignorar el borrador
+    if (now - draft.timestamp > DRAFT_EXPIRATION_MS) {
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      return initialFormData;
+    }
+
+    return draft.data;
   } catch {
     return initialFormData;
   }
@@ -409,12 +426,16 @@ export default function TicketForm() {
     };
   }, [user]);
 
-  // Debounced draft save
+  // Debounced draft save with timestamp
   useEffect(() => {
     if (typeof window === "undefined") return;
     clearTimeout(draftTimer.current);
     draftTimer.current = setTimeout(() => {
-      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(data));
+      const draft: FormDraft = {
+        data,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(draft));
     }, DRAFT_SAVE_DELAY);
     return () => clearTimeout(draftTimer.current);
   }, [data]);
@@ -469,6 +490,7 @@ export default function TicketForm() {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem(FORM_STORAGE_KEY);
     await supabase.auth.signOut();
     window.location.reload();
   };
