@@ -16,7 +16,7 @@ export default function GlobalError({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-6">
-      <div className="max-w-md w-full text-center animate-fade-in-up">
+      <div className="max-w-md w-full text-center">
         {/* Icon */}
         <div className="w-20 h-20 mx-auto rounded-2xl bg-red-50 flex items-center justify-center text-4xl mb-6 text-red-500">
           <Icon icon="lucide:alert-triangle" />
@@ -65,10 +65,7 @@ export default function GlobalError({
 
         {/* Support note */}
         <p className="mt-8 text-xs text-slate-400">
-          Si el problema persiste, contacta al Consejo de Sede a través del{" "}
-          <a href="/solicitud" className="text-indigo-500 hover:text-indigo-600 underline">
-            formulario de solicitudes
-          </a>.
+          Si el problema persiste, por favor contacta al equipo de soporte.
         </p>
       </div>
     </div>

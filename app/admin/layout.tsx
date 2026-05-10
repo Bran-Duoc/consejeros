@@ -99,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             priority
           />
           {!collapsed && (
-            <div className="animate-fade-in">
+            <div>
               <div className="font-bold text-sm leading-tight">Panel Administrativo</div>
             </div>
           )}
@@ -179,7 +179,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {mobileOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="lg:hidden fixed top-14 left-0 bottom-0 w-[260px] z-50 bg-white border-r border-border animate-slide-in-left">
+          <div className="lg:hidden fixed top-14 left-0 bottom-0 w-[260px] z-50 bg-white border-r border-border">
             <nav className="py-4 px-3 space-y-1">
               {filteredNavItems.map((item) => (
                 <Link
@@ -271,9 +271,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         };
 
         return (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] animate-fade-in">
+          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]">
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" onClick={() => { setCmdKOpen(false); setSearchQuery(""); }} aria-hidden="true" />
-            <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-border overflow-hidden animate-slide-in-up" role="dialog" aria-label="Búsqueda rápida">
+            <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-border overflow-hidden" role="dialog" aria-label="Búsqueda rápida">
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
                 <Icon icon="lucide:search" className="w-5 h-5 text-foreground/40 shrink-0" />
                 <input

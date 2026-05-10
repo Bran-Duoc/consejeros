@@ -15,7 +15,7 @@ const urgencyColors: Record<UrgencyLevel, string> = {
   bajo: "text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded",
   medio: "text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded",
   alto: "text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded",
-  critico: "text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded animate-pulse-soft",
+  critico: "text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded",
 };
 
 const categoryColors: Record<TicketCategory, string> = {
@@ -61,7 +61,7 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
         >
           {/* Stale alert */}
           {stale && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-100 text-[10px] font-bold mb-3 animate-pulse-soft">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-100 text-[10px] font-bold mb-3">
               <Icon icon="lucide:clock" className="w-3.5 h-3.5" /> Ticket estancado — sin actividad
             </div>
           )}
@@ -121,7 +121,7 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
               </div>
               <span
                 className={`text-[10px] font-mono font-medium shrink-0 ${
-                  sla.level === "expired" ? "animate-blink-danger" : ""
+                  sla.level === "expired" ? "" : ""
                 }`}
                 style={{ color: sla.color }}
               >
@@ -173,7 +173,7 @@ function KanbanColumn({
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
         <div className="flex items-center gap-3">
-          <div className={`w-1.5 h-6 rounded-full ${isOverWipLimit ? "bg-status-danger animate-pulse-soft" : column.accent}`} />
+          <div className={`w-1.5 h-6 rounded-full ${isOverWipLimit ? "bg-status-danger" : column.accent}`} />
           <div className="flex items-center gap-2">
             <h3 className={`font-bold text-sm ${isOverWipLimit ? "text-status-danger" : "text-slate-700"}`}>{column.label}</h3>
             <span className="text-[10px] font-bold text-slate-400">
@@ -306,7 +306,7 @@ export default function KanbanPage() {
       {selectedTicket && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" onClick={() => setSelectedTicket(null)} />
-          <div className="relative w-full max-w-md bg-surface-card border-l border-border h-full shadow-2xl flex flex-col animate-slide-in-right">
+          <div className="relative w-full max-w-md bg-surface-card border-l border-border h-full shadow-2xl flex flex-col">
             <div className="h-16 flex items-center justify-between px-6 border-b border-border">
               <h2 className="font-bold text-lg">Detalle del Ticket</h2>
               <button onClick={() => setSelectedTicket(null)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-foreground/5 text-foreground/50 transition">

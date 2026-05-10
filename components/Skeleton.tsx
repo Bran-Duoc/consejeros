@@ -6,7 +6,7 @@ import React from "react";
 function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`animate-pulse rounded-xl bg-slate-200/70 ${className}`}
+      className={`rounded-xl bg-slate-200/70 ${className}`}
       aria-hidden="true"
     />
   );
@@ -29,7 +29,7 @@ export function StatCardSkeleton() {
 // ---- Ticket Card Skeleton ----
 export function TicketCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 animate-fade-in">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5">
       <div className="flex items-start gap-4">
         <Skeleton className="w-10 h-10 rounded-xl shrink-0" />
         <div className="flex-1 min-w-0 space-y-2">

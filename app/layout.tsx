@@ -1,9 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppProvider } from "@/context/AppContext";
-import Navbar from "@/components/Navbar";
 import Script from "next/script";
-import DynamicBackground from "@/components/DynamicBackground";
 import FormbricksProvider from "@/components/FormbricksProvider";
 import "./globals.css";
 
@@ -40,8 +38,6 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
-import Footer from "@/components/Footer";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -55,15 +51,12 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
-      <body className="min-h-screen grid grid-rows-[auto_1fr_auto] bg-background text-foreground m-0 p-0 box-border">
-        <DynamicBackground />
+      <body className="min-h-screen bg-background text-foreground m-0 p-0 box-border">
         <AppProvider>
           <FormbricksProvider />
-          <Navbar />
-          <main className="w-full">
+          <main className="w-full min-h-screen flex flex-col">
             {children}
           </main>
-          <Footer />
         </AppProvider>
         <ServiceWorkerRegistrar />
       </body>
