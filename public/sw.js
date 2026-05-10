@@ -1,10 +1,9 @@
 const CACHE_NAME = "portal-consejo-v1";
 const STATIC_ASSETS = [
   "/",
-  "/solicitud",
-  "/faq",
-  "/roadmap",
   "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
