@@ -66,11 +66,11 @@ export default function LoginForm() {
             <div className="mb-3 xl:mb-6 drop-shadow-lg flex flex-col gap-2">
               <span className="text-white/90 text-xl xl:text-3xl font-bold uppercase tracking-tight">Conecta con tus</span>
               <Image 
-                src="/logo.svg" 
+                src="/logo-white.svg" 
                 alt="Consejeros de Carrera" 
                 width={280} 
                 height={80} 
-                className="h-auto invert brightness-[2] contrast-[1.2]" 
+                className="h-auto invert brightness-[2]" 
               />
             </div>
             <p className="text-base xl:text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-4 xl:mb-5">
@@ -112,12 +112,12 @@ export default function LoginForm() {
               <span className="text-[10px] font-bold uppercase tracking-widest text-brand-blue">Sede Viña del Mar</span>
             </div>
             <div className="mb-4 flex flex-col gap-2">
-              <span className="text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">Conecta con tus</span>
+              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Conecta con tus</span>
               <Image 
                 src="/logo.svg" 
                 alt="Consejeros de Carrera" 
-                width={180} 
-                height={54} 
+                width={160} 
+                height={48} 
                 className="h-auto" 
               />
             </div>
