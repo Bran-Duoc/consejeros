@@ -63,14 +63,14 @@ export default function LoginForm() {
             className="p-5 xl:p-6 -ml-5 xl:-ml-6 rounded-[2rem] xl:rounded-[2.5rem] bg-white/5 border border-white/10"
             style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
           >
-            <div className="mb-3 xl:mb-4 drop-shadow-lg flex flex-col gap-2">
-              <span className="text-white/80 text-xl xl:text-2xl font-bold uppercase tracking-tight">Conecta con tus</span>
+            <div className="mb-3 xl:mb-6 drop-shadow-lg flex flex-col gap-2">
+              <span className="text-white/90 text-xl xl:text-3xl font-bold uppercase tracking-tight">Conecta con tus</span>
               <Image 
                 src="/logo.svg" 
                 alt="Consejeros de Carrera" 
-                width={200} 
-                height={60} 
-                className="h-auto brightness-0 invert opacity-90" 
+                width={280} 
+                height={80} 
+                className="h-auto invert brightness-[2] contrast-[1.2]" 
               />
             </div>
             <p className="text-base xl:text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-4 xl:mb-5">
@@ -111,12 +111,16 @@ export default function LoginForm() {
               <div className="w-1.5 h-1.5 rounded-full bg-brand-blue" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-brand-blue">Sede Viña del Mar</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-1.5 leading-tight">
-              Conecta con tus <span className="text-brand-blue">Consejeros de Carrera</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-3">
-              El espacio seguro donde tus representantes te escuchan, te orientan y gestionan tus necesidades ante la sede.
-            </p>
+            <div className="mb-4 flex flex-col gap-2">
+              <span className="text-slate-500 text-xs sm:text-sm font-bold uppercase tracking-wider">Conecta con tus</span>
+              <Image 
+                src="/logo.svg" 
+                alt="Consejeros de Carrera" 
+                width={180} 
+                height={54} 
+                className="h-auto" 
+              />
+            </div>
             <div className="flex flex-col gap-2.5 text-[11px] text-slate-500 font-medium">
               <span className="flex items-center gap-2">
                 <Icon icon="lucide:building-2" className="w-3.5 h-3.5 text-brand-blue" />
