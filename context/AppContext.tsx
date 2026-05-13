@@ -19,6 +19,17 @@ import { ToastContainer } from "@/components/Toast";
 
 export type AdminRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
+export interface UserProfile {
+  id: string;
+  nombre?: string;
+  name?: string;
+  email: string;
+  rol?: string;
+  role?: string;
+  departamento?: string;
+  department?: string;
+}
+
 interface AppState {
   tickets: Ticket[];
   audit: AuditEntry[];
@@ -27,7 +38,7 @@ interface AppState {
   agents: User[];
   user: AuthUser | null;
   role: AdminRole | null;
-  profile: any | null;
+  profile: UserProfile | null;
   isLoading: boolean;
   toastAPI: ToastAPI;
   addTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">) => Promise<Ticket>;
@@ -49,7 +60,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [slaConfig, setSlaConfig] = useState<SLAConfig[]>([]);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<AdminRole | null>(null);
-  const [profile, setProfile] = useState<any | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [agents, setAgents] = useState<User[]>(adminUsers);
   const [isServerOnline, setIsServerOnline] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -216,9 +227,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
         toastAPI.success("¡Solicitud enviada exitosamente!");
         return newTicket;
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error al crear la solicitud.";
         console.error("Error creating ticket:", err);
-        toastAPI.error(err.message || "Error al crear la solicitud.");
+        toastAPI.error(message);
         throw err;
       }
     },
@@ -238,10 +250,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         await db.audit.create(auditEntry);
         setAudit((prevAudit) => [...prevAudit, auditEntry]);
         toastAPI.success("Estado actualizado correctamente.");
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Revert optimistic update
         setTickets(previousTickets);
-        toastAPI.error(err.message || "Error al mover el ticket.");
+        const message = err instanceof Error ? err.message : "Error al mover el ticket.";
+        toastAPI.error(message);
         console.error("Error moving ticket:", err);
       }
     },
@@ -254,7 +267,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const newSurvey: Survey = { ...surveyData, id: generateId(), createdAt: new Date().toISOString() };
       setSurveys((prev) => [...prev, newSurvey]);
       toastAPI.success("¡Gracias por tu feedback!");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error adding survey:", err);
       toastAPI.error("No se pudo enviar la encuesta. Intenta de nuevo.");
     }
