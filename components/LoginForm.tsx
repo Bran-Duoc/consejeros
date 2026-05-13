@@ -71,17 +71,23 @@ export default function LoginForm() {
               El espacio seguro donde tus representantes te escuchan, te orientan y gestionan tus necesidades ante la sede.
             </p>
             <ul className="text-sm text-white/80 space-y-2 xl:space-y-3 font-medium">
-              <li className="flex items-start gap-3">
-                <span className="text-lg xl:text-xl shrink-0 leading-none">🏫</span>
-                <span className="leading-snug">Reporta situaciones académicas o de infraestructura.</span>
+              <li className="flex items-center gap-3">
+                <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:building-2" className="w-3 h-3 xl:w-4 xl:h-4 text-indigo-300" />
+                </div>
+                Reporta situaciones académicas o de infraestructura.
               </li>
-              <li className="flex items-start gap-3">
-                <span className="text-lg xl:text-xl shrink-0 leading-none">🤝</span>
-                <span className="leading-snug">Solicita apoyo, beneficios y orientación.</span>
+              <li className="flex items-center gap-3">
+                <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:handshake" className="w-3 h-3 xl:w-4 xl:h-4 text-indigo-300" />
+                </div>
+                Solicita apoyo, beneficios y orientación.
               </li>
-              <li className="flex items-start gap-3">
-                <span className="text-lg xl:text-xl shrink-0 leading-none">⚡</span>
-                <span className="leading-snug">Tu caso llega directamente a los consejeros de carrera de forma privada y segura.</span>
+              <li className="flex items-center gap-3">
+                <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:zap" className="w-3 h-3 xl:w-4 xl:h-4 text-indigo-300" />
+                </div>
+                Tu caso llega directo a los consejeros de forma privada y segura.
               </li>
             </ul>
           </div>
@@ -108,18 +114,18 @@ export default function LoginForm() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-3">
               El espacio seguro donde tus representantes te escuchan, te orientan y gestionan tus necesidades ante la sede.
             </p>
-            <div className="flex flex-col gap-2 text-[11px] text-slate-500 font-medium">
-              <span className="flex items-start gap-1.5">
-                <span className="text-sm leading-none shrink-0">🏫</span>
-                <span className="leading-tight">Reporta situaciones académicas o de infraestructura.</span>
+            <div className="flex flex-col gap-2.5 text-[11px] text-slate-500 font-medium">
+              <span className="flex items-center gap-2">
+                <Icon icon="lucide:building-2" className="w-3.5 h-3.5 text-brand-blue" />
+                Reporta situaciones académicas o de infraestructura
               </span>
-              <span className="flex items-start gap-1.5">
-                <span className="text-sm leading-none shrink-0">🤝</span>
-                <span className="leading-tight">Solicita apoyo, beneficios y orientación.</span>
+              <span className="flex items-center gap-2">
+                <Icon icon="lucide:handshake" className="w-3.5 h-3.5 text-brand-blue" />
+                Solicita apoyo, beneficios y orientación
               </span>
-              <span className="flex items-start gap-1.5">
-                <span className="text-sm leading-none shrink-0">⚡</span>
-                <span className="leading-tight">Tu caso llega directamente a los consejeros de carrera de forma privada y segura.</span>
+              <span className="flex items-center gap-2">
+                <Icon icon="lucide:zap" className="w-3.5 h-3.5 text-brand-blue" />
+                Contacto directo y seguro con Consejeros
               </span>
             </div>
           </div>
