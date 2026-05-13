@@ -188,6 +188,13 @@ export default function TicketForm() {
     setFieldErrors({});
   }, [updateField]);
 
+  const handleCategoryContinue = useCallback((cat: TicketCategory) => {
+    updateField("category", cat);
+    setFieldErrors({});
+    setDirection(1);
+    setStep(1);
+  }, [updateField]);
+
   const handleNewTicket = useCallback(() => {
     setSubmitted(false);
     setStep(0);
@@ -223,7 +230,13 @@ export default function TicketForm() {
               exit="exit"
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              {step === 0 && <StepCategory value={data.category as TicketCategory | ""} onChange={handleCategorySelect} />}
+              {step === 0 && (
+                <StepCategory 
+                  value={data.category as TicketCategory | ""} 
+                  onChange={handleCategorySelect} 
+                  onContinue={handleCategoryContinue}
+                />
+              )}
               {step === 1 && <StepDetails data={data} onChange={updateField} errors={fieldErrors} />}
               {step === 2 && <StepUrgency value={data.urgency as UrgencyLevel | ""} onChange={(v) => updateField("urgency", v)} />}
               {step === 3 && <StepReview data={data} onChange={updateField} />}

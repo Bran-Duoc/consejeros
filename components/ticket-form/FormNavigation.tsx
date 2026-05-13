@@ -30,7 +30,9 @@ export function FormNavigation({
         Anterior
       </motion.button>
 
-      {step < totalSteps - 1 ? (
+      {step === 0 ? (
+        <div /> // Spacer
+      ) : step < totalSteps - 1 ? (
         <motion.button
           type="button"
           onClick={onNext}

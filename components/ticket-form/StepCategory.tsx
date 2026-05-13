@@ -11,214 +11,199 @@ import {
 
 // ---- Category Configuration ----
 interface CategoryConfig {
-  key: TicketCategory;
+  id: TicketCategory;
+  title: string;
+  icon: string;
   color: string;
-  activeBg: string;
-  activeBorder: string;
-  tagline: string;
-  /** What consejeros directly handle (primary scope) */
-  primary: { icon: string; text: string }[];
-  /** Where we orient you to (secondary / official channels) */
-  secondary?: { icon: string; text: string }[];
-  /** Clarification about scope */
-  disclaimer?: string;
+  bgColor: string;
+  borderColor: string;
+  shortDesc: string;
+  primaryFocus: string[];
+  disclaimer: string;
 }
 
 const CATEGORIES: CategoryConfig[] = [
   {
-    key: "academico",
-    color: "text-brand-red",
-    activeBg: "bg-brand-red-light",
-    activeBorder: "border-brand-red",
-    tagline: "Levantamos tus necesidades como estudiante ante la sede",
-    primary: [
-      { icon: "lucide:megaphone", text: "Levantamientos de preocupaciones estudiantiles ante dirección de carrera" },
-      { icon: "lucide:book-open", text: "Necesidad de reforzamientos, tutorías o apoyo académico extra" },
-      { icon: "lucide:users", text: "Feedback sobre metodología de clases o experiencia docente" },
-      { icon: "lucide:clipboard-list", text: "Inquietudes sobre mallas, horarios o carga académica" },
+    id: "academico",
+    title: "Académico",
+    icon: categoryIcons.academico,
+    color: "text-indigo-600",
+    bgColor: "bg-indigo-50",
+    borderColor: "border-indigo-200",
+    shortDesc: "Inscripción, notas, certificados, convalidaciones.",
+    primaryFocus: [
+      "Levantamiento de necesidades grupales (ej. tutorías o reforzamientos).",
+      "Inquietudes sobre metodologías, docentes o evaluaciones.",
+      "Problemas de topes de horario, mallas y convalidaciones."
     ],
-    secondary: [
-      { icon: "lucide:file-text", text: "Certificados (alumno regular, concentración de notas) → Punto Estudiantil / Mi Duoc" },
-      { icon: "lucide:repeat", text: "Convalidaciones, inscripción de asignaturas → Secretaría Académica" },
-      { icon: "lucide:star", text: "Revisión de calificaciones → Directo con tu docente o director de carrera" },
-    ],
-    disclaimer: "Canalizamos tus inquietudes ante las autoridades. Para trámites administrativos, te orientamos al canal oficial correcto.",
+    disclaimer: "Orientamos en procesos administrativos (certificados, justificaciones) y te derivamos a los canales oficiales para su tramitación formal."
   },
   {
-    key: "infraestructura",
-    color: "text-brand-yellow-dark",
-    activeBg: "bg-brand-yellow-light",
-    activeBorder: "border-brand-yellow",
-    tagline: "Reporta problemas de espacios, equipos y servicios de la sede",
-    primary: [
-      { icon: "lucide:wifi-off", text: "Problemas de WiFi, conectividad o equipos tecnológicos" },
-      { icon: "lucide:monitor-x", text: "Laboratorios, computadores o proyectores en mal estado" },
-      { icon: "lucide:thermometer", text: "Climatización, iluminación o condiciones de las salas" },
-      { icon: "lucide:door-open", text: "Espacios de estudio, bibliotecas o áreas comunes insuficientes" },
-      { icon: "lucide:alert-triangle", text: "Situaciones de seguridad o higiene en las instalaciones" },
+    id: "infraestructura",
+    title: "Infraestructura",
+    icon: categoryIcons.infraestructura,
+    color: "text-amber-600",
+    bgColor: "bg-amber-50",
+    borderColor: "border-amber-200",
+    shortDesc: "Salas, equipos, WiFi, espacios físicos.",
+    primaryFocus: [
+      "Reporte de fallas en salas, laboratorios o equipamiento.",
+      "Sugerencias de mejora para áreas comunes y conectividad WiFi.",
+      "Solicitudes para espacios físicos de estudio o recreación."
     ],
-    disclaimer: "Reportamos directamente a las áreas responsables de la sede para gestión prioritaria.",
+    disclaimer: "Tu reporte se canaliza directamente con la subdirección de operaciones de la sede para una rápida resolución."
   },
   {
-    key: "bienestar",
-    color: "text-brand-green-dark",
-    activeBg: "bg-brand-green-light",
-    activeBorder: "border-brand-green",
-    tagline: "Te acompañamos y orientamos al apoyo profesional que necesitas",
-    primary: [
-      { icon: "lucide:compass", text: "Orientación inicial: te escuchamos y te guiamos al servicio correcto" },
-      { icon: "lucide:hand-helping", text: "Acompañamiento para acceder a programas de apoyo institucional" },
-      { icon: "lucide:accessibility", text: "Necesidades de inclusión o adecuaciones especiales" },
-      { icon: "lucide:heart-handshake", text: "Situaciones personales que afectan tu vida académica" },
+    id: "bienestar",
+    title: "Bienestar",
+    icon: categoryIcons.bienestar,
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-50",
+    borderColor: "border-emerald-200",
+    shortDesc: "Salud mental, orientación, apoyo social.",
+    primaryFocus: [
+      "Acompañamiento en momentos de estrés o ansiedad académica.",
+      "Orientación sobre programas de apoyo social de la sede.",
+      "Derivación directa al Programa de Apoyo al Estudiante (PAE)."
     ],
-    secondary: [
-      { icon: "lucide:brain", text: "Atención psicológica profesional → Vida Estudiantil / DAE" },
-      { icon: "lucide:stethoscope", text: "Apoyo de salud o crisis emocional → Línea de apoyo Duoc UC" },
-      { icon: "lucide:baby", text: "Programas para padres/madres estudiantes → Vida Estudiantil" },
-    ],
-    disclaimer: "No somos profesionales de salud mental. Te conectamos de forma segura y confidencial con los equipos especializados de la institución.",
+    disclaimer: "Importante: Nosotros no agendamos horas médicas o psicológicas. Te brindamos un espacio seguro de primera acogida y te conectamos con los profesionales institucionales."
   },
   {
-    key: "financiero",
-    color: "text-brand-purple-dark",
-    activeBg: "bg-brand-purple-light",
-    activeBorder: "border-brand-purple",
-    tagline: "Te orientamos sobre beneficios y opciones financieras disponibles",
-    primary: [
-      { icon: "lucide:compass", text: "Orientación sobre becas internas, Gratuidad, CAE y beneficios JUNAEB" },
-      { icon: "lucide:route", text: "Te guiamos al área correcta según tu situación financiera" },
-      { icon: "lucide:file-question", text: "Dudas sobre proceso de postulación a beneficios" },
-      { icon: "lucide:shield-check", text: "Levantamiento de tu caso si sientes que necesitas apoyo urgente" },
+    id: "financiero",
+    title: "Financiero",
+    icon: categoryIcons.financiero,
+    color: "text-cyan-600",
+    bgColor: "bg-cyan-50",
+    borderColor: "border-cyan-200",
+    shortDesc: "Becas, pagos, aranceles, beneficios.",
+    primaryFocus: [
+      "Dudas sobre pérdida o postulación a beneficios estatales/internos.",
+      "Orientación sobre el CAE, gratuidad o becas institucionales.",
+      "Consultas generales sobre aranceles y procesos de pago."
     ],
-    secondary: [
-      { icon: "lucide:credit-card", text: "Pagos, cuotas y convenios → Área de Finanzas" },
-      { icon: "lucide:receipt", text: "Estado de cuenta y facturación → Mi Duoc / Punto Estudiantil" },
-      { icon: "lucide:landmark", text: "Renovación CAE / Gratuidad → Plataforma oficial MINEDUC" },
-    ],
-    disclaimer: "No gestionamos pagos ni beneficios directamente. Te acompañamos para que llegues al lugar correcto con la información necesaria.",
+    disclaimer: "Importante: Nosotros no asignamos becas ni gestionamos pagos. Te escuchamos y te derivamos al área de Financiamiento (DAE) para que no enfrentes la burocracia sin apoyo."
   },
   {
-    key: "otro",
-    color: "text-slate-500",
-    activeBg: "bg-slate-50",
-    activeBorder: "border-slate-400",
-    tagline: "Cualquier otra inquietud, sugerencia o idea para mejorar la sede",
-    primary: [
-      { icon: "lucide:lightbulb", text: "Sugerencias para mejorar la experiencia estudiantil" },
-      { icon: "lucide:flag", text: "Reclamos o situaciones que no encajan en otra categoría" },
-      { icon: "lucide:rocket", text: "Ideas de proyectos o iniciativas para la comunidad" },
-      { icon: "lucide:message-circle", text: "Cualquier tema que quieras que tu consejero lleve a la mesa" },
+    id: "otro",
+    title: "Otro",
+    icon: categoryIcons.otro,
+    color: "text-slate-600",
+    bgColor: "bg-slate-100",
+    borderColor: "border-slate-300",
+    shortDesc: "Sugerencias, reclamos u otros temas.",
+    primaryFocus: [
+      "Propuestas de innovación o actividades para la comunidad.",
+      "Reclamos generales no categorizados en las opciones anteriores.",
+      "Dudas generales sobre la vida universitaria en la sede."
     ],
-  },
+    disclaimer: "Si tu caso es complejo o no sabes a quién acudir, nosotros lo analizaremos y te guiaremos hacia la unidad correcta de la Sede Viña del Mar."
+  }
 ];
 
-// ---- Component ----
 interface StepCategoryProps {
   value: TicketCategory | "";
   onChange: (v: TicketCategory) => void;
+  onContinue: (v: TicketCategory) => void;
 }
 
-export function StepCategory({ value, onChange }: StepCategoryProps) {
+export function StepCategory({ value, onChange, onContinue }: StepCategoryProps) {
   return (
-    <div>
-      <h2 className="text-lg sm:text-xl font-bold mb-1 text-slate-800">¿En qué podemos ayudarte?</h2>
-      <p className="text-slate-500 text-xs sm:text-sm mb-4">Selecciona la categoría de tu solicitud para ver qué podemos hacer por ti.</p>
+    <div className="flex flex-col">
+      <div className="mb-6">
+        <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">¿En qué podemos ayudarte?</h2>
+        <p className="text-slate-500 text-sm mt-2 leading-relaxed">
+          Selecciona la categoría de tu solicitud.
+        </p>
+      </div>
+
       <motion.div
-        className="flex flex-col gap-2.5"
+        className="space-y-3"
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
       >
         {CATEGORIES.map((cat) => {
-          const isActive = value === cat.key;
-          return (
-            <motion.div key={cat.key} variants={staggerItem} layout>
-              {/* Card Header (always visible) */}
-              <motion.button
-                type="button"
-                whileHover={!isActive ? { scale: 1.01, y: -1 } : undefined}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => onChange(cat.key)}
-                className={`w-full text-left p-3 sm:p-3.5 rounded-xl border-2 transition-colors duration-150 ${
-                  isActive
-                    ? `${cat.activeBorder} ${cat.activeBg} shadow-md rounded-b-none`
-                    : "border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? cat.activeBg : "bg-slate-50"}`}>
-                      <Icon
-                        icon={categoryIcons[cat.key]}
-                        className={`w-4.5 h-4.5 ${isActive ? cat.color : "text-slate-400"}`}
-                      />
-                    </div>
-                    <div>
-                      <span className="font-semibold text-slate-800 text-sm block">{categoryLabels[cat.key]}</span>
-                      <span className="text-[11px] text-slate-400 leading-tight">{cat.tagline}</span>
-                    </div>
-                  </div>
-                  <motion.div
-                    animate={{ rotate: isActive ? 180 : 0 }}
-                    transition={transitions.snappy}
-                  >
-                    <Icon icon="lucide:chevron-down" className={`w-4 h-4 ${isActive ? cat.color : "text-slate-300"}`} />
-                  </motion.div>
-                </div>
-              </motion.button>
+          const isExpanded = value === cat.id;
 
-              {/* Expanded Detail Panel */}
+          return (
+            <motion.div 
+              key={cat.id}
+              variants={staggerItem}
+              layout
+              className={`border rounded-2xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer ${
+                isExpanded ? `bg-white shadow-md ${cat.borderColor} ring-1 ring-slate-100` : 'bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm'
+              }`}
+              onClick={() => onChange(cat.id)}
+            >
+              {/* Card Header (Siempre visible) */}
+              <div className="p-4 flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${cat.bgColor} ${cat.color}`}>
+                  <Icon icon={cat.icon} className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-800">{cat.title}</h3>
+                  {!isExpanded && (
+                    <motion.p 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-xs text-slate-500 mt-0.5"
+                    >
+                      {cat.shortDesc}
+                    </motion.p>
+                  )}
+                </div>
+                <motion.div 
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  className="text-slate-400"
+                >
+                  <Icon icon="lucide:chevron-down" className="w-5 h-5" />
+                </motion.div>
+              </div>
+
+              {/* Card Body (Expandible) */}
               <AnimatePresence>
-                {isActive && (
-                  <motion.div
+                {isExpanded && (
+                  <motion.div 
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: "auto", opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <div className={`border-2 border-t-0 ${cat.activeBorder} ${cat.activeBg} rounded-b-xl p-3.5 sm:p-4`}>
-                      {/* Primary scope */}
-                      <div className="mb-3">
-                        <div className="flex items-center gap-1.5 mb-2">
-                          <Icon icon="lucide:check-circle-2" className={`w-3.5 h-3.5 ${cat.color}`} />
-                          <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">Lo que hacemos por ti</span>
-                        </div>
-                        <div className="space-y-1.5">
-                          {cat.primary.map((item) => (
-                            <div key={item.text} className="flex items-start gap-2 bg-white/60 rounded-lg px-2.5 py-1.5">
-                              <Icon icon={item.icon} className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${cat.color}`} />
-                              <span className="text-xs text-slate-600 leading-relaxed">{item.text}</span>
-                            </div>
+                    <div className="px-4 pb-4 pt-2 border-t border-slate-100">
+                      
+                      {/* Foco de Acción */}
+                      <div className="mb-4">
+                        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Lo que abordamos aquí:</h4>
+                        <ul className="space-y-2.5">
+                          {cat.primaryFocus.map((item, idx) => (
+                            <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-600">
+                              <Icon icon="lucide:check-circle-2" className={`shrink-0 mt-0.5 w-4 h-4 ${cat.color}`} />
+                              <span className="leading-snug">{item}</span>
+                            </li>
                           ))}
-                        </div>
+                        </ul>
                       </div>
 
-                      {/* Secondary scope (if exists) */}
-                      {cat.secondary && cat.secondary.length > 0 && (
-                        <div className="mb-3">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <Icon icon="lucide:arrow-right-circle" className="w-3.5 h-3.5 text-slate-400" />
-                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Te orientamos hacia</span>
-                          </div>
-                          <div className="space-y-1.5">
-                            {cat.secondary.map((item) => (
-                              <div key={item.text} className="flex items-start gap-2 bg-white/40 rounded-lg px-2.5 py-1.5 border border-slate-200/50">
-                                <Icon icon={item.icon} className="w-3.5 h-3.5 mt-0.5 shrink-0 text-slate-400" />
-                                <span className="text-[11px] text-slate-500 leading-relaxed">{item.text}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                      {/* Disclaimer / Gestión de Expectativas */}
+                      <div className={`p-3 rounded-xl mb-4 text-[11px] sm:text-xs leading-relaxed flex items-start gap-2 border ${cat.bgColor} ${cat.borderColor}`}>
+                        <Icon icon="lucide:info" className={`shrink-0 mt-0.5 w-4 h-4 ${cat.color}`} />
+                        <p className={`font-medium ${cat.color.replace('600', '800')}`}>{cat.disclaimer}</p>
+                      </div>
 
-                      {/* Disclaimer */}
-                      {cat.disclaimer && (
-                        <div className="flex items-start gap-2 p-2.5 rounded-lg bg-white/50 border border-slate-200/40">
-                          <Icon icon="lucide:info" className="w-3.5 h-3.5 mt-0.5 shrink-0 text-brand-blue" />
-                          <span className="text-[11px] text-slate-500 leading-relaxed italic">{cat.disclaimer}</span>
-                        </div>
-                      )}
+                      {/* Botón de Continuar */}
+                      <motion.button 
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={(e) => {
+                          e.stopPropagation(); 
+                          onContinue(cat.id);
+                        }}
+                        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-slate-900/10"
+                      >
+                        Continuar con {cat.title.toLowerCase()} <Icon icon="lucide:arrow-right" className="w-4 h-4" />
+                      </motion.button>
+
                     </div>
                   </motion.div>
                 )}
