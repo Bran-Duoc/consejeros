@@ -22,9 +22,9 @@ export function HeroSection() {
         className="object-cover"
         priority
       />
-      <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 xl:p-12 text-white">
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-8 xl:p-12 text-white">
         <motion.div
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4 xl:mb-6 w-fit"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 w-fit"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -34,37 +34,39 @@ export function HeroSection() {
         </motion.div>
 
         <motion.div
-          className="p-5 xl:p-6 rounded-[2rem] xl:rounded-[2.5rem] bg-white/5 border border-white/10"
-          style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
+          className="p-8 xl:p-10 rounded-[2.5rem] bg-white/5 border border-white/10 max-w-lg w-full flex flex-col items-center text-center"
+          style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, type: "spring", stiffness: 200, damping: 20 }}
         >
-          <div className="mb-3 xl:mb-6 drop-shadow-lg flex flex-col gap-2">
+          <div className="mb-6 drop-shadow-lg flex flex-col items-center gap-3">
             <span className="text-white/90 text-xl xl:text-3xl font-bold uppercase tracking-tight">Conecta con tus</span>
             <Image
               src="/logo.svg"
               alt="Consejeros de Carrera"
-              width={280}
-              height={80}
-              className="h-auto"
+              width={320}
+              height={100}
+              className="h-auto w-full max-w-[280px] xl:max-w-[320px]"
             />
           </div>
-          <p className="text-base xl:text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-4 xl:mb-5">
+          
+          <p className="text-base xl:text-lg text-white/90 leading-relaxed drop-shadow-md font-medium mb-6">
             El espacio seguro donde tus representantes te escuchan, te orientan y gestionan tus necesidades ante la sede.
           </p>
+
           <motion.ul
-            className="text-sm text-white/80 space-y-2 xl:space-y-3 font-medium"
+            className="text-sm text-white/80 space-y-3 font-medium w-full max-w-sm"
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
           >
             {FEATURES.map((feat) => (
-              <motion.li key={feat.icon} className="flex items-center gap-3" variants={staggerItem}>
-                <div className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
-                  <Icon icon={feat.icon} className="w-3 h-3 xl:w-4 xl:h-4 text-indigo-300" />
+              <motion.li key={feat.icon} className="flex items-center gap-3 text-left" variants={staggerItem}>
+                <div className="w-6 h-6 rounded-full bg-indigo-500/30 flex items-center justify-center shrink-0 border border-white/10">
+                  <Icon icon={feat.icon} className="w-3.5 h-3.5 text-indigo-200" />
                 </div>
-                {feat.text}
+                <span className="leading-snug">{feat.text}</span>
               </motion.li>
             ))}
           </motion.ul>
