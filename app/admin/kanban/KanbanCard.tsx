@@ -30,7 +30,9 @@ export function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: 
   const { role, agents } = useApp();
   const sla = calculateSLAStatus(ticket.slaDeadline);
   const stale = ticket.status !== "resuelto" && isTicketStale(ticket.updatedAt, 12);
-  const agent = agents.find((u) => u.email === ticket.assignedTo);
+
+  // Redactar info sensible para Admin TI en categoría bienestar
+  const isRedacted = (role === "Admin_TI" || role === "Admin TI") && ticket.category === "bienestar";
 
   return (
     <Draggable draggableId={ticket.id} index={index} isDragDisabled={role === "Supervisor"}>
@@ -44,10 +46,11 @@ export function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: 
             role === "Supervisor" ? "cursor-default" : "cursor-pointer"
           } ${
             snapshot.isDragging
-              ? `border-indigo-300 shadow-xl scale-[1.02] z-50`
-              : `shadow-sm border-slate-100 hover:shadow-md hover:border-indigo-100`
+              ? "border-indigo-300 shadow-xl scale-[1.02] z-50"
+              : "shadow-sm border-slate-100 hover:shadow-md hover:border-indigo-100"
           } ${stale ? "ring-2 ring-amber-400/30" : ""}`}
         >
+          {/* Top row: Category + Urgency */}
           <div className="flex items-center justify-between mb-3">
             <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-tight ${categoryColors[ticket.category as TicketCategory]}`}>
               <Icon icon={categoryIcons[ticket.category as TicketCategory]} className="w-3.5 h-3.5" />
@@ -58,12 +61,38 @@ export function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: 
             </div>
           </div>
 
-          <h4 className="text-sm font-bold leading-tight text-slate-800 mb-2.5 line-clamp-2">
-            {(role === "Admin_TI" || role === "Admin TI") && ticket.category === "bienestar" ? "██████ █████ ██████" : ticket.title}
+          {/* Title */}
+          <h4 className="text-sm font-bold leading-tight text-slate-800 mb-2 line-clamp-2">
+            {isRedacted ? "██████ █████ ██████" : ticket.title}
           </h4>
 
+          {/* Student info — visible for admins */}
+          <div className="mb-3 space-y-1">
+            <div className="flex items-center gap-2 text-[11px]">
+              <Icon icon="lucide:user" className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="text-slate-600 font-semibold truncate">
+                {isRedacted ? "████ ████████" : (ticket.createdByName || "Estudiante")}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-[11px]">
+              <Icon icon="lucide:mail" className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <span className="text-slate-500 font-medium truncate">
+                {isRedacted ? "████@████.██" : (ticket.createdBy || "—")}
+              </span>
+            </div>
+            {(ticket.school || ticket.career) && (
+              <div className="flex items-center gap-2 text-[11px]">
+                <Icon icon="lucide:graduation-cap" className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="text-slate-500 font-medium truncate">
+                  {isRedacted ? "████████" : [ticket.school, ticket.career].filter(Boolean).join(" · ")}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* SLA bar */}
           {ticket.status !== "resuelto" && (
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-3">
               <div className="flex-1 h-1 rounded-full bg-slate-100 overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
@@ -78,14 +107,19 @@ export function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: 
             </div>
           )}
 
+          {/* Bottom row: assigned + date */}
           <div className="flex items-center justify-between pt-3 border-t border-slate-50 text-[10px]">
             <div className="flex items-center gap-2">
               {ticket.assignedTo ? (
                 <div className="flex items-center gap-1.5">
                   <div className="w-5 h-5 rounded-lg bg-indigo-500 text-white flex items-center justify-center font-bold text-[8px]">
-                    {ticket.assignedTo?.[0].toUpperCase()}
+                    {ticket.assignedTo?.[0]?.toUpperCase() || "?"}
                   </div>
-                  <span className="text-slate-700 font-bold">{ticket.assignedTo === "Soporte TI" || ticket.assignedTo === "Bienestar Estudiantil" || ticket.assignedTo === "Coordinación Académica" ? ticket.assignedTo : ticket.assignedTo.split("@")[0]}</span>
+                  <span className="text-slate-700 font-bold">
+                    {["Soporte TI", "Bienestar Estudiantil", "Coordinación Académica"].includes(ticket.assignedTo)
+                      ? ticket.assignedTo
+                      : ticket.assignedTo.split("@")[0]}
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1 text-amber-500 font-bold uppercase tracking-wider">
