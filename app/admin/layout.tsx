@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
-import { useApp } from "@/context/AppContext";
-import type { AdminRole } from "@/context/AppContext";
+import { motion, AnimatePresence } from "framer-motion";
+import { useApp, type UserProfile } from "@/context/AppContext";
+import { transitions, staggerContainer, staggerItem } from "@/lib/transitions";
+import type { Ticket } from "@/lib/data";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "lucide:layout-dashboard", exact: true },
@@ -248,103 +250,115 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
 
       {/* Cmd+K Command Palette Modal */}
-      {cmdKOpen && (() => {
-        const q = searchQuery.trim().toLowerCase();
-        const results = q.length > 0 ? tickets.filter((t: any) =>
-          t.id?.slice(0, 8).toLowerCase().includes(q) ||
-          t.title?.toLowerCase().includes(q) ||
-          t.createdByName?.toLowerCase().includes(q) ||
-          t.category?.toLowerCase().includes(q) ||
-          t.status?.toLowerCase().includes(q) ||
-          t.school?.toLowerCase().includes(q) ||
-          t.career?.toLowerCase().includes(q)
-        ).slice(0, 8) : [];
-
-        const statusIcons: Record<string, string> = {
-          nuevo: "lucide:circle", pendiente: "lucide:clock", en_revision: "lucide:eye",
-          escalado: "lucide:alert-triangle", resuelto: "lucide:check-circle-2"
-        };
-        const statusBg: Record<string, string> = {
-          nuevo: "bg-sky-100 text-sky-600", pendiente: "bg-indigo-100 text-indigo-600",
-          en_revision: "bg-amber-100 text-amber-600", escalado: "bg-rose-100 text-rose-600",
-          resuelto: "bg-emerald-100 text-emerald-600"
-        };
-
-        return (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]">
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" onClick={() => { setCmdKOpen(false); setSearchQuery(""); }} aria-hidden="true" />
-            <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-border overflow-hidden" role="dialog" aria-label="Búsqueda rápida">
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-                <Icon icon="lucide:search" className="w-5 h-5 text-foreground/40 shrink-0" />
+      <AnimatePresence>
+        {cmdKOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh]"
+          >
+            <div 
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" 
+              onClick={() => { setCmdKOpen(false); setSearchQuery(""); }} 
+              aria-hidden="true" 
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: -20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: -20 }}
+              className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden" 
+              role="dialog" 
+              aria-label="Búsqueda rápida"
+            >
+              <div className="flex items-center gap-3 px-4 py-4 border-b border-slate-100">
+                <Icon icon="lucide:search" className="w-5 h-5 text-slate-400 shrink-0" />
                 <input
                   autoFocus
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Busca por ID, nombre o palabra clave..."
-                  className="flex-1 bg-transparent border-none outline-none text-base text-foreground placeholder:text-foreground/30"
+                  className="flex-1 bg-transparent border-none outline-none text-base text-slate-900 placeholder:text-slate-300"
                   aria-label="Campo de búsqueda"
                 />
-                <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded-md bg-foreground/5 border border-border text-[10px] font-mono text-foreground/50">ESC</kbd>
+                <kbd className="hidden sm:inline-flex px-1.5 py-0.5 rounded-md bg-slate-50 border border-slate-200 text-[10px] font-mono text-slate-400">ESC</kbd>
               </div>
-              <div className="p-2 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                {q.length > 0 ? (
-                  results.length > 0 ? (
-                    <div className="space-y-1">
-                      <p className="text-xs font-semibold text-foreground/40 mb-2 px-2 uppercase tracking-wider">{results.length} resultado{results.length !== 1 ? 's' : ''}</p>
-                      {results.map((t: any) => (
-                        <button
+              
+              <div className="p-2 max-h-[60vh] overflow-y-auto custom-scrollbar bg-slate-50/30">
+                {searchQuery.trim().length > 0 ? (() => {
+                  const q = searchQuery.trim().toLowerCase();
+                  const results = tickets.filter((t: Ticket) =>
+                    t.id.toLowerCase().includes(q) ||
+                    t.title.toLowerCase().includes(q) ||
+                    t.createdByName.toLowerCase().includes(q) ||
+                    t.category.toLowerCase().includes(q) ||
+                    t.status.toLowerCase().includes(q)
+                  ).slice(0, 8);
+
+                  if (results.length === 0) {
+                    return (
+                      <div className="p-8 text-center text-slate-400 text-sm">
+                        <Icon icon="lucide:search-x" className="w-6 h-6 mx-auto mb-2 text-slate-300" />
+                        No se encontraron resultados para &ldquo;{searchQuery}&rdquo;
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-1">
+                      <p className="text-[10px] font-bold text-slate-400 mb-2 px-2 uppercase tracking-widest">Resultados ({results.length})</p>
+                      {results.map((t) => (
+                        <motion.button
                           key={t.id}
+                          variants={staggerItem}
                           onClick={() => { setCmdKOpen(false); setSearchQuery(""); window.location.href = "/admin/kanban"; }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/5 transition-colors text-left group"
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group"
                         >
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${statusBg[t.status] || 'bg-slate-100 text-slate-500'}`}>
-                            <Icon icon={statusIcons[t.status] || "lucide:ticket"} className="w-4 h-4" />
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+                            <Icon icon="lucide:ticket" className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium truncate">{t.title}</div>
-                            <div className="text-xs text-foreground/40 truncate">
-                              <span className="font-mono">{t.id?.slice(0, 8)}</span> · {t.createdByName} · {t.category}
+                            <div className="text-sm font-semibold text-slate-800 truncate">{t.title}</div>
+                            <div className="text-[11px] text-slate-500 truncate">
+                              <span className="font-mono text-indigo-600">{t.id.slice(0, 8)}</span> · {t.createdByName} · {t.category}
                             </div>
                           </div>
-                          <Icon icon="lucide:arrow-right" className="w-4 h-4 text-foreground/20 group-hover:text-foreground/50 shrink-0" />
-                        </button>
+                          <Icon icon="lucide:arrow-right" className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors shrink-0" />
+                        </motion.button>
                       ))}
+                    </motion.div>
+                  );
+                })() : (
+                  <div className="px-2 py-2">
+                    <p className="text-[10px] font-bold text-slate-400 mb-2 px-2 uppercase tracking-widest">Accesos rápidos</p>
+                    <div className="grid grid-cols-1 gap-1">
+                      <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/kanban"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                          <Icon icon="lucide:kanban-square" className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-slate-800">Tablero Kanban</div>
+                          <div className="text-[11px] text-slate-500">Gestionar solicitudes por columna</div>
+                        </div>
+                      </button>
+                      <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/metrics"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                          <Icon icon="lucide:bar-chart-3" className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-slate-800">Métricas y KPIs</div>
+                          <div className="text-[11px] text-slate-500">Reportes de rendimiento en tiempo real</div>
+                        </div>
+                      </button>
                     </div>
-                  ) : (
-                    <div className="p-8 text-center text-foreground/40 text-sm">
-                      <Icon icon="lucide:search-x" className="w-6 h-6 mx-auto mb-2 text-slate-300" />
-                      No se encontraron resultados para &ldquo;{searchQuery}&rdquo;
-                    </div>
-                  )
-                ) : (
-                  <div className="px-2 py-4">
-                    <p className="text-xs font-semibold text-foreground/40 mb-2 px-2 uppercase tracking-wider">Accesos rápidos</p>
-                    <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/kanban"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/5 transition-colors text-left group">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                        <Icon icon="lucide:kanban-square" className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">Tablero Kanban</div>
-                        <div className="text-xs text-foreground/40">Gestionar solicitudes</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/metrics"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-foreground/5 transition-colors text-left group mt-1">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                        <Icon icon="lucide:bar-chart-3" className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium">Métricas y KPIs</div>
-                        <div className="text-xs text-foreground/40">Reportes en tiempo real</div>
-                      </div>
-                    </button>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        );
-      })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -3,35 +3,37 @@
 import React, { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Icon } from "@iconify/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
 import {
   Ticket, TicketStatus, TicketCategory, UrgencyLevel,
   categoryLabels, categoryIcons, urgencyLabels,
-  statusLabels, statusColors
+  statusLabels
 } from "@/lib/data";
 import { calculateSLAStatus, isTicketStale } from "@/lib/sla";
+import { transitions, staggerContainer, staggerItem } from "@/lib/transitions";
 
 const urgencyColors: Record<UrgencyLevel, string> = {
-  bajo: "text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded",
-  medio: "text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded",
-  alto: "text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded",
-  critico: "text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded",
+  bajo: "text-emerald-600 bg-emerald-50 border-emerald-100",
+  medio: "text-amber-600 bg-amber-50 border-amber-100",
+  alto: "text-rose-500 bg-rose-50 border-rose-100",
+  critico: "text-rose-700 bg-rose-100 border-rose-200",
 };
 
 const categoryColors: Record<TicketCategory, string> = {
-  academico: "bg-blue-50 text-blue-700 border-blue-200",
-  infraestructura: "bg-orange-50 text-orange-700 border-orange-200",
+  academico: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  infraestructura: "bg-amber-50 text-amber-700 border-amber-200",
   bienestar: "bg-rose-50 text-rose-700 border-rose-200",
   financiero: "bg-emerald-50 text-emerald-700 border-emerald-200",
   otro: "bg-slate-50 text-slate-700 border-slate-200",
 };
 
-const COLUMNS: { id: TicketStatus; label: string; accent: string }[] = [
-  { id: "nuevo", label: "Nuevo", accent: "bg-sky-500" },
-  { id: "pendiente", label: "Pendiente", accent: "bg-indigo-500" },
-  { id: "en_revision", label: "En revisión", accent: "bg-status-warning" },
-  { id: "escalado", label: "Escalado", accent: "bg-status-danger" },
-  { id: "resuelto", label: "Resuelto", accent: "bg-status-success" },
+const COLUMNS: { id: TicketStatus; label: string; accent: string; bgColor: string }[] = [
+  { id: "nuevo", label: "Nuevo", accent: "bg-sky-500", bgColor: "bg-sky-50/50" },
+  { id: "pendiente", label: "Pendiente", accent: "bg-indigo-500", bgColor: "bg-indigo-50/50" },
+  { id: "en_revision", label: "En revisión", accent: "bg-amber-500", bgColor: "bg-amber-50/50" },
+  { id: "escalado", label: "Escalado", accent: "bg-rose-500", bgColor: "bg-rose-50/50" },
+  { id: "resuelto", label: "Resuelto", accent: "bg-emerald-500", bgColor: "bg-emerald-50/50" },
 ];
 
 // ---- Kanban Card ----
@@ -41,8 +43,6 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
   const stale = ticket.status !== "resuelto" && isTicketStale(ticket.updatedAt, 12);
   const agent = agents.find((u) => u.id === ticket.assignedTo);
 
-  const column = COLUMNS.find(c => c.id === ticket.status);
-
   return (
     <Draggable draggableId={ticket.id} index={index} isDragDisabled={role === "Supervisor"}>
       {(provided, snapshot) => (
@@ -51,100 +51,67 @@ function KanbanCard({ ticket, index, onClick }: { ticket: Ticket; index: number;
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           onClick={() => onClick(ticket)}
-          className={`rounded-xl border bg-white p-4 mb-3 transition-all duration-200 ${
+          className={`rounded-2xl border bg-white p-4 mb-3 transition-all duration-200 ${
             role === "Supervisor" ? "cursor-default" : "cursor-pointer"
           } ${
             snapshot.isDragging
-              ? `kanban-card-dragging border-slate-300 shadow-lg`
-              : `shadow-sm border-slate-200 hover:shadow-md hover:border-slate-300`
-          } ${stale ? "ring-2 ring-amber-400/40" : ""}`}
+              ? `border-indigo-300 shadow-xl scale-[1.02] z-50`
+              : `shadow-sm border-slate-100 hover:shadow-md hover:border-indigo-100`
+          } ${stale ? "ring-2 ring-amber-400/30" : ""}`}
         >
-          {/* Stale alert */}
-          {stale && (
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-100 text-[10px] font-bold mb-3">
-              <Icon icon="lucide:clock" className="w-3.5 h-3.5" /> Ticket estancado — sin actividad
-            </div>
-          )}
-
-          {/* RBAC Masking */}
-          {(role === "Admin_TI" || role === "Admin TI") && ticket.category === "bienestar" && (
-            <div className="flex items-center gap-1 bg-status-danger/10 text-status-danger px-2 py-1 rounded border border-status-danger/20 mb-2">
-              <Icon icon="lucide:shield-alert" className="w-3 h-3 shrink-0" />
-              <span className="text-[9px] font-bold uppercase tracking-wider">Dato Sensible Protegido por Ley 21.719</span>
-            </div>
-          )}
-
           {/* Top: category + urgency */}
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center gap-2 text-slate-500">
-              <Icon icon={categoryIcons[ticket.category as TicketCategory]} className="w-4 h-4 opacity-70" />
-              <span className="text-[10px] font-semibold uppercase tracking-tight">
-                {categoryLabels[ticket.category as TicketCategory]}
-              </span>
+          <div className="flex items-center justify-between mb-3">
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] font-bold uppercase tracking-tight ${categoryColors[ticket.category as TicketCategory]}`}>
+              <Icon icon={categoryIcons[ticket.category as TicketCategory]} className="w-3.5 h-3.5" />
+              {categoryLabels[ticket.category as TicketCategory]}
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className={`text-[10px] font-bold ${urgencyColors[ticket.urgency as UrgencyLevel]}`}>
-                {urgencyLabels[ticket.urgency as UrgencyLevel]}
-              </span>
+            <div className={`text-[10px] font-bold px-2 py-0.5 rounded-lg border uppercase tracking-wider ${urgencyColors[ticket.urgency as UrgencyLevel]}`}>
+              {urgencyLabels[ticket.urgency as UrgencyLevel]}
             </div>
           </div>
 
           {/* Title */}
-          <h4 className="text-sm font-semibold leading-snug text-slate-900 mb-2 line-clamp-2">
-            {role === "Admin_TI" && ticket.category === "bienestar" ? "██████ █████ ██████" : ticket.title}
+          <h4 className="text-sm font-bold leading-tight text-slate-800 mb-2.5 line-clamp-2">
+            {(role === "Admin_TI" || role === "Admin TI") && ticket.category === "bienestar" ? "██████ █████ ██████" : ticket.title}
           </h4>
 
-          {/* Subtasks (Mock for "en_revision") */}
-          {ticket.status === "en_revision" && (
-            <div className="mb-3">
-              <div className="flex justify-between items-center text-[10px] font-medium text-slate-500 mb-1">
-                <span>Subtareas WIP</span>
-                <span>2/4</span>
-              </div>
-              <div className="flex-1 h-1 rounded-full bg-slate-200 overflow-hidden">
-                <div className="h-full rounded-full bg-indigo-600 transition-all duration-500" style={{ width: "50%" }} />
-              </div>
-            </div>
-          )}
-
-          {/* SLA countdown */}
+          {/* SLA countdown bar */}
           {ticket.status !== "resuelto" && (
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                <div
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-1 rounded-full bg-slate-100 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(100, Math.max(5, sla.level === "expired" ? 100 : sla.level === "danger" ? 85 : sla.level === "warning" ? 60 : 30))}%` }}
                   className="h-full rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min(100, Math.max(5, sla.level === "expired" ? 100 : sla.level === "danger" ? 85 : sla.level === "warning" ? 60 : 30))}%`,
-                    backgroundColor: sla.color,
-                  }}
+                  style={{ backgroundColor: sla.color }}
                 />
               </div>
-              <span
-                className={`text-[10px] font-mono font-medium shrink-0 ${
-                  sla.level === "expired" ? "" : ""
-                }`}
-                style={{ color: sla.color }}
-              >
+              <span className="text-[10px] font-bold font-mono tracking-tighter" style={{ color: sla.color }}>
                 {sla.remainingFormatted}
               </span>
             </div>
           )}
 
           {/* Bottom: agent + date */}
-          <div className="flex items-center justify-between text-[10px] text-slate-500">
-            <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between pt-3 border-t border-slate-50 text-[10px]">
+            <div className="flex items-center gap-2">
               {agent ? (
-                <>
-                  <div className="w-5 h-5 rounded-md bg-indigo-100 flex items-center justify-center text-[8px] font-bold text-indigo-700">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-lg bg-indigo-500 text-white flex items-center justify-center font-bold text-[8px]">
                     {agent.name.split(" ").map((n) => n[0]).join("")}
                   </div>
-                  <span className="text-slate-900 font-medium">{agent.name.split(" ")[0]}</span>
-                </>
+                  <span className="text-slate-700 font-bold">{agent.name.split(" ")[0]}</span>
+                </div>
               ) : (
-                <span className="text-status-warning">Sin asignar</span>
+                <div className="flex items-center gap-1 text-amber-500 font-bold uppercase tracking-wider">
+                  <Icon icon="lucide:user-plus" className="w-3 h-3" /> Sin asignar
+                </div>
               )}
             </div>
-            <span>{new Date(ticket.createdAt).toLocaleDateString("es-CL", { day: "2-digit", month: "short" })}</span>
+            <div className="flex items-center gap-1 text-slate-400 font-medium uppercase tracking-widest">
+              <Icon icon="lucide:calendar" className="w-3 h-3" />
+              {new Date(ticket.createdAt).toLocaleDateString("es-CL", { day: "2-digit", month: "short" })}
+            </div>
           </div>
         </div>
       )}
@@ -162,55 +129,54 @@ function KanbanColumn({
   tickets: Ticket[];
   onCardClick: (t: Ticket) => void;
 }) {
-  const isOverWipLimit = column.id === "en_revision" && tickets.length > 5;
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="flex flex-col w-full bg-slate-50 rounded-2xl shadow-sm border border-border">
-      {/* Column Header */}
-      <div 
-        className={`rounded-t-2xl bg-slate-100/80 px-4 py-3 flex items-center justify-between transition-colors cursor-pointer select-none`}
-        onClick={() => setIsCollapsed(!isCollapsed)}
-      >
-        <div className="flex items-center gap-3">
-          <div className={`w-1.5 h-6 rounded-full ${isOverWipLimit ? "bg-status-danger" : column.accent}`} />
-          <div className="flex items-center gap-2">
-            <h3 className={`font-bold text-sm ${isOverWipLimit ? "text-status-danger" : "text-slate-700"}`}>{column.label}</h3>
-            <span className="text-[10px] font-bold text-slate-400">
-              {tickets.length} {column.id === "en_revision" ? "/ 5" : ""}
-            </span>
+    <div className={`flex flex-col shrink-0 transition-all duration-300 ${isCollapsed ? "w-16" : "w-72 lg:w-80"}`}>
+      <div className={`flex flex-col h-full rounded-2xl ${column.bgColor} border border-slate-100 overflow-hidden`}>
+        {/* Column Header */}
+        <div 
+          className={`px-4 py-4 flex items-center justify-between cursor-pointer select-none border-b border-white/50`}
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-3 h-3 rounded-full ${column.accent} ring-4 ring-white/50`} />
+            {!isCollapsed && (
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-xs text-slate-800 uppercase tracking-widest">{column.label}</h3>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/60 text-slate-400 border border-white">
+                  {tickets.length}
+                </span>
+              </div>
+            )}
           </div>
         </div>
-        <button className="text-black/40 hover:text-black transition-colors">
-          <Icon icon={isCollapsed ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-5 h-5" />
-        </button>
-      </div>
 
-      {/* Droppable area */}
-      <div className={`${isCollapsed ? "hidden" : "block"}`}>
-        <Droppable droppableId={column.id}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`flex-1 p-3 rounded-b-2xl min-h-[150px] transition-colors custom-scrollbar overflow-y-auto max-h-[calc(100vh-220px)] ${
-                snapshot.isDraggingOver
-                  ? "bg-slate-200/50"
-                  : "bg-transparent"
-              }`}
-            >
-              {tickets.map((ticket, i) => (
-                <KanbanCard key={ticket.id} ticket={ticket} index={i} onClick={onCardClick} />
-              ))}
-              {provided.placeholder}
-              {tickets.length === 0 && (
-                <div className="flex items-center justify-center h-24 text-black/40 text-sm italic">
-                  Sin tickets
-                </div>
-              )}
-            </div>
-          )}
-        </Droppable>
+        {/* Droppable area */}
+        {!isCollapsed && (
+          <Droppable droppableId={column.id}>
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className={`flex-1 p-3 min-h-[200px] transition-colors custom-scrollbar overflow-y-auto max-h-[calc(100vh-240px)] ${
+                  snapshot.isDraggingOver ? "bg-indigo-50/30" : "bg-transparent"
+                }`}
+              >
+                {tickets.map((ticket, i) => (
+                  <KanbanCard key={ticket.id} ticket={ticket} index={i} onClick={onCardClick} />
+                ))}
+                {provided.placeholder}
+                {tickets.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-12 text-slate-300 opacity-50">
+                    <Icon icon="lucide:inbox" className="w-8 h-8 mb-2" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">Sin tickets</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </Droppable>
+        )}
       </div>
     </div>
   );
@@ -220,12 +186,10 @@ function KanbanColumn({
 export default function KanbanPage() {
   const { tickets, moveTicket, role } = useApp();
   const [filterCategory, setFilterCategory] = useState<TicketCategory | "all">("all");
-  const [filterUrgency, setFilterUrgency] = useState<UrgencyLevel | "all">("all");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   const filtered = tickets.filter((t) => {
     if (filterCategory !== "all" && t.category !== filterCategory) return false;
-    if (filterUrgency !== "all" && t.urgency !== filterUrgency) return false;
     return true;
   });
 
@@ -235,7 +199,7 @@ export default function KanbanPage() {
   );
 
   const onDragEnd = (result: DropResult) => {
-    if (role === "Supervisor") return; // Read-only role
+    if (role === "Supervisor") return;
     if (!result.destination) return;
     const newStatus = result.destination.droppableId as TicketStatus;
     if (newStatus === result.source.droppableId) return;
@@ -243,146 +207,149 @@ export default function KanbanPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      variants={staggerContainer}
+      initial="hidden"
+      animate="visible"
+      className="h-full flex flex-col"
+    >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <motion.div variants={staggerItem} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Tablero Kanban</h1>
-          <p className="text-foreground text-sm mt-1">
-            {role === "Supervisor" 
-              ? "Vista de supervisión (Lectura)" 
-              : "Arrastra las tarjetas para cambiar el estado"}
+          <h1 className="text-2xl font-extrabold text-slate-800 tracking-tight">Tablero Kanban</h1>
+          <p className="text-slate-400 text-sm mt-1">
+            {role === "Supervisor" ? "Modo Lectura" : "Gestiona el flujo de trabajo de las solicitudes"}
           </p>
         </div>
-        <div className="flex gap-2">
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value as TicketCategory | "all")}
-            className="bg-surface-card border border-border text-sm rounded-xl px-3 py-2 text-foreground outline-none focus:border-indigo-500/50"
-          >
-            <option value="all">Todas las categorías</option>
-            {(Object.keys(categoryLabels) as TicketCategory[]).map((c) => (
-              <option key={c} value={c}>{categoryLabels[c]}</option>
-            ))}
-          </select>
-          <select
-            value={filterUrgency}
-            onChange={(e) => setFilterUrgency(e.target.value as UrgencyLevel | "all")}
-            className="bg-surface-card border border-border text-sm rounded-xl px-3 py-2 text-foreground outline-none focus:border-indigo-500/50"
-          >
-            <option value="all">Todas las urgencias</option>
-            {(Object.keys(urgencyLabels) as UrgencyLevel[]).map((u) => (
-              <option key={u} value={u}>{urgencyLabels[u]}</option>
-            ))}
-          </select>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-100 shadow-sm">
+            <Icon icon="lucide:filter" className="w-4 h-4 text-slate-400" />
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value as TicketCategory | "all")}
+              className="bg-transparent text-xs font-bold text-slate-600 outline-none uppercase tracking-wide cursor-pointer"
+            >
+              <option value="all">TODAS LAS CATEGORÍAS</option>
+              {(Object.keys(categoryLabels) as TicketCategory[]).map((c) => (
+                <option key={c} value={c}>{categoryLabels[c].toUpperCase()}</option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Board */}
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-4">
-          
-          {/* Col 1: Nuevo -> Escalado */}
-          <div className="flex flex-col gap-6">
-            <KanbanColumn column={COLUMNS.find(c => c.id === "nuevo")!} tickets={getColumnTickets("nuevo")} onCardClick={setSelectedTicket} />
-            <KanbanColumn column={COLUMNS.find(c => c.id === "escalado")!} tickets={getColumnTickets("escalado")} onCardClick={setSelectedTicket} />
+      {/* Board with Horizontal Scroll */}
+      <motion.div variants={staggerItem} className="flex-1 min-h-0 overflow-x-auto pb-6 custom-scrollbar">
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="flex gap-6 h-full min-w-max pr-6">
+            {COLUMNS.map((col) => (
+              <KanbanColumn 
+                key={col.id} 
+                column={col} 
+                tickets={getColumnTickets(col.id)} 
+                onCardClick={setSelectedTicket} 
+              />
+            ))}
           </div>
+        </DragDropContext>
+      </motion.div>
 
-          {/* Col 2: Pendiente -> Resuelto */}
-          <div className="flex flex-col gap-6">
-            <KanbanColumn column={COLUMNS.find(c => c.id === "pendiente")!} tickets={getColumnTickets("pendiente")} onCardClick={setSelectedTicket} />
-            <KanbanColumn column={COLUMNS.find(c => c.id === "resuelto")!} tickets={getColumnTickets("resuelto")} onCardClick={setSelectedTicket} />
-          </div>
-
-          {/* Col 3: En Revision (Full height) */}
-          <div className="flex flex-col gap-6">
-            <KanbanColumn column={COLUMNS.find(c => c.id === "en_revision")!} tickets={getColumnTickets("en_revision")} onCardClick={setSelectedTicket} />
-          </div>
-
-        </div>
-      </DragDropContext>
-
-      {/* Progressive Disclosure Drawer */}
-      {selectedTicket && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" onClick={() => setSelectedTicket(null)} />
-          <div className="relative w-full max-w-md bg-surface-card border-l border-border h-full shadow-2xl flex flex-col">
-            <div className="h-16 flex items-center justify-between px-6 border-b border-border">
-              <h2 className="font-bold text-lg">Detalle del Ticket</h2>
-              <button onClick={() => setSelectedTicket(null)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-foreground/5 text-foreground/50 transition">
-                <Icon icon="lucide:x" className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-              <div className="flex items-center gap-2 mb-4">
-                <span className={`px-2.5 py-0.5 rounded text-xs font-semibold border ${categoryColors[selectedTicket.category as TicketCategory]}`}>
-                  {categoryLabels[selectedTicket.category as TicketCategory]}
-                </span>
-                <span className={`text-xs font-bold ${urgencyColors[selectedTicket.urgency as UrgencyLevel]}`}>
-                  {urgencyLabels[selectedTicket.urgency as UrgencyLevel]}
-                </span>
+      {/* Drawer */}
+      <AnimatePresence>
+        {selectedTicket && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm" 
+              onClick={() => setSelectedTicket(null)} 
+            />
+            <motion.div 
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={transitions.spring}
+              className="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-white z-[60] shadow-2xl flex flex-col border-l border-slate-100"
+            >
+              <div className="h-16 flex items-center justify-between px-6 border-b border-slate-50 bg-slate-50/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
+                  <h2 className="font-extrabold text-xs text-slate-400 uppercase tracking-widest">Detalle del Ticket</h2>
+                </div>
+                <button 
+                  onClick={() => setSelectedTicket(null)} 
+                  className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-100 hover:bg-slate-50 text-slate-400 transition"
+                >
+                  <Icon icon="lucide:x" className="w-5 h-5" />
+                </button>
               </div>
-              
-              <h3 className="text-xl font-bold mb-4">
-                {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
-              </h3>
-              
-              {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? (
-                <div className="bg-status-danger/10 text-status-danger p-4 rounded-xl border border-status-danger/20 mb-6 flex flex-col gap-2">
-                  <div className="flex items-center gap-2 font-bold uppercase text-[10px] tracking-wider">
-                    <Icon icon="lucide:shield-alert" className="w-4 h-4" />
-                    Dato Sensible Protegido
-                  </div>
-                  <p className="text-sm">
-                    El contenido de esta solicitud contiene datos clínicos o psicológicos protegidos por la Ley N° 21.719. Su rol técnico (Administrador TI) no posee los privilegios necesarios para visualizar esta información. Contacte a un Consejero Asignado para más detalles.
-                  </p>
-                </div>
-              ) : (
-                <p className="text-foreground/70 text-sm leading-relaxed mb-8">
-                  {selectedTicket.description}
-                </p>
-              )}
 
-              <div className="space-y-6">
-                <div>
-                  <h4 className="font-semibold text-sm mb-3 border-b border-border pb-2">Información del Solicitante</h4>
-                  <div className="text-sm space-y-2">
-                    <p><span className="text-foreground/50 w-24 inline-block">Nombre:</span> {selectedTicket.createdByName}</p>
-                    <p><span className="text-foreground/50 w-24 inline-block">Email:</span> {selectedTicket.createdBy}</p>
-                    <p><span className="text-foreground/50 w-24 inline-block">Escuela:</span> {selectedTicket.school || "No especificada"}</p>
-                    <p><span className="text-foreground/50 w-24 inline-block">Carrera:</span> {selectedTicket.career || "No especificada"}</p>
-                    <p><span className="text-foreground/50 w-24 inline-block">Fecha:</span> {new Date(selectedTicket.createdAt).toLocaleString("es-CL")}</p>
-                  </div>
+              <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
+                <div className="flex flex-wrap gap-2 mb-6">
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${categoryColors[selectedTicket.category as TicketCategory]}`}>
+                    {categoryLabels[selectedTicket.category as TicketCategory]}
+                  </span>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${urgencyColors[selectedTicket.urgency as UrgencyLevel]}`}>
+                    {urgencyLabels[selectedTicket.urgency as UrgencyLevel]}
+                  </span>
                 </div>
-
-                {selectedTicket.status === "en_revision" && (
-                  <div>
-                    <h4 className="font-semibold text-sm mb-3 border-b border-border pb-2">Subtareas (WIP)</h4>
-                    <div className="space-y-2">
-                      <label className="flex items-start gap-2 text-sm cursor-pointer">
-                        <input type="checkbox" defaultChecked className="mt-1" />
-                        <span>Verificar antecedentes del alumno en el portal académico</span>
-                      </label>
-                      <label className="flex items-start gap-2 text-sm cursor-pointer">
-                        <input type="checkbox" defaultChecked className="mt-1" />
-                        <span>Solicitar validación al director de carrera</span>
-                      </label>
-                      <label className="flex items-start gap-2 text-sm cursor-pointer">
-                        <input type="checkbox" className="mt-1" />
-                        <span>Emitir certificado con firma electrónica</span>
-                      </label>
-                      <label className="flex items-start gap-2 text-sm cursor-pointer">
-                        <input type="checkbox" className="mt-1" />
-                        <span>Notificar resolución al estudiante vía correo</span>
-                      </label>
+                
+                <h3 className="text-2xl font-extrabold text-slate-800 mb-6 leading-tight tracking-tight">
+                  {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? "██████ █████ ██████" : selectedTicket.title}
+                </h3>
+                
+                {(role === "Admin_TI" || role === "Admin TI") && selectedTicket.category === "bienestar" ? (
+                  <div className="bg-rose-50 text-rose-700 p-5 rounded-2xl border border-rose-100 mb-8 flex flex-col gap-3">
+                    <div className="flex items-center gap-2 font-extrabold uppercase text-[10px] tracking-widest">
+                      <Icon icon="lucide:shield-alert" className="w-4 h-4" />
+                      Privacidad Estricta (Ley 21.719)
                     </div>
+                    <p className="text-sm font-medium leading-relaxed">
+                      El contenido de esta solicitud contiene datos sensibles. Su perfil técnico no permite la visualización de este caso para proteger la privacidad del estudiante.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mb-10">
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Descripción</h4>
+                    <p className="text-slate-600 text-sm leading-relaxed bg-slate-50/50 p-5 rounded-2xl border border-slate-50">
+                      {selectedTicket.description}
+                    </p>
                   </div>
                 )}
+
+                <div className="space-y-8">
+                  <div>
+                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Información del Alumno</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {[
+                        { label: "Nombre", value: selectedTicket.createdByName },
+                        { label: "Email", value: selectedTicket.createdBy },
+                        { label: "Escuela", value: selectedTicket.school || "—" },
+                        { label: "Carrera", value: selectedTicket.career || "—" },
+                      ].map((item) => (
+                        <div key={item.label} className="p-3 rounded-xl bg-white border border-slate-100">
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">{item.label}</p>
+                          <p className="text-xs font-bold text-slate-700 truncate">{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+
+              <div className="p-6 border-t border-slate-50 bg-slate-50/30">
+                <button 
+                  onClick={() => setSelectedTicket(null)}
+                  className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl hover:bg-slate-800 transition-colors uppercase tracking-widest text-xs"
+                >
+                  Cerrar Detalle
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }
