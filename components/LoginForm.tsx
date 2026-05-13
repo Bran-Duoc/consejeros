@@ -61,12 +61,18 @@ export default function LoginForm() {
           
           <div 
             className="p-5 xl:p-6 -ml-5 xl:-ml-6 rounded-[2rem] xl:rounded-[2.5rem] bg-white/5 border border-white/10"
-            style={{ backdropFilter: "blur(60px)", WebkitBackdropFilter: "blur(60px)" }}
+            style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
           >
-            <h1 className="text-3xl xl:text-5xl font-black mb-3 xl:mb-4 leading-tight drop-shadow-lg">
-              Conecta con tus <br />
-              <span className="text-indigo-400">Consejeros de Carrera.</span>
-            </h1>
+            <div className="mb-3 xl:mb-4 drop-shadow-lg flex flex-col gap-2">
+              <span className="text-white/80 text-xl xl:text-2xl font-bold uppercase tracking-tight">Conecta con tus</span>
+              <Image 
+                src="/logo.svg" 
+                alt="Consejeros de Carrera" 
+                width={200} 
+                height={60} 
+                className="h-auto brightness-0 invert opacity-90" 
+              />
+            </div>
             <p className="text-base xl:text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-4 xl:mb-5">
               El espacio seguro donde tus representantes te escuchan, te orientan y gestionan tus necesidades ante la sede.
             </p>
