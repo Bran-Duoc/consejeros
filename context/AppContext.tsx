@@ -135,7 +135,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         // Ping Supabase to check connectivity
         const { error: pingError } = await supabase.from('tickets').select('id').limit(1);
-        if (pingError) throw pingError;
+        
+        // Si hay error de ping, probamos de nuevo una vez antes de rendirnos
+        if (pingError) {
+           console.warn("Ping fallback attempt...");
+           const { error: retryError } = await supabase.from('tickets').select('id').limit(1);
+           if (retryError) throw retryError;
+        }
 
         const [dbTickets, dbAudit, dbSurveys, dbUsers] = await Promise.all([
           db.tickets.getAll(),
@@ -147,12 +153,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setTickets(dbTickets);
         setAudit(dbAudit);
         setSurveys(dbSurveys);
-        setAgents(dbUsers.length > 0 ? dbUsers : adminUsers);
-        setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         
+        // Solo actualizamos agents si hay datos nuevos y son diferentes
+        if (dbUsers.length > 0) {
+          setAgents(dbUsers);
+        }
+        
+        setSlaConfig(loadFromStorage(STORAGE_KEYS.sla, mockSLAConfig));
         setIsServerOnline(true);
       } catch (err) {
         console.error("Critical: Server is offline or connection failed:", err);
+        // Si estamos offline pero tenemos datos en memoria/local, no bloqueamos la app
+        // Pero marcamos que estamos en modo offline
         setIsServerOnline(false);
       } finally {
         setIsInitializing(false);
@@ -160,9 +172,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, [agents, toastAPI]);
+  }, []); // Solo al montar
 
 
+
+  // Monitor browser online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("Browser back online, checking server...");
+      // Re-fetch data or just set server online if ping works
+      supabase.from('tickets').select('id').limit(1).then(({ error }) => {
+        if (!error) setIsServerOnline(true);
+      });
+    };
+    const handleOffline = () => setIsServerOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Supabase Realtime — subscribe to ticket changes
   useEffect(() => {
@@ -373,10 +404,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isInitializing,
       }}
     >
-      {isInitializing ? null : !isServerOnline ? (
+      {isInitializing ? null : !isServerOnline && tickets.length === 0 ? (
         <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-brand-red-light flex items-center justify-center mb-6">
-            <Icon icon="lucide:server-off" className="w-10 h-10 text-brand-red" />
+          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mb-6">
+            <Icon icon="lucide:server-off" className="w-10 h-10 text-red-500" />
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Servidor no disponible</h2>
           <p className="text-slate-500 max-w-sm mb-8">No hemos podido establecer conexión con el sistema central. Por favor, verifica tu conexión a internet o intenta más tarde.</p>
@@ -390,6 +421,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ) : (
         <>
           {children}
+          <OfflineBanner isOnline={isServerOnline} />
           <ToastContainer toasts={toastAPI.toasts} onDismiss={toastAPI.dismiss} />
         </>
       )}
@@ -401,4 +433,29 @@ export function useApp(): AppState {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error("useApp must be used within AppProvider");
   return ctx;
+}
+
+function OfflineBanner({ isOnline }: { isOnline: boolean }) {
+  return (
+    <AnimatePresence>
+      {!isOnline && (
+        <motion.div
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] w-[calc(100%-3rem)] max-w-sm"
+        >
+          <div className="bg-slate-900 text-white rounded-2xl px-5 py-4 shadow-2xl border border-white/10 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-500 flex items-center justify-center shrink-0">
+              <Icon icon="lucide:wifi-off" className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold">Modo Offline</p>
+              <p className="text-[10px] text-white/60 font-medium leading-tight">Trabajando con datos locales. Algunas funciones pueden estar limitadas.</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }
