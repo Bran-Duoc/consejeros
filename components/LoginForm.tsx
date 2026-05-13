@@ -9,7 +9,6 @@ import { transitions } from "@/lib/transitions";
 
 // Sub-components
 import { HeroSection } from "./login/HeroSection";
-import { MobileInfo } from "./login/MobileInfo";
 import { GoogleAuthButton } from "./login/GoogleAuthButton";
 
 export default function LoginForm() {
