@@ -23,8 +23,8 @@ const getSimplifiedStatus = (status: TicketStatus) => {
 export default function StudentProfile() {
   const { tickets, user, role } = useApp();
 
-  // Filtrar solo los tickets del usuario logueado
-  const myTickets = tickets.filter((t) => t.createdBy === user?.email);
+  // Filtrar solo los tickets del usuario logueado (createdBy = user UUID)
+  const myTickets = tickets.filter((t) => t.createdBy === user?.id);
 
   return (
     <div className="min-h-screen bg-slate-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8">
