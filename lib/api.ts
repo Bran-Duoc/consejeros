@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel } from './data';
+import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel, AdminRole } from './data';
 
 // ============================================================
 // API Layer — Portal Hub del Consejo de Sede
@@ -333,7 +333,7 @@ export const db = {
     async getAll() {
       const { data, error } = await supabase.from('staff_users').select('*');
       if (!error && data) {
-        return data.map((u: any) => ({
+        return data.filter(u => !!u).map((u: any) => ({
           id: u.id,
           name: u.nombre || u.name || 'Staff',
           email: u.email,
@@ -343,12 +343,12 @@ export const db = {
       }
       const { data: userData, error: userError } = await supabase.from('users').select('*');
       if (userError) return [];
-      return (userData || []).map((u: any) => ({
+      return (userData || []).filter(u => !!u).map((u: any) => ({
         id: u.id,
-        name: u.nombre || u.name || u.email?.split('@')[0] || 'Usuario',
-        email: u.email,
-        role: u.rol || u.role || 'Estudiante',
-        department: u.departamento || u.department,
+        name: u.rol || 'Estudiante',
+        email: '', // La tabla public.users no tiene email, se saca de auth.users si fuera necesario
+        role: (u.rol as AdminRole) || 'Estudiante',
+        activeTickets: 0
       }));
     },
   },

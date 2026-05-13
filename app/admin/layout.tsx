@@ -235,11 +235,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {roleLabel}
               </span>
               <span className="text-xs text-slate-500 font-medium max-w-[150px] truncate">
-                {user?.email}
+                {user?.email || ""}
               </span>
             </div>
             <div className="w-9 h-9 rounded-xl bg-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm border border-indigo-400/20">
-               {user?.email?.[0].toUpperCase() ?? <Icon icon="lucide:user" className="w-5 h-5" />}
+               {user?.email ? user.email[0].toUpperCase() : <Icon icon="lucide:user" className="w-5 h-5" />}
             </div>
           </div>
         </header>

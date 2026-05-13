@@ -8,13 +8,13 @@ export const URGENCY_LEVELS = ["bajo", "medio", "alto", "critico"] as const;
 export type TicketStatus = "nuevo" | "pendiente" | "en_revision" | "escalado" | "resuelto";
 export type TicketCategory = typeof TICKET_CATEGORIES[number];
 export type UrgencyLevel = typeof URGENCY_LEVELS[number];
-export type UserRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
+export type AdminRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
+  role: AdminRole;
   avatar?: string;
   department?: string;
   activeTickets?: number;

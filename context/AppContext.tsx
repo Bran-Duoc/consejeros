@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import {
   Ticket, AuditEntry, Survey, SLAConfig, TicketStatus,
-  generateId, STORAGE_KEYS, loadFromStorage, User,
+  generateId, STORAGE_KEYS, loadFromStorage, User, AdminRole,
 } from "@/lib/data";
 import {
   mockTickets, mockAuditEntries, mockSurveys, mockSLAConfig, adminUsers
@@ -18,7 +18,6 @@ import { enqueueSubmission, startAutoSync } from "@/lib/offline-queue";
 import { useToast, type ToastAPI } from "@/lib/useToast";
 import { ToastContainer } from "@/components/Toast";
 
-export type AdminRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
 export interface UserProfile {
   id: string;
@@ -74,7 +73,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const syncUserAndRole = async (sessionUser: AuthUser | null) => {
       // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio (Solo para Google)
       const isGoogleLogin = sessionUser?.app_metadata?.provider === 'google';
-      if (sessionUser && isGoogleLogin && !sessionUser.email?.endsWith("@duocuc.cl")) {
+      const email = sessionUser?.email;
+      
+      if (sessionUser && isGoogleLogin && email && !email.endsWith("@duocuc.cl")) {
         await supabase.auth.signOut();
         setUser(null);
         setRole(null);
