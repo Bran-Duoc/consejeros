@@ -66,11 +66,11 @@ export default function LoginForm() {
             <div className="mb-3 xl:mb-6 drop-shadow-lg flex flex-col gap-2">
               <span className="text-white/90 text-xl xl:text-3xl font-bold uppercase tracking-tight">Conecta con tus</span>
               <Image 
-                src="/logo-white.svg" 
+                src="/logo.svg" 
                 alt="Consejeros de Carrera" 
                 width={280} 
                 height={80} 
-                className="h-auto invert brightness-[2]" 
+                className="h-auto" 
               />
             </div>
             <p className="text-base xl:text-lg text-white/90 max-w-md leading-relaxed drop-shadow-md font-medium mb-4 xl:mb-5">
