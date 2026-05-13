@@ -41,7 +41,7 @@ export default function StudentProfile() {
             <p className="text-slate-500 text-sm mt-1">{user?.email}</p>
           </div>
           <Link 
-            href="/form"
+            href="/"
             className="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-lg shadow-indigo-100 text-sm"
           >
             <Icon icon="lucide:plus" className="w-4 h-4" />
