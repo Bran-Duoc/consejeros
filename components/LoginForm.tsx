@@ -48,85 +48,88 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="h-full flex flex-col lg:flex-row overflow-hidden">
-      {/* Left Side: Hero Image — desktop only */}
-      <HeroSection />
+    <div className="h-full flex flex-col lg:flex-row relative bg-slate-900 overflow-hidden">
+      {/* Background (Hero) — Hidden text on mobile, full bg */}
+      <div className="lg:hidden absolute inset-0 z-0">
+        <Image
+          src="/login-welcome.png"
+          alt="Background"
+          fill
+          className="object-cover opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-indigo-950/80 via-transparent to-indigo-950/90" />
+      </div>
 
-      {/* Right Side: Login — always visible, centered */}
-      <div className="flex-1 flex flex-col justify-center items-center px-5 py-6 sm:p-8 lg:p-12 relative overflow-y-auto">
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <HeroSection />
+      </div>
+
+      {/* Right Side: Login — Centered with glassmorphism on mobile */}
+      <div className="flex-1 flex flex-col justify-center items-center px-5 py-8 lg:p-12 relative z-10 overflow-y-auto custom-scrollbar">
         <div className="w-full max-w-md">
-          {/* ── Mobile-only: Platform info ── */}
-          <MobileInfo />
-
-          {/* ── Desktop-only: Simple header ── */}
-          <motion.div
-            className="hidden lg:block text-center mb-5 sm:mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="flex justify-center mb-3 sm:mb-5">
-              <Image src="/logo.svg" alt="Logo Duoc UC" width={140} height={45} className="h-auto" />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-1 tracking-tight">Bienvenido</h2>
-            <p className="text-slate-500 font-medium text-sm">Inicia sesión con tu cuenta institucional</p>
-          </motion.div>
+          {/* Header for mobile only: Hero Content */}
+          <div className="lg:hidden mb-8 text-center">
+             <HeroSection />
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, ...transitions.spring }}
-            className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xl shadow-slate-200/60 border border-slate-100"
+            className="bg-white/95 backdrop-blur-xl lg:bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-2xl border border-white/20 lg:border-slate-100"
           >
+            {/* Desktop Logo */}
+            <div className="hidden lg:flex justify-center mb-6">
+              <Image src="/logo.svg" alt="Logo Duoc UC" width={160} height={50} className="h-auto" />
+            </div>
+
             <AnimatePresence>
               {errorMessage && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="mb-5 p-3 sm:p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3 overflow-hidden"
+                  className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-start gap-3 overflow-hidden"
                 >
                   <Icon icon="lucide:alert-circle" className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700 font-medium leading-relaxed">{errorMessage}</p>
+                  <p className="text-xs text-red-700 font-bold leading-relaxed">{errorMessage}</p>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Mobile: brief instruction */}
-            <p className="lg:hidden text-sm font-semibold text-slate-700 mb-3">
-              Inicia sesión con tu correo institucional
-            </p>
+            <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight lg:text-center">Bienvenido</h2>
+            <p className="text-slate-500 font-bold text-xs uppercase tracking-widest mb-6 lg:text-center">Portal de Gestión Hub</p>
 
             <GoogleAuthButton loading={loading} onClick={handleGoogleLogin} />
 
-            <div className="mt-5 pt-5 border-t border-slate-100 flex flex-col gap-3">
+            <div className="mt-8 pt-8 border-t border-slate-100 flex flex-col gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                  <Icon icon="lucide:lock" className="w-3.5 h-3.5" />
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:lock" className="w-4 h-4" />
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-normal">
-                  Acceso seguro mediante <strong>Microsoft SSO / Google Workspace</strong> institucional.
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Acceso seguro institucional mediante <strong>Google Workspace (@duocuc.cl)</strong>.
                 </p>
               </div>
               <div className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                  <Icon icon="lucide:info" className="w-3.5 h-3.5" />
+                <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+                  <Icon icon="lucide:shield-check" className="w-4 h-4" />
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 leading-normal">
-                  Tus datos personales están protegidos bajo la <strong>Ley 21.719</strong> y políticas de privacidad Duoc UC.
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Canal privado y confidencial. Tus datos están protegidos por la normativa de seguridad Duoc UC.
                 </p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="mt-5 sm:mt-8 text-center"
+            className="mt-8 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-widest">
-              © 2026 Sede Viña del Mar · HUB CONSEJEROS DE CARRERAS
+            <p className="text-[10px] text-white/50 lg:text-slate-400 font-bold uppercase tracking-widest">
+              © 2026 Sede Viña del Mar · HUB CONSEJEROS
             </p>
           </motion.div>
         </div>
