@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Ticket, AuditEntry, Survey, SLAConfig, TicketStatus,
   generateId, STORAGE_KEYS, loadFromStorage, User, AdminRole,
