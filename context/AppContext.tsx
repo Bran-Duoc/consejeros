@@ -14,6 +14,7 @@ import { supabase } from "@/lib/supabase";
 import { User as AuthUser } from "@supabase/supabase-js";
 import { Icon } from "@iconify/react";
 import { db } from "@/lib/api";
+import { enqueueSubmission, startAutoSync } from "@/lib/offline-queue";
 import { useToast, type ToastAPI } from "@/lib/useToast";
 import { ToastContainer } from "@/components/Toast";
 
@@ -157,7 +158,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     }
     loadData();
-  }, []);
+  }, [agents, toastAPI]);
+
+
 
   // Supabase Realtime — subscribe to ticket changes
   useEffect(() => {
@@ -228,6 +231,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
         toastAPI.success("¡Solicitud enviada exitosamente!");
         return newTicket;
       } catch (err: unknown) {
+        if (!navigator.onLine) {
+          enqueueSubmission(ticketToCreate);
+          const mockTicket = {
+            ...ticketToCreate,
+            id: `offline-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as Ticket;
+          setTickets((prev) => [mockTicket, ...prev]);
+          toastAPI.warning("Guardado offline. Se enviará automáticamente al reconectarte.");
+          return mockTicket;
+        }
+
         const message = err instanceof Error ? err.message : "Error al crear la solicitud.";
         console.error("Error creating ticket:", err);
         toastAPI.error(message);
@@ -236,6 +252,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     [slaConfig, agents, user, toastAPI]
   );
+
+  useEffect(() => {
+    if (isInitializing) return;
+
+    const stopSync = startAutoSync(async (data) => {
+      // Cast to the type addTicket expects
+      await addTicket(data as any);
+    }, (res) => {
+      if (res.success > 0) {
+        toastAPI.success(`Sincronizadas ${res.success} solicitudes pendientes.`);
+      }
+    });
+
+    return () => {
+      stopSync();
+    };
+  }, [isInitializing, addTicket, toastAPI]);
 
   const moveTicket = useCallback(
     async (ticketId: string, newStatus: TicketStatus) => {

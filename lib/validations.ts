@@ -5,10 +5,7 @@
 // ============================================================
 
 import { z } from "zod";
-
-// ---- Enum values as const arrays (consumed by Zod + UI) ----
-export const TICKET_CATEGORIES = ["academico", "infraestructura", "bienestar", "financiero", "otro"] as const;
-export const URGENCY_LEVELS = ["bajo", "medio", "alto", "critico"] as const;
+import { TICKET_CATEGORIES, URGENCY_LEVELS } from "@/lib/data";
 
 // ---- Sanitization helpers ----
 function stripDangerousChars(text: string): string {

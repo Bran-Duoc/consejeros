@@ -2,9 +2,12 @@
 // Types & Constants for Portal Hub del Consejo de Sede
 // ============================================================
 
+export const TICKET_CATEGORIES = ["academico", "infraestructura", "bienestar", "financiero", "otro"] as const;
+export const URGENCY_LEVELS = ["bajo", "medio", "alto", "critico"] as const;
+
 export type TicketStatus = "nuevo" | "pendiente" | "en_revision" | "escalado" | "resuelto";
-export type TicketCategory = "academico" | "infraestructura" | "bienestar" | "financiero" | "otro";
-export type UrgencyLevel = "bajo" | "medio" | "alto" | "critico";
+export type TicketCategory = typeof TICKET_CATEGORIES[number];
+export type UrgencyLevel = typeof URGENCY_LEVELS[number];
 export type UserRole = "Estudiante" | "Supervisor" | "Consejo" | "Admin TI" | "Admin_TI";
 
 export interface User {
