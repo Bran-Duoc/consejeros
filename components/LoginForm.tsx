@@ -96,10 +96,7 @@ export default function LoginForm() {
 
       {/* Right Side: Login — always visible, centered */}
       <div className="flex-1 flex flex-col justify-center items-center px-5 py-6 sm:p-8 lg:p-12 relative overflow-y-auto">
-        {/* Mobile logo */}
-        <div className="absolute top-4 left-5 sm:top-6 sm:left-8 lg:hidden">
-          <Image src="/logo.svg" alt="Logo Duoc UC" width={96} height={32} className="h-auto" />
-        </div>
+
 
         <div className="w-full max-w-md">
           {/* ── Mobile-only: Platform info ── */}
