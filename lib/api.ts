@@ -231,6 +231,26 @@ export const db = {
         return { id, status } as Ticket;
       });
     },
+
+    async update(id: string, updates: Partial<Ticket>): Promise<Ticket> {
+      return withRetry(async () => {
+        const dbData = mapTicketToDB(updates);
+        // Special case for assignedTo/status mappings
+        if (updates.status) dbData.estado = STATUS_TO_DB[updates.status] || updates.status;
+        if (updates.assignedTo) dbData.asignado_a = updates.assignedTo;
+
+        const { data, error } = await supabase
+          .from('tickets')
+          .update(dbData)
+          .eq('id', id)
+          .select()
+          .maybeSingle();
+
+        if (error) throw new Error(friendlyError(error));
+        if (data) return mapTicketFromDB(data);
+        return { id, ...updates } as any;
+      });
+    },
   },
 
   audit: {

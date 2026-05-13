@@ -12,6 +12,7 @@
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@iconify/react": "^6.0.2",
+    "@react-email/components": "^1.0.12",
     "@serwist/next": "^9.5.11",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
@@ -21,6 +22,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.75.0",
+    "resend": "^6.12.3",
     "serwist": "^9.5.11",
     "zod": "^4.3.6"
   },

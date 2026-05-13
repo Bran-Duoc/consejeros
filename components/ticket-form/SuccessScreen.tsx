@@ -51,18 +51,33 @@ export function SuccessScreen({ ticketId, onNewTicket }: SuccessScreenProps) {
         >
           Folio: <code className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-800">{ticketId?.slice(0, 8)}</code>
         </motion.p>
-        <motion.button
-          type="button"
-          onClick={onNewTicket}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="px-6 py-2.5 rounded-xl bg-brand-blue text-white text-sm font-semibold shadow-md shadow-brand-blue/20 hover:bg-brand-blue-dark transition-colors"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          Nueva Solicitud
-        </motion.button>
+        <div className="flex flex-col gap-2">
+          <motion.button
+            type="button"
+            onClick={onNewTicket}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-md shadow-indigo-100 hover:bg-indigo-700 transition-colors"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            Nueva Solicitud
+          </motion.button>
+          
+          <motion.button
+            type="button"
+            onClick={() => window.location.href = "/perfil"}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full py-3 rounded-xl bg-slate-50 text-slate-600 text-sm font-bold border border-slate-100 hover:bg-slate-100 transition-colors"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            Ver mis solicitudes
+          </motion.button>
+        </div>
       </motion.div>
     </div>
   );

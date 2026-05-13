@@ -46,6 +46,7 @@ interface AppState {
   moveTicket: (ticketId: string, newStatus: TicketStatus) => Promise<void>;
   addAuditEntry: (entry: AuditEntry) => void;
   addSurvey: (survey: Omit<Survey, "id" | "createdAt">) => Promise<void>;
+  updateTicket: (ticketId: string, updates: Partial<Ticket>) => Promise<void>;
   getTicketsByStatus: (status: TicketStatus) => Ticket[];
   getAuditForTicket: (ticketId: string) => AuditEntry[];
   isServerOnline: boolean;
@@ -294,6 +295,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [user, tickets, toastAPI]
   );
 
+  const updateTicket = useCallback(
+    async (ticketId: string, updates: Partial<Ticket>) => {
+      // Optimistic update
+      const previousTickets = tickets;
+      setTickets((prev) => prev.map((t) => (t.id === ticketId ? { ...t, ...updates } : t)));
+
+      try {
+        const updatedTicket = await db.tickets.update(ticketId, updates);
+        setTickets((prev) => prev.map((t) => (t.id === ticketId ? updatedTicket : t)));
+        
+        // Log assignment if changed
+        if (updates.assignedTo) {
+          const auditEntry = logAssignment(ticketId, updates.assignedTo, "Manual or Auto-assignment");
+          await db.audit.create(auditEntry);
+          setAudit((prev) => [...prev, auditEntry]);
+        }
+        
+        // Log status if changed
+        if (updates.status) {
+          const auditEntry = logStatusChange(ticketId, (user?.id || null) as any, user?.email || "Sistema", "status_update", updates.status);
+          await db.audit.create(auditEntry);
+          setAudit((prev) => [...prev, auditEntry]);
+        }
+      } catch (err: unknown) {
+        setTickets(previousTickets);
+        console.error("Error updating ticket:", err);
+      }
+    },
+    [user, tickets]
+  );
+
   const addSurvey = useCallback(async (surveyData: Omit<Survey, "id" | "createdAt">) => {
     try {
       await db.surveys.create(surveyData);
@@ -333,6 +365,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         moveTicket,
         addAuditEntry,
         addSurvey,
+        updateTicket,
         getTicketsByStatus,
         getAuditForTicket,
         isServerOnline,
