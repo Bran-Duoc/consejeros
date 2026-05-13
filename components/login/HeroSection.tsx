@@ -22,9 +22,9 @@ export function HeroSection() {
         className="object-cover"
         priority
       />
-      <div className="absolute bottom-8 left-8 right-8 xl:bottom-12 xl:left-12 xl:right-12 z-20 text-white">
+      <div className="absolute inset-0 z-20 flex flex-col justify-end p-8 xl:p-12 text-white">
         <motion.div
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4 xl:mb-6"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-4 xl:mb-6 w-fit"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -34,7 +34,7 @@ export function HeroSection() {
         </motion.div>
 
         <motion.div
-          className="p-5 xl:p-6 -ml-5 xl:-ml-6 rounded-[2rem] xl:rounded-[2.5rem] bg-white/5 border border-white/10"
+          className="p-5 xl:p-6 rounded-[2rem] xl:rounded-[2.5rem] bg-white/5 border border-white/10"
           style={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
