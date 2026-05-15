@@ -26,7 +26,7 @@ export default function AdminLoginPage() {
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
     if (!agentId || !pin) {
-      setErrorMessage("Identificación requerida");
+      setErrorMessage("Ingresa tus credenciales");
       return;
     }
 
@@ -34,7 +34,6 @@ export default function AdminLoginPage() {
     setErrorMessage(null);
 
     try {
-      // Usamos una convención interna: agent_id + @staff.internal
       const { error } = await supabase.auth.signInWithPassword({
         email: `${agentId.toLowerCase()}@staff.internal`,
         password: pin,
@@ -43,7 +42,7 @@ export default function AdminLoginPage() {
       if (error) throw error;
       router.push("/admin");
     } catch (error: any) {
-      setErrorMessage("Acceso denegado: Credenciales inválidas");
+      setErrorMessage("Credenciales no válidas");
     } finally {
       setLoading(false);
     }
@@ -54,59 +53,56 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#0B0D11] p-4 font-mono">
-      <div className="w-full max-w-sm relative">
-        {/* Glow effect */}
-        <div className="absolute -inset-1 bg-indigo-500/20 blur-2xl rounded-full opacity-50" />
-        
-        <div className="relative bg-[#161922] border border-white/5 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden">
+    <main className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-2xl shadow-slate-200/60 border border-slate-100">
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-4">
-              <Icon icon="lucide:shield-alert" className="w-6 h-6" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 mb-6 shadow-sm border border-indigo-100">
+              <Icon icon="lucide:user-check" className="w-8 h-8" />
             </div>
-            <h1 className="text-white text-lg font-bold tracking-tight uppercase">Terminal de Acceso</h1>
-            <p className="text-slate-500 text-[10px] mt-1 uppercase tracking-widest font-bold">Protocolo de Staff Análogo</p>
+            <h1 className="text-slate-900 text-2xl font-black tracking-tight">Acceso Staff</h1>
+            <p className="text-slate-500 text-sm mt-2 font-medium">Portal de administración interna</p>
           </div>
 
           <AnimatePresence>
             {errorMessage && (
               <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 flex items-center gap-3 text-red-600"
               >
-                <Icon icon="lucide:octagon-alert" className="w-4 h-4 text-red-500" />
-                <p className="text-[10px] text-red-400 font-bold uppercase">{errorMessage}</p>
+                <Icon icon="lucide:alert-circle" className="w-5 h-5 shrink-0" />
+                <p className="text-xs font-bold uppercase tracking-wide">{errorMessage}</p>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-8">
             {/* Agent ID */}
-            <div className="space-y-2">
-              <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-1">Código de Agente</label>
+            <div className="space-y-3">
+              <label className="text-[11px] text-slate-400 font-bold uppercase tracking-widest ml-1">Código Identificador</label>
               <div className="relative group">
                 <input
                   type="text"
                   value={agentId}
                   onChange={(e) => setAgentId(e.target.value)}
-                  placeholder="ID-000"
-                  className="w-full bg-[#0B0D11] border border-white/10 rounded-2xl px-5 py-4 text-indigo-400 text-sm focus:border-indigo-500/50 outline-none transition-all placeholder:text-slate-700"
+                  placeholder="ID de usuario"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 text-sm focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400"
                 />
-                <Icon icon="lucide:user" className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-700 group-focus-within:text-indigo-500" />
+                <Icon icon="lucide:hash" className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300 group-focus-within:text-indigo-500" />
               </div>
             </div>
 
             {/* PIN Display */}
-            <div className="space-y-2">
-              <label className="text-[10px] text-slate-500 font-bold uppercase tracking-widest ml-1">Pin de Seguridad</label>
+            <div className="space-y-3">
+              <label className="text-[11px] text-slate-400 font-bold uppercase tracking-widest ml-1">Pin de Seguridad</label>
               <div className="flex justify-between gap-2">
                 {[...Array(6)].map((_, i) => (
                   <div 
                     key={i} 
-                    className={`flex-1 h-12 rounded-xl border flex items-center justify-center transition-all ${
-                      pin.length > i ? "border-indigo-500 bg-indigo-500/10 text-white" : "border-white/5 bg-[#0B0D11]"
+                    className={`flex-1 h-14 rounded-2xl border-2 flex items-center justify-center transition-all ${
+                      pin.length > i ? "border-indigo-500 bg-white text-indigo-600 shadow-sm" : "border-slate-100 bg-slate-50"
                     }`}
                   >
                     {pin.length > i ? (showPin ? pin[i] : "•") : ""}
@@ -115,8 +111,8 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Analog Keypad */}
-            <div className="grid grid-cols-3 gap-2 pt-4">
+            {/* Modern Keypad */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "DEL"].map((key) => (
                 <button
                   key={key}
@@ -126,13 +122,13 @@ export default function AdminLoginPage() {
                     else if (key === "DEL") setPin(prev => prev.slice(0, -1));
                     else addDigit(key);
                   }}
-                  className={`h-12 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center ${
-                    key === "C" ? "text-red-400 hover:bg-red-500/10" : 
-                    key === "DEL" ? "text-slate-400 hover:bg-white/5" :
-                    "text-white bg-white/5 hover:bg-white/10"
+                  className={`h-14 rounded-2xl text-lg font-bold transition-all active:scale-90 flex items-center justify-center ${
+                    key === "C" ? "text-slate-400 hover:bg-slate-100" : 
+                    key === "DEL" ? "text-slate-400 hover:bg-slate-100" :
+                    "text-slate-700 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 border border-transparent hover:border-indigo-100 shadow-sm"
                   }`}
                 >
-                  {key === "DEL" ? <Icon icon="lucide:delete" /> : key}
+                  {key === "DEL" ? <Icon icon="lucide:delete" className="w-5 h-5" /> : key}
                 </button>
               ))}
             </div>
@@ -141,25 +137,26 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold uppercase tracking-widest text-[11px] transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 mt-4 flex items-center justify-center gap-2"
+              className="w-full h-16 bg-slate-900 hover:bg-indigo-600 text-white rounded-2xl font-bold uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-900/10 disabled:opacity-50 mt-6 flex items-center justify-center gap-3 active:scale-[0.98]"
             >
               {loading ? (
-                <Icon icon="lucide:loader-2" className="w-5 h-5 animate-spin" />
+                <Icon icon="lucide:loader-2" className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  <Icon icon="lucide:key" className="w-4 h-4" />
-                  Autorizar Acceso
+                  Verificar Acceso
+                  <Icon icon="lucide:chevron-right" className="w-5 h-5" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <button 
               onClick={() => router.push("/")}
-              className="text-[9px] text-slate-600 hover:text-slate-400 font-bold uppercase tracking-[0.2em] transition-colors"
+              className="text-[11px] text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
             >
-              Volver al Portal Civil
+              <Icon icon="lucide:arrow-left" className="w-3 h-3" />
+              Volver al inicio
             </button>
           </div>
         </div>
