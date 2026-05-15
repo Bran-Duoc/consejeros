@@ -42,7 +42,7 @@ export function FormHeader({ step, isOffline, onSignOut }: FormHeaderProps) {
           title="Terminal de Staff"
         >
           <Icon icon="lucide:terminal" className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Acceso Análogo</span>
+          <span className="hidden md:inline">Administrador</span>
         </Link>
         <button
           type="button"

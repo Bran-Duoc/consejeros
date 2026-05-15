@@ -34,7 +34,7 @@ export default function StudentProfile() {
           className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 hover:text-indigo-400 transition-all uppercase tracking-[0.2em] px-4 py-2 rounded-xl bg-white border border-slate-100 shadow-sm hover:border-indigo-500/20"
         >
           <Icon icon="lucide:terminal" className="w-3.5 h-3.5" />
-          Acceso Staff Análogo
+          Acceso Administrador
         </Link>
       </div>
       <div className="max-w-4xl mx-auto">

@@ -67,7 +67,7 @@ export default function LoginForm() {
             className="flex items-center gap-2 text-[9px] font-black text-slate-500/50 hover:text-indigo-400 uppercase tracking-[0.2em] transition-all px-4 py-2 rounded-xl bg-white/5 border border-white/5 hover:border-indigo-500/20 hover:bg-indigo-500/5 group backdrop-blur-sm"
           >
             <Icon icon="lucide:terminal" className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
-            Acceso Staff Análogo
+            Acceso Administrador
           </Link>
         </div>
 
