@@ -30,11 +30,11 @@ export default function StudentProfile() {
     <div className="min-h-screen bg-slate-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8 relative">
       <div className="absolute top-6 right-6">
         <Link 
-          href="/admin" 
-          className="flex items-center gap-1.5 text-[10px] font-bold text-slate-300 hover:text-indigo-500 transition-all uppercase tracking-widest px-3 py-2 rounded-full hover:bg-white border border-transparent hover:border-slate-100 shadow-sm sm:shadow-none"
+          href="/admin/login" 
+          className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 hover:text-indigo-400 transition-all uppercase tracking-[0.2em] px-4 py-2 rounded-xl bg-white border border-slate-100 shadow-sm hover:border-indigo-500/20"
         >
-          <Icon icon="lucide:settings" className="w-3.5 h-3.5" />
-          Administración
+          <Icon icon="lucide:terminal" className="w-3.5 h-3.5" />
+          Acceso Staff Análogo
         </Link>
       </div>
       <div className="max-w-4xl mx-auto">
