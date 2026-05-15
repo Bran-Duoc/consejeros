@@ -21,7 +21,7 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, user, tickets } = useApp();
+  const { role, user, tickets, isInitializing } = useApp();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdKOpen, setCmdKOpen] = useState(false);
@@ -56,10 +56,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = require("next/navigation").useRouter();
 
   useEffect(() => {
-    if (role === "Estudiante") {
+    if (isInitializing) return;
+
+    if (!user) {
+      router.push("/admin/login");
+    } else if (role === "Estudiante") {
       router.push("/perfil");
     }
-  }, [role, router]);
+  }, [user, role, router, isInitializing]);
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.exact) return pathname === item.href;
@@ -71,12 +75,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <div className="min-h-screen bg-slate-50">{children}</div>;
   }
 
-  // Si el usuario no tiene rol aún (cargando) o es estudiante, no mostrar el contenido del panel.
-  // El middleware ya se encarga de redirigir si no hay usuario del todo.
-  if (!role || role === "Estudiante") {
+  // Si estamos cargando o no hay usuario/rol autorizado, mostrar loader
+  if (isInitializing || !user || !role || role === "Estudiante") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Icon icon="lucide:loader-2" className="w-8 h-8 animate-spin text-indigo-600" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+          <Icon icon="lucide:shield-check" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-indigo-600" />
+        </div>
+        <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Verificando Credenciales</p>
       </div>
     );
   }
