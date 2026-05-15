@@ -214,7 +214,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main content */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"}`}>
+      <div className={`flex-1 flex flex-col min-h-[100dvh] transition-all duration-300 ${collapsed ? "lg:ml-[72px]" : "lg:ml-[260px]"}`}>
         {/* Topbar */}
         <header className="hidden lg:flex h-16 border-b border-border bg-white items-center justify-between px-4 lg:px-8 sticky top-0 z-30">
           <button
@@ -245,7 +245,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         <main className="flex-1 pt-14 lg:pt-0 overflow-y-auto">
-          <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+          <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">{children}</div>
         </main>
       </div>
 

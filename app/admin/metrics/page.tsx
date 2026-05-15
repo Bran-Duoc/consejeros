@@ -1,20 +1,31 @@
 "use client";
 
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
 import { categoryLabels, TicketCategory, urgencyLabels, Ticket } from "@/lib/data";
 import { Icon } from "@iconify/react";
 
 // ---- Canvas Bar Chart ----
-function BarChart({ data, width = 500, height = 260 }: {
+function BarChart({ data, height = 260 }: {
   data: { label: string; value: number; color: string }[];
-  width?: number; height?: number;
+  height?: number;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) setWidth(entries[0].contentRect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || width === 0) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -34,7 +45,7 @@ function BarChart({ data, width = 500, height = 260 }: {
     const chartHeight = chartBottom - chartTop;
 
     // Grid lines
-    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.strokeStyle = "rgba(0,0,0,0.04)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = chartTop + (chartHeight / 4) * i;
@@ -44,7 +55,7 @@ function BarChart({ data, width = 500, height = 260 }: {
       ctx.stroke();
 
       // Y-axis labels
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.fillStyle = "rgba(15, 23, 42, 0.3)";
       ctx.font = "10px system-ui";
       ctx.textAlign = "right";
       ctx.fillText(Math.round(max - (max / 4) * i).toString(), 35, y + 4);
@@ -60,8 +71,9 @@ function BarChart({ data, width = 500, height = 260 }: {
       const y = chartBottom - barHeight;
 
       // Bar shadow
-      ctx.fillStyle = "rgba(0,0,0,0.2)";
+      ctx.fillStyle = "rgba(0,0,0,0.05)";
       ctx.beginPath();
+      // @ts-ignore
       ctx.roundRect(x + 2, y + 2, barWidth, barHeight, [6, 6, 0, 0]);
       ctx.fill();
 
@@ -71,24 +83,29 @@ function BarChart({ data, width = 500, height = 260 }: {
       gradient.addColorStop(1, d.color + "66");
       ctx.fillStyle = gradient;
       ctx.beginPath();
+      // @ts-ignore
       ctx.roundRect(x, y, barWidth, barHeight, [6, 6, 0, 0]);
       ctx.fill();
 
       // Value on top
-      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
       ctx.font = "bold 11px system-ui";
       ctx.textAlign = "center";
       ctx.fillText(d.value.toString(), x + barWidth / 2, y - 6);
 
       // Label
-      ctx.fillStyle = "rgba(255,255,255,0.25)";
+      ctx.fillStyle = "rgba(15, 23, 42, 0.4)";
       ctx.font = "9px system-ui";
       const labelText = (d.label || "N/A").toString();
       ctx.fillText(labelText.slice(0, 8), x + barWidth / 2, chartBottom + 16);
     });
   }, [data, width, height]);
 
-  return <canvas ref={canvasRef} className="w-full max-w-full" />;
+  return (
+    <div ref={containerRef} className="w-full">
+      <canvas ref={canvasRef} className="block" />
+    </div>
+  );
 }
 
 // ---- Canvas Donut Chart ----
@@ -96,8 +113,22 @@ function DonutChart({ data, size = 200 }: {
   data: { label: string; value: number; color: string }[];
   size?: number;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  const [currentSize, setCurrentSize] = useState(size);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        const newSize = Math.min(size, entries[0].contentRect.width);
+        setCurrentSize(newSize);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [size]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -106,16 +137,16 @@ function DonutChart({ data, size = 200 }: {
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
+    canvas.width = currentSize * dpr;
+    canvas.height = currentSize * dpr;
     ctx.scale(dpr, dpr);
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
+    canvas.style.width = `${currentSize}px`;
+    canvas.style.height = `${currentSize}px`;
 
-    ctx.clearRect(0, 0, size, size);
-    const cx = size / 2;
-    const cy = size / 2;
-    const radius = size / 2 - 10;
+    ctx.clearRect(0, 0, currentSize, currentSize);
+    const cx = currentSize / 2;
+    const cy = currentSize / 2;
+    const radius = currentSize / 2 - 10;
     const innerRadius = radius * 0.6;
 
     let startAngle = -Math.PI / 2;
@@ -132,17 +163,17 @@ function DonutChart({ data, size = 200 }: {
     });
 
     // Center text
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.font = "bold 24px system-ui";
     ctx.textAlign = "center";
     ctx.fillText(total.toString(), cx, cy + 4);
-    ctx.fillStyle = "rgba(255,255,255,0.25)";
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
     ctx.font = "10px system-ui";
     ctx.fillText("total", cx, cy + 18);
-  }, [data, size, total]);
+  }, [data, currentSize, total]);
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div ref={containerRef} className="flex flex-col items-center gap-4 w-full">
       <canvas ref={canvasRef} />
       <div className="flex flex-wrap gap-3 justify-center">
         {data.map((d) => (
@@ -157,15 +188,26 @@ function DonutChart({ data, size = 200 }: {
 }
 
 // ---- Trend Line Chart ----
-function TrendLine({ data, width = 500, height = 180, color = "#5483BF" }: {
+function TrendLine({ data, height = 180, color = "#5483BF" }: {
   data: number[];
-  width?: number; height?: number; color?: string;
+  height?: number; color?: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) setWidth(entries[0].contentRect.width);
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || width === 0) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -187,7 +229,7 @@ function TrendLine({ data, width = 500, height = 180, color = "#5483BF" }: {
     const chartHeight = chartBottom - chartTop;
 
     // Grid
-    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.strokeStyle = "rgba(0,0,0,0.04)";
     ctx.lineWidth = 1;
     for (let i = 0; i <= 3; i++) {
       const y = chartTop + (chartHeight / 3) * i;
@@ -237,7 +279,7 @@ function TrendLine({ data, width = 500, height = 180, color = "#5483BF" }: {
       ctx.fill();
       ctx.beginPath();
       ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = "#0F1117";
+      ctx.fillStyle = "#ffffff";
       ctx.fill();
     });
 
@@ -245,14 +287,18 @@ function TrendLine({ data, width = 500, height = 180, color = "#5483BF" }: {
     const labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     data.forEach((_, i) => {
       const x = 30 + i * stepX;
-      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.fillStyle = "rgba(0,0,0,0.3)";
       ctx.font = "9px system-ui";
       ctx.textAlign = "center";
       ctx.fillText(labels[i % 7], x, chartBottom + 16);
     });
   }, [data, width, height, color]);
 
-  return <canvas ref={canvasRef} className="w-full max-w-full" />;
+  return (
+    <div ref={containerRef} className="w-full">
+      <canvas ref={canvasRef} className="block" />
+    </div>
+  );
 }
 
 // ---- KPI Card ----
@@ -369,11 +415,11 @@ export default function MetricsPage() {
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="rounded-2xl bg-surface-card border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Icon icon="lucide:bar-chart-2" className="text-indigo-600" /> Tickets por Categoría</h3>
-          <BarChart data={catData} width={440} height={240} />
+          <BarChart data={catData} height={240} />
         </div>
         <div className="rounded-2xl bg-surface-card border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Icon icon="lucide:line-chart" className="text-indigo-600" /> Tendencia Semanal</h3>
-          <TrendLine data={weeklyTrend} width={440} height={200} color="#5483BF" />
+          <TrendLine data={weeklyTrend} height={200} color="#5483BF" />
         </div>
       </div>
 
@@ -409,14 +455,14 @@ export default function MetricsPage() {
         <div className="rounded-2xl bg-surface-card border border-border p-5 flex flex-col items-center">
           <h3 className="text-sm font-semibold text-foreground mb-4 self-start flex items-center gap-2"><Icon icon="lucide:star" className="text-status-warning" /> Distribución CSAT</h3>
           {csatDistribution.length > 0 ? (
-            <DonutChart data={csatDistribution} size={200} />
+            <DonutChart data={csatDistribution} />
           ) : (
             <div className="text-foreground text-sm py-8">Sin datos de encuestas</div>
           )}
         </div>
         <div className="rounded-2xl bg-surface-card border border-border p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2"><Icon icon="lucide:trending-down" className="text-indigo-500" /> Tendencia CSAT</h3>
-          <TrendLine data={csatTrend} width={440} height={200} color="#A680BF" />
+          <TrendLine data={csatTrend} height={200} color="#A680BF" />
         </div>
       </div>
     </div>

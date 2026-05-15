@@ -105,26 +105,28 @@ export default function TicketDetail() {
               <Icon icon="lucide:activity" className="text-indigo-500" />
               Estado del Proceso Interno
             </h3>
-            <div className="flex items-center justify-between relative">
-              <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0" />
-              {ADMIN_STEPS.map((s, idx) => (
-                <button
-                  key={s.id}
-                  onClick={() => handleStepComplete(idx)}
-                  className={`relative z-10 flex flex-col items-center gap-2 group`}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border-4 ${
-                    idx <= activeStep 
-                      ? "bg-indigo-600 border-indigo-100 text-white shadow-lg" 
-                      : "bg-white border-slate-50 text-slate-300"
-                  }`}>
-                    <Icon icon={s.icon} className="w-5 h-5" />
-                  </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-tight ${idx <= activeStep ? "text-indigo-600" : "text-slate-400"}`}>
-                    {s.label}
-                  </span>
-                </button>
-              ))}
+            <div className="overflow-x-auto pb-4 -mx-2 px-2 custom-scrollbar">
+              <div className="flex items-center justify-between relative min-w-[500px] sm:min-w-0">
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0" />
+                {ADMIN_STEPS.map((s, idx) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleStepComplete(idx)}
+                    className={`relative z-10 flex flex-col items-center gap-2 group`}
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border-4 ${
+                      idx <= activeStep 
+                        ? "bg-indigo-600 border-indigo-100 text-white shadow-lg" 
+                        : "bg-white border-slate-50 text-slate-300"
+                    }`}>
+                      <Icon icon={s.icon} className="w-5 h-5" />
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase tracking-tight ${idx <= activeStep ? "text-indigo-600" : "text-slate-400"}`}>
+                      {s.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

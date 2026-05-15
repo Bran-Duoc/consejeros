@@ -53,7 +53,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="h-full flex flex-col lg:flex-row overflow-hidden">
+    <div className="h-[100dvh] flex flex-col lg:flex-row overflow-hidden">
       {/* Left Side: Hero Image — desktop only */}
       <HeroSection />
 

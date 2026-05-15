@@ -41,7 +41,10 @@
 }
 
 html, body {
-  height: 100dvh;
+  min-height: 100dvh;
+  /* Fix for iOS 100vh bug */
+  height: -webkit-fill-available;
+  scroll-behavior: smooth;
 }
 
 /* Public pages: hide scrollbar visually but allow scroll */

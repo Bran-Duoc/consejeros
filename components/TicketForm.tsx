@@ -208,7 +208,7 @@ export default function TicketForm() {
 
   // ── Form Shell ──
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-[100dvh] flex flex-col overflow-hidden">
       {/* Fixed Header */}
       <div className="shrink-0 px-4 sm:px-6 py-3 border-b border-slate-100 bg-white/90 backdrop-blur-sm">
         <FormHeader step={step} isOffline={isOffline} onSignOut={handleSignOut} />
