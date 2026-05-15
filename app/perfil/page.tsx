@@ -21,7 +21,22 @@ const getSimplifiedStatus = (status: TicketStatus) => {
 };
 
 export default function StudentProfile() {
-  const { tickets, user, role } = useApp();
+  const { tickets, user, isInitializing } = useApp();
+  const router = require("next/navigation").useRouter();
+
+  React.useEffect(() => {
+    if (!isInitializing && !user) {
+      router.push("/");
+    }
+  }, [user, isInitializing, router]);
+
+  if (isInitializing || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-10 h-10 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // Filtrar solo los tickets del usuario logueado (createdBy = user UUID)
   const myTickets = tickets.filter((t) => t.createdBy === user?.id);
