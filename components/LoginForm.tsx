@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,6 +60,16 @@ export default function LoginForm() {
 
       {/* Right Side: Login */}
       <div className="flex-1 flex flex-col relative overflow-y-auto custom-scrollbar">
+        {/* Subtle Admin Link */}
+        <div className="absolute top-4 right-4 z-[60]">
+          <Link 
+            href="/admin" 
+            className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-widest transition-all px-3 py-2 rounded-full hover:bg-indigo-50/50 group"
+          >
+            <Icon icon="lucide:settings" className="w-3 h-3 transition-transform group-hover:rotate-45" />
+            Administración
+          </Link>
+        </div>
 
         {/* ── MOBILE: Full-bleed hero background ── */}
         <div className="lg:hidden relative">

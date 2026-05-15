@@ -36,6 +36,14 @@ export function FormHeader({ step, isOffline, onSignOut }: FormHeaderProps) {
             <span className="hidden sm:inline">Sin conexión</span>
           </div>
         )}
+        <Link 
+          href="/admin" 
+          className="flex items-center gap-1.5 text-[10px] font-bold text-slate-300 hover:text-indigo-500 transition-all px-2 py-1.5"
+          title="Panel de Administración"
+        >
+          <Icon icon="lucide:settings" className="w-3.5 h-3.5" />
+          <span className="hidden md:inline uppercase tracking-widest">Admin</span>
+        </Link>
         <button
           type="button"
           onClick={onSignOut}

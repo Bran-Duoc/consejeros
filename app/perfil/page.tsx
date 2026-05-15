@@ -27,7 +27,16 @@ export default function StudentProfile() {
   const myTickets = tickets.filter((t) => t.createdBy === user?.id);
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 pt-20 pb-12 px-4 sm:px-6 lg:px-8 relative">
+      <div className="absolute top-6 right-6">
+        <Link 
+          href="/admin" 
+          className="flex items-center gap-1.5 text-[10px] font-bold text-slate-300 hover:text-indigo-500 transition-all uppercase tracking-widest px-3 py-2 rounded-full hover:bg-white border border-transparent hover:border-slate-100 shadow-sm sm:shadow-none"
+        >
+          <Icon icon="lucide:settings" className="w-3.5 h-3.5" />
+          Administración
+        </Link>
+      </div>
       <div className="max-w-4xl mx-auto">
         
         {/* Header */}
