@@ -21,7 +21,7 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, user, tickets, isInitializing } = useApp();
+  const { role, user, tickets, isInitializing, isAuthLoading } = useApp();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cmdKOpen, setCmdKOpen] = useState(false);
@@ -56,14 +56,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = require("next/navigation").useRouter();
 
   useEffect(() => {
-    if (isInitializing) return;
+    if (isInitializing || isAuthLoading) return;
 
     if (!user) {
       router.push("/admin/login");
     } else if (role === "Estudiante") {
       router.push("/perfil");
     }
-  }, [user, role, router, isInitializing]);
+  }, [user, role, router, isInitializing, isAuthLoading]);
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.exact) return pathname === item.href;
@@ -76,7 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   // Si estamos cargando o no hay usuario/rol autorizado, mostrar loader
-  if (isInitializing || !user || !role || role === "Estudiante") {
+  if (isInitializing || isAuthLoading || !user || !role || role === "Estudiante") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
         <div className="relative">

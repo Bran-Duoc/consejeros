@@ -51,6 +51,7 @@ interface AppState {
   getAuditForTicket: (ticketId: string) => AuditEntry[];
   isServerOnline: boolean;
   isInitializing: boolean;
+  isAuthLoading: boolean;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -69,9 +70,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const toastAPI = useToast();
 
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
   // Sync Auth State & Fetch Role
   useEffect(() => {
     const syncUserAndRole = async (sessionUser: AuthUser | null) => {
+      setIsAuthLoading(true);
       // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio (Solo para Google)
       const isGoogleLogin = sessionUser?.app_metadata?.provider === 'google';
       const email = sessionUser?.email;
@@ -80,13 +84,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         await supabase.auth.signOut();
         setUser(null);
         setRole(null);
+        setIsAuthLoading(false);
         window.location.href = "/login?error=invalid_domain";
         return;
       }
 
       setUser(sessionUser);
       if (sessionUser) {
-        // Primero intentamos buscar en staff_users
         const { data: staffData, error: staffError } = await supabase
           .from("staff_users")
           .select("*")
@@ -97,7 +101,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
           setRole(staffData.rol as AdminRole);
           setProfile(staffData);
         } else {
-          // Si no es staff, buscamos en users (estudiantes)
           const { data: userData, error: userError } = await supabase
             .from("users")
             .select("*")
@@ -108,7 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             setRole(userData.rol as AdminRole);
             setProfile(userData);
           } else {
-            setRole("Estudiante"); // Fallback
+            setRole("Estudiante");
             setProfile(null);
           }
         }
@@ -116,6 +119,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setRole(null);
         setProfile(null);
       }
+      setIsAuthLoading(false);
     };
 
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -403,6 +407,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         getAuditForTicket,
         isServerOnline,
         isInitializing,
+        isAuthLoading,
       }}
     >
       {isInitializing ? null : !isServerOnline && tickets.length === 0 ? (
