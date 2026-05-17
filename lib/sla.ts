@@ -45,8 +45,8 @@ export function calculateSLAStatus(slaDeadline: string): SLAStatus {
     bgColor = "rgba(242, 168, 29, 0.1)";
   } else {
     level = "ok";
-    color = "#B7D984";
-    bgColor = "rgba(183, 217, 132, 0.1)";
+    color = "#10b981";
+    bgColor = "rgba(16, 185, 129, 0.1)";
   }
 
   return {

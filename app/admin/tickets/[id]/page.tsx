@@ -171,7 +171,7 @@ export default function TicketDetail() {
                     <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Resuelto a Tiempo</span>
                   ) : (
                     <span style={{ color: sla.color }} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-sm">
-                      {sla.remainingFormatted} restantes
+                      {sla.remainingFormatted}
                     </span>
                   )}
                 </div>
