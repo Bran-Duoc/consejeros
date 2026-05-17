@@ -15,6 +15,22 @@ export default function AdminLoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPin, setShowPin] = useState(false);
 
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  const [bypassDisabled, setBypassDisabled] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      setIsLocalhost(isLocal);
+      setBypassDisabled(localStorage.getItem("localhost_bypass_disabled") === "true");
+    }
+  }, []);
+
+  const handleEnableBypass = () => {
+    localStorage.removeItem("localhost_bypass_disabled");
+    window.location.reload();
+  };
+
   useEffect(() => {
     if (user && role && role !== "Estudiante") {
       router.push("/admin");
@@ -150,15 +166,25 @@ export default function AdminLoginPage() {
             </button>
           </form>
 
-          <div className="mt-10 text-center">
-            <button 
-              onClick={() => router.push("/")}
-              className="text-[11px] text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
-            >
-              <Icon icon="lucide:arrow-left" className="w-3 h-3" />
-              Volver al inicio
-            </button>
-          </div>
+           <div className="mt-10 text-center space-y-4">
+             {isLocalhost && bypassDisabled && (
+               <button
+                 type="button"
+                 onClick={handleEnableBypass}
+                 className="w-full flex items-center justify-center gap-2 px-4 py-3.5 text-xs font-bold text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/70 rounded-2xl transition-all border border-indigo-100/40 active:scale-[0.98] shadow-sm shadow-indigo-100/20"
+               >
+                 <Icon icon="lucide:zap" className="w-4 h-4 text-indigo-500" />
+                 Activar Auto-login (Desarrollo)
+               </button>
+             )}
+             <button 
+               onClick={() => router.push("/")}
+               className="text-[11px] text-slate-400 hover:text-indigo-600 font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2 mx-auto"
+             >
+               <Icon icon="lucide:arrow-left" className="w-3 h-3" />
+               Volver al inicio
+             </button>
+           </div>
         </div>
       </div>
     </main>

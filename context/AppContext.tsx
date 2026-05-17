@@ -79,7 +79,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       // --- LOCALHOST BYPASS ---
       // Auto-login para desarrollo sin afectar producción en Vercel/GitHub
-      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      const bypassDisabled = typeof window !== 'undefined' && localStorage.getItem("localhost_bypass_disabled") === 'true';
+      if (typeof window !== 'undefined' && !bypassDisabled && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
         console.warn("🔧 Localhost Bypass Activado: Iniciando sesión automáticamente como Admin TI");
         setUser({ id: "dev-bypass-id", email: "admin@localhost" } as AuthUser);
         setRole("Admin_TI");

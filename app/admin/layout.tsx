@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Collapse toggle */}
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 space-y-1">
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-foreground hover:text-background hover:bg-foreground transition-all text-sm"
@@ -150,13 +150,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {/* Back to public */}
           <Link
             href="/"
-            className={`mt-1 flex items-center gap-2 px-3 py-2.5 rounded-xl text-foreground hover:text-background hover:bg-foreground transition-all text-sm ${collapsed ? "justify-center" : ""}`}
+            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-foreground hover:text-background hover:bg-foreground transition-all text-sm ${collapsed ? "justify-center" : ""}`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             {!collapsed && <span>Sitio Público</span>}
           </Link>
+
+          {/* Cerrar Sesión */}
+          <button
+            onClick={async () => {
+              if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+                localStorage.setItem("localhost_bypass_disabled", "true");
+              }
+              const { supabase } = await import("@/lib/supabase");
+              await supabase.auth.signOut();
+              window.location.href = "/";
+            }}
+            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all text-sm ${collapsed ? "justify-center" : ""}`}
+            title="Cerrar sesión"
+          >
+            <Icon icon="lucide:log-out" className="w-4.5 h-4.5 shrink-0" />
+            {!collapsed && <span>Cerrar Sesión</span>}
+          </button>
         </div>
       </aside>
 

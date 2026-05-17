@@ -179,6 +179,9 @@ export default function TicketForm() {
 
   const handleSignOut = async () => {
     localStorage.removeItem(FORM_STORAGE_KEY);
+    if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+      localStorage.setItem("localhost_bypass_disabled", "true");
+    }
     await supabase.auth.signOut();
     window.location.reload();
   };

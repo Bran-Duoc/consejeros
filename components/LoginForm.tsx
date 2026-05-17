@@ -22,14 +22,26 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [isLocalhost, setIsLocalhost] = useState(false);
+  const [bypassDisabled, setBypassDisabled] = useState(false);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("error") === "invalid_domain") {
         setErrorMessage("Acceso denegado. Debes utilizar tu correo institucional (@duocuc.cl).");
       }
+      
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      setIsLocalhost(isLocal);
+      setBypassDisabled(localStorage.getItem("localhost_bypass_disabled") === "true");
     }
   }, []);
+
+  const handleEnableBypass = () => {
+    localStorage.removeItem("localhost_bypass_disabled");
+    window.location.reload();
+  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -178,6 +190,17 @@ export default function LoginForm() {
               </div>
 
               <GoogleAuthButton loading={loading} onClick={handleGoogleLogin} />
+
+              {isLocalhost && bypassDisabled && (
+                <button
+                  type="button"
+                  onClick={handleEnableBypass}
+                  className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3.5 text-xs font-bold text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100/70 rounded-2xl transition-all border border-indigo-100/40 active:scale-[0.98] shadow-sm shadow-indigo-100/20"
+                >
+                  <Icon icon="lucide:zap" className="w-4 h-4 text-indigo-500" />
+                  Activar Auto-login (Desarrollo)
+                </button>
+              )}
 
               <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-3">
                 <div className="flex items-start gap-3">
