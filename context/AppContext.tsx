@@ -76,6 +76,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const syncUserAndRole = async (sessionUser: AuthUser | null) => {
       setIsAuthLoading(true);
+
+      // --- LOCALHOST BYPASS ---
+      // Auto-login para desarrollo sin afectar producción en Vercel/GitHub
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        console.warn("🔧 Localhost Bypass Activado: Iniciando sesión automáticamente como Admin TI");
+        setUser({ id: "dev-bypass-id", email: "admin@localhost" } as AuthUser);
+        setRole("Admin_TI");
+        setProfile({ id: "dev-bypass-id", email: "admin@localhost", name: "Desarrollador Local", role: "Admin_TI" });
+        setIsAuthLoading(false);
+        return;
+      }
+      // ------------------------
       // BARRERA DE SEGURIDAD SECUNDARIA: Validación de Dominio (Solo para Google)
       const isGoogleLogin = sessionUser?.app_metadata?.provider === 'google';
       const email = sessionUser?.email;
@@ -236,10 +248,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const slaHours = sla?.maxHours ?? 48;
       const slaDeadline = new Date(Date.now() + slaHours * 3600000).toISOString();
 
+      const name = ticketData.createdByName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "Estudiante";
+      const email = ticketData.createdBy || user?.email || "";
+      const formattedName = email ? `${name} <${email}>` : name;
+
       const ticketToCreate = {
         ...ticketData,
         createdBy: user?.id || ticketData.createdBy,
-        createdByName: user?.email || ticketData.createdByName || "Estudiante",
+        createdByName: formattedName,
         status: routing.status,
         assignedTo: routing.assignedTo && routing.assignedTo.includes('-') ? routing.assignedTo : null,
         slaDeadline,

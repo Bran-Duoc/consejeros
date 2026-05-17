@@ -13,6 +13,7 @@ import {
   categoryLabels,
   statusLabels,
   statusColors,
+  parseCreatedBy,
 } from "@/lib/data";
 import { calculateSLAStatus } from "@/lib/sla";
 import { staggerContainer, staggerItem } from "@/lib/transitions";
@@ -145,31 +146,31 @@ export default function TicketListPage() {
       {/* Data Grid */}
       <motion.div variants={staggerItem} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse min-w-full">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
-                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-24" onClick={() => handleSort("id")}>
+                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-20" onClick={() => handleSort("id")}>
                   <div className="flex items-center gap-1">
                     ID {sortField === "id" && <Icon icon={sortDesc ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-3 h-3" />}
                   </div>
                 </th>
-                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort("title")}>
+                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors min-w-[200px]" onClick={() => handleSort("title")}>
                   <div className="flex items-center gap-1">
                     Asunto {sortField === "title" && <Icon icon={sortDesc ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-3 h-3" />}
                   </div>
                 </th>
-                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-40" onClick={() => handleSort("createdByName")}>
+                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-44" onClick={() => handleSort("createdByName")}>
                   <div className="flex items-center gap-1">
                     Solicitante {sortField === "createdByName" && <Icon icon={sortDesc ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-3 h-3" />}
                   </div>
                 </th>
-                <th className="px-4 py-3 w-36">Estado</th>
-                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-32" onClick={() => handleSort("sla")}>
+                <th className="px-4 py-3 w-36 hidden sm:table-cell">Estado</th>
+                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-32 hidden md:table-cell" onClick={() => handleSort("sla")}>
                   <div className="flex items-center gap-1">
                     SLA {sortField === "sla" && <Icon icon={sortDesc ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-3 h-3" />}
                   </div>
                 </th>
-                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-32" onClick={() => handleSort("createdAt")}>
+                <th className="px-4 py-3 cursor-pointer hover:bg-slate-100 transition-colors w-32 hidden lg:table-cell" onClick={() => handleSort("createdAt")}>
                   <div className="flex items-center gap-1">
                     Fecha {sortField === "createdAt" && <Icon icon={sortDesc ? "lucide:chevron-down" : "lucide:chevron-up"} className="w-3 h-3" />}
                   </div>
@@ -181,19 +182,21 @@ export default function TicketListPage() {
               {filteredTickets.map((ticket) => {
                 const sla = calculateSLAStatus(ticket.slaDeadline);
                 const isResolved = ticket.status === "resuelto";
+                const student = parseCreatedBy(ticket.createdByName);
+                const displayId = ticket.id.length > 8 ? ticket.id.slice(0, 8) : ticket.id;
 
                 return (
                   <tr key={ticket.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
                     {/* ID */}
                     <td className="px-4 py-3">
                       <Link href={`/admin/tickets/${ticket.id}`} className="font-mono text-xs font-bold text-indigo-600 hover:underline">
-                        #{ticket.id.slice(0, 6)}
+                        #{displayId}
                       </Link>
                     </td>
                     
                     {/* Asunto */}
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-slate-800 line-clamp-1">{ticket.title}</div>
+                      <div className="font-semibold text-slate-800 line-clamp-1 max-w-[280px] sm:max-w-none">{ticket.title}</div>
                       <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">
                         {categoryLabels[ticket.category]}
                       </div>
@@ -201,12 +204,12 @@ export default function TicketListPage() {
 
                     {/* Solicitante */}
                     <td className="px-4 py-3">
-                      <div className="text-slate-700 font-medium truncate">{ticket.createdByName}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{ticket.career || "Carrera no especificada"}</div>
+                      <div className="text-slate-700 font-bold truncate max-w-[150px]">{student.name}</div>
+                      <div className="text-[10px] text-slate-400 truncate max-w-[150px] font-medium leading-tight mt-0.5">{student.email}</div>
                     </td>
 
                     {/* Estado (Inline edit) */}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden sm:table-cell">
                       {role === "Supervisor" ? (
                         <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide border ${statusColors[ticket.status]}`}>
                           {statusLabels[ticket.status]}
@@ -226,7 +229,7 @@ export default function TicketListPage() {
                     </td>
 
                     {/* SLA */}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       {isResolved ? (
                         <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-slate-100 text-slate-500 border border-slate-200">
                           Completado
@@ -239,7 +242,7 @@ export default function TicketListPage() {
                     </td>
 
                     {/* Fecha */}
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
                       {new Date(ticket.createdAt).toLocaleDateString("es-CL", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </td>
 

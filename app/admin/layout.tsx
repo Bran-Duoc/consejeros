@@ -13,7 +13,6 @@ import type { Ticket } from "@/lib/data";
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "lucide:layout-dashboard", exact: true },
   { href: "/admin/tickets", label: "Tickets", icon: "lucide:list-todo" },
-  { href: "/admin/kanban", label: "Kanban", icon: "lucide:kanban-square" },
   { href: "/admin/metrics", label: "Métricas", icon: "lucide:bar-chart-3" },
   { href: "/admin/sla", label: "Config SLA", icon: "lucide:settings-2", roles: ["Admin TI", "Admin_TI"] },
   { href: "/admin/users", label: "Usuarios", icon: "lucide:users", roles: ["Admin TI", "Admin_TI"] },
@@ -348,15 +347,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-slate-800">Lista de Tickets</div>
                           <div className="text-[11px] text-slate-500">Gestión rápida y masiva</div>
-                        </div>
-                      </button>
-                      <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/kanban"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                          <Icon icon="lucide:kanban-square" className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-slate-800">Tablero Kanban</div>
-                          <div className="text-[11px] text-slate-500">Gestionar solicitudes por columna</div>
                         </div>
                       </button>
                       <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/metrics"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">

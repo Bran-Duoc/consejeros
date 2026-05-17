@@ -119,6 +119,19 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// ---- Helper: parseCreatedBy ----
+export function parseCreatedBy(createdByName: string): { name: string; email: string } {
+  if (!createdByName) return { name: "Estudiante", email: "No especificado" };
+  const match = createdByName.match(/(.*)<(.*)>/);
+  if (match) {
+    return { name: match[1].trim(), email: match[2].trim() };
+  }
+  if (createdByName.includes('@')) {
+    return { name: createdByName.split('@')[0], email: createdByName };
+  }
+  return { name: createdByName, email: "No especificado" };
+}
+
 // ---- LocalStorage helpers (Fallback only) ----
 export const STORAGE_KEYS = {
   tickets: "portal_tickets",

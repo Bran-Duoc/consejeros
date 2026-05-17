@@ -5,33 +5,37 @@ import { useParams, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
-import { TicketStatus, categoryLabels, urgencyLabels, TicketCategory } from "@/lib/data";
+import { TicketStatus, categoryLabels, urgencyLabels, TicketCategory, parseCreatedBy } from "@/lib/data";
+import { calculateSLAStatus } from "@/lib/sla";
 import { transitions } from "@/lib/transitions";
 
-// Pasos internos para el administrador
+// Pasos internos para el administrador que coinciden exactamente con los estados
 const ADMIN_STEPS = [
-  { id: "recepcion", label: "Recepción", icon: "lucide:mail-open", status: "pendiente" },
-  { id: "verificacion", label: "Verificación", icon: "lucide:shield-check", status: "en_revision" },
-  { id: "gestion", label: "Gestión", icon: "lucide:settings", status: "en_revision" },
-  { id: "resolucion", label: "Resolución", icon: "lucide:check-circle", status: "resuelto" },
+  { id: "nuevo", label: "Nuevo", icon: "lucide:inbox", status: "nuevo" as TicketStatus },
+  { id: "pendiente", label: "Pendiente", icon: "lucide:clock", status: "pendiente" as TicketStatus },
+  { id: "en_revision", label: "En revisión", icon: "lucide:eye", status: "en_revision" as TicketStatus },
+  { id: "escalado", label: "Escalado", icon: "lucide:alert-triangle", status: "escalado" as TicketStatus },
+  { id: "resuelto", label: "Resuelto", icon: "lucide:check-circle", status: "resuelto" as TicketStatus },
 ];
 
 export default function TicketDetail() {
   const { id } = useParams();
   const router = useRouter();
   const { tickets, updateTicket, user, role } = useApp();
-  const [activeStep, setActiveStep] = useState(0);
   const [comment, setComment] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
 
   const ticket = tickets.find((t) => t.id === id);
 
-  // 1. Auto-asignación y cambio de estado inicial
+  // Derivar el paso activo del estado real del ticket
+  const activeStep = ticket ? Math.max(0, ADMIN_STEPS.findIndex(s => s.status === ticket.status)) : 0;
+
+  // 1. Auto-asignación inicial (sólo si es nuevo y no tiene asignado)
   useEffect(() => {
-    if (ticket && !ticket.assignedTo && user?.email) {
+    if (ticket && !ticket.assignedTo && user?.email && ticket.status === "nuevo") {
       updateTicket(ticket.id, { 
         assignedTo: user.email,
-        status: "pendiente" // Pasa a "En atención" automáticamente
+        status: "pendiente"
       });
     }
   }, [ticket, user, updateTicket]);
@@ -44,9 +48,8 @@ export default function TicketDetail() {
 
   const handleStepComplete = (index: number) => {
     if (index >= ADMIN_STEPS.length) return;
-    setActiveStep(index);
-    // Actualizar estado del ticket según el paso
-    updateTicket(ticket.id, { status: ADMIN_STEPS[index].status as TicketStatus });
+    // Actualizar estado del ticket según el paso seleccionado
+    updateTicket(ticket.id, { status: ADMIN_STEPS[index].status });
   };
 
   const handleAddComment = () => {
@@ -54,6 +57,10 @@ export default function TicketDetail() {
     // Aquí iría la lógica para guardar comentarios internos
     setComment("");
   };
+
+  const student = parseCreatedBy(ticket.createdByName);
+  const sla = calculateSLAStatus(ticket.slaDeadline);
+  const isResolved = ticket.status === "resuelto";
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -69,7 +76,7 @@ export default function TicketDetail() {
           <div>
             <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               {ticket.title}
-              <span className="text-xs font-mono text-slate-400 font-normal">#{ticket.id.slice(0, 8)}</span>
+              <span className="text-xs font-mono text-slate-400 font-normal">#{ticket.id.length > 8 ? ticket.id.slice(0, 8) : ticket.id}</span>
             </h1>
             <p className="text-xs text-slate-500">Gestión orgánica de caso</p>
           </div>
@@ -108,24 +115,37 @@ export default function TicketDetail() {
             <div className="overflow-x-auto pb-4 -mx-2 px-2 custom-scrollbar">
               <div className="flex items-center justify-between relative min-w-[500px] sm:min-w-0">
                 <div className="absolute top-1/2 left-0 w-full h-0.5 bg-slate-100 -translate-y-1/2 z-0" />
-                {ADMIN_STEPS.map((s, idx) => (
-                  <button
-                    key={s.id}
-                    onClick={() => handleStepComplete(idx)}
-                    className={`relative z-10 flex flex-col items-center gap-2 group`}
-                  >
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border-4 ${
-                      idx <= activeStep 
-                        ? "bg-indigo-600 border-indigo-100 text-white shadow-lg" 
-                        : "bg-white border-slate-50 text-slate-300"
-                    }`}>
-                      <Icon icon={s.icon} className="w-5 h-5" />
-                    </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-tight ${idx <= activeStep ? "text-indigo-600" : "text-slate-400"}`}>
-                      {s.label}
-                    </span>
-                  </button>
-                ))}
+                {ADMIN_STEPS.map((s, idx) => {
+                  const isCurrent = idx === activeStep;
+                  const isCompleted = idx < activeStep;
+                  
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => handleStepComplete(idx)}
+                      className={`relative z-10 flex flex-col items-center gap-2 group`}
+                    >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border-4 ${
+                        isCurrent
+                          ? "bg-indigo-600 border-indigo-100 text-white shadow-lg scale-110" 
+                          : isCompleted
+                          ? "bg-emerald-500 border-emerald-100 text-white shadow-md"
+                          : "bg-white border-slate-50 text-slate-300"
+                      }`}>
+                        <Icon icon={isCompleted ? "lucide:check" : s.icon} className="w-5 h-5" />
+                      </div>
+                      <span className={`text-[10px] font-bold uppercase tracking-tight ${
+                        isCurrent
+                          ? "text-indigo-600 font-extrabold"
+                          : isCompleted
+                          ? "text-emerald-600 font-bold"
+                          : "text-slate-400"
+                      }`}>
+                        {s.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -137,11 +157,38 @@ export default function TicketDetail() {
             </div>
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoItem label="Alumno" value={ticket.createdByName} icon="lucide:user" />
-                <InfoItem label="Email" value={ticket.createdBy} icon="lucide:mail" />
+                <InfoItem label="Alumno" value={student.name} icon="lucide:user" />
+                <InfoItem label="Email" value={student.email} icon="lucide:mail" />
                 <InfoItem label="Categoría" value={categoryLabels[ticket.category as TicketCategory]} icon="lucide:tag" />
-                <InfoItem label="Urgencia" value={urgencyLabels[ticket.urgency]} icon="lucide:alert-triangle" isUrgent={ticket.urgency === 'alto'} />
+                <InfoItem label="Urgencia" value={urgencyLabels[ticket.urgency]} icon="lucide:alert-triangle" isUrgent={ticket.urgency === 'alto' || ticket.urgency === 'critico'} />
               </div>
+
+              {/* SLA Countdown Bar */}
+              <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-4 space-y-3">
+                <div className="flex justify-between items-center text-[10px] font-extrabold uppercase tracking-wider">
+                  <span className="text-slate-400">Control de SLA</span>
+                  {isResolved ? (
+                    <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Resuelto a Tiempo</span>
+                  ) : (
+                    <span style={{ color: sla.color }} className="bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-sm">
+                      {sla.remainingFormatted} restantes
+                    </span>
+                  )}
+                </div>
+                <div className="h-2 rounded-full bg-slate-100 overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${isResolved ? 100 : Math.min(100, Math.max(5, sla.level === "expired" ? 100 : sla.level === "danger" ? 85 : sla.level === "warning" ? 60 : 30))}%` }}
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ backgroundColor: isResolved ? "#10b981" : sla.color }}
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] text-slate-400 font-semibold uppercase">
+                  <span>Plazo: {new Date(ticket.slaDeadline).toLocaleDateString("es-CL", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                  <span>Estado: {isResolved ? "Cerrado" : sla.level === "expired" ? "Excedido" : "Activo"}</span>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descripción</p>
                 <div className="bg-slate-50 p-4 rounded-2xl text-slate-700 text-sm leading-relaxed border border-slate-100">
