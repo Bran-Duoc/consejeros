@@ -187,13 +187,13 @@ export default function AdminDashboard() {
         {/* Quick actions Bento */}
         <motion.div variants={staggerItem} className="grid grid-cols-2 gap-4">
           <Link
-            href="/admin/kanban"
-            className="p-5 rounded-2xl bg-white border border-slate-100 hover:border-indigo-200 hover:shadow-md transition-all group flex flex-col items-center justify-center text-center"
+            href="/admin/tickets"
+            className="p-5 rounded-2xl bg-white border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all group flex flex-col items-center justify-center text-center"
           >
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">
-              <Icon icon="lucide:kanban-square" />
+            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl mb-3 group-hover:scale-110 transition-transform">
+              <Icon icon="lucide:list-todo" />
             </div>
-            <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Kanban</span>
+            <span className="text-xs font-bold text-slate-800 uppercase tracking-widest">Tickets</span>
           </Link>
           <Link
             href="/admin/metrics"

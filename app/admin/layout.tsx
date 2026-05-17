@@ -12,6 +12,7 @@ import type { Ticket } from "@/lib/data";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: "lucide:layout-dashboard", exact: true },
+  { href: "/admin/tickets", label: "Tickets", icon: "lucide:list-todo" },
   { href: "/admin/kanban", label: "Kanban", icon: "lucide:kanban-square" },
   { href: "/admin/metrics", label: "Métricas", icon: "lucide:bar-chart-3" },
   { href: "/admin/sla", label: "Config SLA", icon: "lucide:settings-2", roles: ["Admin TI", "Admin_TI"] },
@@ -319,7 +320,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <motion.button
                           key={t.id}
                           variants={staggerItem}
-                          onClick={() => { setCmdKOpen(false); setSearchQuery(""); window.location.href = "/admin/kanban"; }}
+                          onClick={() => { setCmdKOpen(false); setSearchQuery(""); window.location.href = `/admin/tickets/${t.id}`; }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group"
                         >
                           <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
@@ -340,6 +341,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <div className="px-2 py-2">
                     <p className="text-[10px] font-bold text-slate-400 mb-2 px-2 uppercase tracking-widest">Accesos rápidos</p>
                     <div className="grid grid-cols-1 gap-1">
+                      <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/tickets"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">
+                        <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+                          <Icon icon="lucide:list-todo" className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-slate-800">Lista de Tickets</div>
+                          <div className="text-[11px] text-slate-500">Gestión rápida y masiva</div>
+                        </div>
+                      </button>
                       <button onClick={() => { setCmdKOpen(false); window.location.href = "/admin/kanban"; }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-200 transition-all text-left group">
                         <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
                           <Icon icon="lucide:kanban-square" className="w-4 h-4" />
