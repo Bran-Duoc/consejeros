@@ -242,6 +242,20 @@ function CategoryDetail({ cat, onContinue }: { cat: CategoryConfig; onContinue: 
             transition={{ duration: 0.2 }}
             className="flex-1"
           >
+            {(cat.id === "bienestar" || cat.id === "financiero") && (
+              <div className={`mb-5 p-3 rounded-xl border ${cat.borderColor} bg-white flex items-start gap-3 shadow-sm`}>
+                <div className={`w-8 h-8 rounded-lg ${cat.bgColor} ${cat.color} flex items-center justify-center shrink-0 mt-0.5`}>
+                  <Icon icon="lucide:info" className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cat.color}`}>Nuestra labor es orientarte</h5>
+                  <p className="text-[11px] text-slate-500 leading-snug font-medium">
+                    Somos estudiantes como tú. Nuestro rol en esta área es escucharte y <strong>derivarte a los canales oficiales</strong> de la sede para que recibas la atención correcta.
+                  </p>
+                </div>
+              </div>
+            )}
+            
             <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
               <Icon icon="lucide:folder-open" className={`w-3.5 h-3.5 ${cat.color}`} />
               Selecciona un tema principal:

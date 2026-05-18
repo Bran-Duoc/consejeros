@@ -74,10 +74,10 @@ export interface Survey {
 // ---- Formatting helpers ----
 export const categoryLabels: Record<TicketCategory, string> = {
   academico: "Académico",
-  infraestructura: "Experiencia",
-  bienestar: "Vida Estudiantil",
-  financiero: "Financiero",
-  otro: "Otro",
+  infraestructura: "Experiencia y Campus",
+  bienestar: "Punto Estudiantil (Apoyo)",
+  financiero: "Orientación Financiera",
+  otro: "Guía Práctica: ¿Cómo y Dónde?",
 };
 
 export interface SubcategoryGroup {
@@ -120,28 +120,27 @@ export const categorySubcategories: Record<TicketCategory, SubcategoryGroup[]> =
   ],
   bienestar: [
     {
-      name: "Salud y Bienestar",
+      name: "Salud y Apoyo Psicológico",
       icon: "lucide:heart",
       options: [
-        { label: "Apoyo Psicológico (PAE)", description: "Acompañamiento, contención y bienestar integral" },
-        { label: "Primeros Auxilios", description: "Asistencia rápida y derivación en salud física" },
+        { label: "Orientación Psicológica (PAE)", description: "Te indicamos cómo agendar con los especialistas de Punto Estudiantil" },
+        { label: "Primeros Auxilios", description: "Guía sobre cómo proceder y a quién acudir ante emergencias de salud" },
       ],
     },
     {
       name: "Vida Universitaria",
       icon: "lucide:smile",
       options: [
-        { label: "Talleres y Recreación", description: "Participación en actividades para tu desarrollo personal" },
-        { label: "Deportes y Selecciones", description: "Impulso a la vida sana y participación deportiva" },
-        { label: "Pastoral y Misiones", description: "Espacios de encuentro, reflexión y apoyo espiritual" },
+        { label: "Talleres y Deportes (DAE)", description: "Información sobre cómo inscribirte en actividades extraprogramáticas" },
+        { label: "Pastoral y Misiones", description: "Te conectamos con los coordinadores del área espiritual" },
       ],
     },
     {
       name: "Comunidad e Integración",
       icon: "lucide:users-2",
       options: [
-        { label: "Inclusión y Diversidad", description: "Iniciativas para un entorno equitativo y respetuoso" },
-        { label: "Voluntariados y Servicios", description: "Oportunidades de colaboración comunitaria y becas" },
+        { label: "Inclusión y Diversidad", description: "Orientación sobre protocolos institucionales y apoyos equitativos" },
+        { label: "Voluntariados y Servicios", description: "Te derivamos para conocer becas de trabajo y ayudas comunitarias" },
       ],
     },
   ],
@@ -150,26 +149,26 @@ export const categorySubcategories: Record<TicketCategory, SubcategoryGroup[]> =
       name: "Espacios Comunes",
       icon: "lucide:sofa",
       options: [
-        { label: "Casino y Alimentación", description: "Mejora continua en nuestros espacios de comida" },
-        { label: "Patios y Áreas de Descanso", description: "Ideas para enriquecer nuestras zonas de esparcimiento" },
-        { label: "Baños e Instalaciones", description: "Iniciativas para el confort y limpieza constante" },
+        { label: "Casino y Alimentación", description: "Reporte de sugerencias para mejorar nuestros espacios de comida" },
+        { label: "Patios y Áreas de Descanso", description: "Iniciativas para enriquecer nuestras zonas de esparcimiento" },
+        { label: "Baños e Instalaciones", description: "Reportes sobre confort y limpieza de infraestructura" },
       ],
     },
     {
       name: "Entorno de Aprendizaje",
       icon: "lucide:book-open",
       options: [
-        { label: "Biblioteca y Salas de Estudio", description: "Aprovechamiento de recursos y espacios de silencio" },
-        { label: "Laboratorios y Talleres", description: "Sugerencias sobre equipamiento e infraestructura técnica" },
-        { label: "Salas de Clases", description: "Iniciativas sobre el confort y equipamiento del aula" },
+        { label: "Biblioteca y Salas de Estudio", description: "Dudas sobre reservas o aprovechamiento de espacios de silencio" },
+        { label: "Laboratorios y Talleres", description: "Reporte o sugerencias sobre equipamiento e infraestructura técnica" },
+        { label: "Salas de Clases", description: "Iniciativas sobre el confort, pizarras y equipamiento del aula" },
       ],
     },
     {
       name: "Servicios Generales",
       icon: "lucide:settings",
       options: [
-        { label: "WiFi y Conectividad", description: "Aportes para la optimización de nuestra red institucional" },
-        { label: "Seguridad y Accesos", description: "Contribución para mantener un entorno universitario seguro" },
+        { label: "WiFi y Conectividad", description: "Reporte centralizado para optimizar nuestra red institucional" },
+        { label: "Seguridad y Accesos", description: "Reportes o consultas para mantener un entorno seguro" },
       ],
     },
   ],
@@ -178,41 +177,41 @@ export const categorySubcategories: Record<TicketCategory, SubcategoryGroup[]> =
       name: "Becas y Beneficios",
       icon: "lucide:award",
       options: [
-        { label: "Becas Estatales (CAE, Gratuidad)", description: "Asesoría integral para acceder a beneficios públicos" },
-        { label: "Becas Institucionales", description: "Orientación oportuna sobre beneficios internos Duoc UC" },
+        { label: "Guía de Becas Estatales", description: "Te orientamos sobre dónde y con quién consultar Gratuidad o CAE" },
+        { label: "Guía de Becas Internas", description: "Información oficial para contactar a los ejecutivos de Duoc UC" },
       ],
     },
     {
-      name: "Procesos de Pago",
+      name: "Consultas de Pago",
       icon: "lucide:credit-card",
       options: [
-        { label: "Aranceles y Matrículas", description: "Orientación clara sobre procesos de pago regulares" },
-        { label: "Repactaciones y Casos Especiales", description: "Acompañamiento en situaciones financieras excepcionales" },
+        { label: "Derivación Aranceles y Matrículas", description: "Te indicamos los canales oficiales para resolver pagos regulares" },
+        { label: "Derivación Casos Especiales", description: "Guía sobre con quién hablar para opciones de repactación" },
       ],
     },
     {
       name: "Renovación y Suspensión",
       icon: "lucide:pause-circle",
       options: [
-        { label: "Suspensión de Beneficios", description: "Guía para congelar o mantener becas durante interrupciones" },
+        { label: "Suspensión de Beneficios", description: "Orientación básica sobre los pasos para congelar becas o carrera" },
       ],
     },
   ],
   otro: [
     {
-      name: "Centro de Ayuda",
-      icon: "lucide:help-circle",
+      name: "Directorio de Sede",
+      icon: "lucide:map-pin",
       options: [
-        { label: "Dudas Generales", description: "Cualquier otra consulta en la que podamos guiarte" },
-        { label: "Sugerencias e Iniciativas", description: "Ideas constructivas para seguir mejorando la sede" },
+        { label: "¿Dónde queda este lugar?", description: "Te ayudamos a encontrar salas, oficinas o servicios dentro del campus" },
+        { label: "¿Con quién debo hablar?", description: "Orientación exacta sobre a qué departamento debes acudir" },
       ],
     },
     {
-      name: "Soporte Digital",
+      name: "Soporte Digital Rápido",
       icon: "lucide:smartphone",
       options: [
-        { label: "App Experiencia Duoc", description: "Apoyo técnico en el uso de la aplicación móvil estudiantil" },
-        { label: "Otros Sistemas", description: "Asistencia rápida para facilitar el uso de plataformas varias" },
+        { label: "Ayuda App Experiencia Duoc", description: "Te enseñamos a usar y aprovechar la aplicación móvil" },
+        { label: "Credencial Virtual", description: "Guía paso a paso para activar tu credencial en el celular" },
       ],
     },
   ],
