@@ -440,6 +440,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
           >
             Reintentar Conexión
           </button>
+          <button 
+            onClick={() => { window.location.href = "/logout"; }}
+            className="mt-4 text-xs text-slate-400 hover:text-rose-600 font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5"
+          >
+            <Icon icon="lucide:shield-alert" className="w-3.5 h-3.5" />
+            Cerrar sesión y Limpiar Caché
+          </button>
         </div>
       ) : (
         <>

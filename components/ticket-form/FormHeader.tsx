@@ -38,11 +38,11 @@ export function FormHeader({ step, isOffline, onSignOut }: FormHeaderProps) {
         )}
         <Link 
           href="/admin/login" 
-          className="flex items-center gap-1.5 text-[9px] font-black text-slate-400 hover:text-indigo-400 uppercase tracking-[0.2em] transition-all px-2 py-1.5"
-          title="Terminal de Staff"
+          className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 hover:text-indigo-600 hover:bg-indigo-50/50 border border-slate-200/60 hover:border-indigo-100/80 rounded-xl px-2.5 py-2 transition-all group"
+          title="Acceso Administrador"
         >
-          <Icon icon="lucide:terminal" className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Administrador</span>
+          <Icon icon="lucide:terminal" className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+          <span className="hidden sm:inline uppercase tracking-wider font-bold">Admin</span>
         </Link>
         <button
           type="button"

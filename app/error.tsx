@@ -63,8 +63,22 @@ export default function GlobalError({
           </a>
         </div>
 
+        {/* Emergency Logout Option */}
+        <div className="mt-6 border-t border-slate-100 pt-6">
+          <button
+            onClick={() => { window.location.href = "/logout"; }}
+            className="w-full py-3.5 px-4 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-rose-100/50 hover:border-rose-200"
+          >
+            <Icon icon="lucide:shield-alert" className="w-4 h-4 text-rose-600" />
+            Forzar Cierre de Sesión y Limpiar Caché
+          </button>
+          <p className="text-[10px] text-slate-400 mt-2 font-medium">
+            Usa esta opción si estás atascado en un ciclo de error o necesitas reiniciar tu cuenta por completo.
+          </p>
+        </div>
+
         {/* Support note */}
-        <p className="mt-8 text-xs text-slate-400">
+        <p className="mt-6 text-xs text-slate-400">
           Si el problema persiste, por favor contacta al equipo de soporte.
         </p>
       </div>
