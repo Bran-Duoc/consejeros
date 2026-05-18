@@ -72,13 +72,13 @@ export default function LoginForm() {
 
       {/* Right Side: Login */}
       <div className="flex-1 flex flex-col relative overflow-y-auto custom-scrollbar">
-        {/* Analog Admin Link */}
-        <div className="absolute top-3 right-3 lg:top-4 lg:right-4 z-[60]">
+        {/* Analog Admin Link (Desktop) */}
+        <div className="hidden lg:block absolute top-4 right-4 z-[60]">
           <Link 
             href="/admin/login" 
-            className="flex items-center gap-2 text-[10px] font-bold text-white lg:text-slate-600 hover:text-white lg:hover:text-indigo-600 uppercase tracking-wider transition-all px-3 py-2.5 rounded-xl bg-white/10 lg:bg-slate-50/80 border border-white/20 lg:border-slate-200/80 hover:bg-white/20 lg:hover:bg-indigo-50/80 hover:border-white/30 lg:hover:border-indigo-200/80 group backdrop-blur-sm shadow-sm"
+            className="flex items-center gap-2 text-[10px] font-bold text-slate-600 hover:text-indigo-600 uppercase tracking-wider transition-all px-3 py-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 hover:bg-indigo-50/80 hover:border-indigo-200/80 group backdrop-blur-sm shadow-sm"
           >
-            <Icon icon="lucide:terminal" className="w-3.5 h-3.5 transition-transform group-hover:scale-110 text-indigo-200 lg:text-slate-400 group-hover:text-indigo-600" />
+            <Icon icon="lucide:terminal" className="w-3.5 h-3.5 transition-transform group-hover:scale-110 text-slate-400 group-hover:text-indigo-600" />
             <span className="font-semibold">Acceso Administrador</span>
           </Link>
         </div>
@@ -92,16 +92,33 @@ export default function LoginForm() {
           </div>
 
           {/* Content over background */}
-          <div className="relative z-10 flex flex-col items-center text-center px-6 pt-10 pb-8">
-            <motion.div
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-5 w-fit"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-100">Sede Viña del Mar</span>
-            </motion.div>
+          <div className="relative z-10 flex flex-col items-center text-center px-6 pt-6 pb-8">
+            {/* Top row: Badge & Mobile Admin Link */}
+            <div className="w-full flex items-center justify-between mb-8">
+              <motion.div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-indigo-100 truncate">Sede Viña</span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <Link 
+                  href="/admin/login" 
+                  className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider transition-all px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 hover:border-white/30 backdrop-blur-sm shadow-sm group"
+                >
+                  <Icon icon="lucide:terminal" className="w-3 h-3 text-indigo-200 group-hover:text-white transition-colors" />
+                  <span>Admin</span>
+                </Link>
+              </motion.div>
+            </div>
 
             <motion.div
               initial={{ opacity: 0, y: 15 }}
