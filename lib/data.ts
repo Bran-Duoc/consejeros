@@ -332,7 +332,7 @@ export const SCHOOLS_DATA: Record<string, string[]> = {
     "Relaciones Públicas y Comunicación Organizacional",
     "Tecnología en Sonido e Iluminación",
   ],
-  "🏥 Escuela de Salud y Bienestar": [
+  "🩺 Escuela de Salud": [
     "Preparador Físico",
   ],
 };
