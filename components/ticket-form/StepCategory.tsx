@@ -6,108 +6,78 @@ import { transitions } from "@/lib/transitions";
 import {
   TicketCategory,
   categoryIcons,
+  categoryLabels,
+  categorySubcategories,
 } from "@/lib/data";
 
-// ---- Category Configuration (Restaurando el texto que te gustó) ----
 interface CategoryConfig {
   id: TicketCategory;
   title: string;
   icon: string;
   color: string;
   bgColor: string;
+  hoverBgColor: string;
   borderColor: string;
-  shortDesc: string; // Recuperado
-  primaryFocus: string[]; // Recuperado
-  disclaimer: string; // Recuperado (antes secondaryFocus)
+  shortDesc: string;
 }
 
 const CATEGORIES: CategoryConfig[] = [
   {
     id: "academico",
-    title: "Académico",
+    title: categoryLabels.academico,
     icon: categoryIcons.academico,
     color: "text-indigo-600",
     bgColor: "bg-indigo-50",
+    hoverBgColor: "hover:bg-indigo-50",
     borderColor: "border-indigo-200",
-    shortDesc: "Inscripción, notas, certificados, convalidaciones.",
-    primaryFocus: [
-      "Levantamiento de necesidades grupales (ej. tutorías o reforzamientos).",
-      "Inquietudes sobre metodologías, docentes o evaluaciones.",
-      "Problemas de topes de horario, mallas y convalidaciones.",
-    ],
-    disclaimer:
-      "Orientamos en procesos administrativos (certificados, justificaciones) y te dirigimos a los canales oficiales para su tramitación formal.",
+    shortDesc: "Docentes, metodologías, topes de horario...",
   },
   {
     id: "infraestructura",
-    title: "Infraestructura",
+    title: categoryLabels.infraestructura,
     icon: categoryIcons.infraestructura,
     color: "text-amber-600",
     bgColor: "bg-amber-50",
+    hoverBgColor: "hover:bg-amber-50",
     borderColor: "border-amber-200",
-    shortDesc: "Salas, laboratorios, áreas comunes, WiFi.",
-    primaryFocus: [
-      "Reporte de fallas en infraestructura o equipamiento.",
-      "Sugerencias de mejora para espacios de estudio.",
-      "Problemas de conectividad en zonas específicas de la sede.",
-    ],
-    disclaimer:
-      "Canalizamos tu reporte con la subdirección de operaciones para una resolución rápida.",
+    shortDesc: "Casinos, laboratorios, espacios de estudio...",
   },
   {
     id: "bienestar",
-    title: "Bienestar",
+    title: categoryLabels.bienestar,
     icon: categoryIcons.bienestar,
     color: "text-emerald-600",
     bgColor: "bg-emerald-50",
+    hoverBgColor: "hover:bg-emerald-50",
     borderColor: "border-emerald-200",
-    shortDesc: "Apoyo emocional, salud mental, orientación.",
-    primaryFocus: [
-      "Acompañamiento en situaciones de estrés o ansiedad académica.",
-      "Orientación sobre programas de apoyo social.",
-      "Derivación al Programa de Apoyo al Estudiante (PAE).",
-    ],
-    disclaimer:
-      "No somos atención clínica directa. Brindamos primera acogida y te conectamos con los profesionales adecuados.",
+    shortDesc: "PAE, talleres, deportes, pastoral...",
   },
   {
     id: "financiero",
-    title: "Financiero",
+    title: categoryLabels.financiero,
     icon: categoryIcons.financiero,
     color: "text-cyan-600",
     bgColor: "bg-cyan-50",
+    hoverBgColor: "hover:bg-cyan-50",
     borderColor: "border-cyan-200",
-    shortDesc: "Becas, beneficios, aranceles, pagos.",
-    primaryFocus: [
-      "Dudas sobre postulación o pérdida de beneficios estatales/internos.",
-      "Orientación sobre el CAE, gratuidad o becas institucionales.",
-      "Consultas generales sobre procesos de pago.",
-    ],
-    disclaimer:
-      "No gestionamos pagos ni asignamos becas. Te dirigimos al área de Financiamiento (DAE) con la orientación correcta.",
+    shortDesc: "Becas, beneficios, procesos de pago...",
   },
   {
     id: "otro",
-    title: "Otro",
+    title: categoryLabels.otro,
     icon: categoryIcons.otro,
     color: "text-slate-600",
     bgColor: "bg-slate-100",
+    hoverBgColor: "hover:bg-slate-100",
     borderColor: "border-slate-300",
-    shortDesc: "Cualquier otro tema no listado.",
-    primaryFocus: [
-      "Dudas generales sobre la vida universitaria.",
-      "Propuestas de mejora para la comunidad.",
-      "Casos complejos que no sabes dónde categorizar.",
-    ],
-    disclaimer:
-      "Si no sabes dónde acudir, nosotros te escuchamos y te guiamos hacia la unidad correcta.",
+    shortDesc: "Dudas generales, sugerencias, reclamos...",
   },
 ];
 
 interface StepCategoryProps {
   value: TicketCategory | "";
   onChange: (v: TicketCategory) => void;
-  onContinue: (v: TicketCategory) => void;
+  onContinue: (cat: TicketCategory, subcat: string) => void;
 }
 
 export function StepCategory({ value, onChange, onContinue }: StepCategoryProps) {
@@ -252,54 +222,37 @@ export function StepCategory({ value, onChange, onContinue }: StepCategoryProps)
   );
 }
 
-function CategoryDetail({ cat, onContinue }: { cat: CategoryConfig; onContinue: (v: TicketCategory) => void }) {
+function CategoryDetail({ cat, onContinue }: { cat: CategoryConfig; onContinue: (cat: TicketCategory, subcat: string) => void }) {
+  const subcats = categorySubcategories[cat.id] || [];
+
   return (
     <div className="flex flex-col flex-1">
-      <div className="mb-6 flex-1">
+      <div className="mb-2 flex-1">
         <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
           <Icon icon="lucide:target" className={`w-3.5 h-3.5 ${cat.color}`} />
-          Nuestro enfoque en esta área:
+          Selecciona una opción específica para continuar:
         </h4>
-        <ul className="space-y-3">
-          {cat.primaryFocus.map((item, idx) => (
-            <motion.li 
-              key={idx} 
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {subcats.map((sub, idx) => (
+            <motion.button
+              key={idx}
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + idx * 0.05 }}
-              className="flex items-start gap-3 text-xs sm:text-sm text-slate-600 font-medium leading-relaxed"
+              transition={{ delay: 0.05 + idx * 0.03 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => { e.stopPropagation(); onContinue(cat.id, sub.label); }}
+              className={`text-left p-3.5 rounded-xl border ${cat.borderColor} bg-white ${cat.hoverBgColor} transition-all shadow-sm group flex flex-col justify-center`}
+              style={{ minHeight: '4.5rem' }}
             >
-              <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${cat.bgColor} border ${cat.borderColor}`} />
-              {item}
-            </motion.li>
+              <div className={`font-bold text-xs sm:text-sm text-slate-800 group-hover:${cat.color} transition-colors leading-tight`}>{sub.label}</div>
+              {sub.description && (
+                <div className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 leading-snug font-medium line-clamp-2">{sub.description}</div>
+              )}
+            </motion.button>
           ))}
-        </ul>
-      </div>
-
-      <div className={`p-4 rounded-xl mb-6 bg-white/60 border ${cat.borderColor} shadow-sm`}>
-        <div className="flex items-start gap-3">
-          <div className={`w-8 h-8 rounded-lg ${cat.bgColor} ${cat.color} flex items-center justify-center shrink-0 border ${cat.borderColor}`}>
-            <Icon icon="lucide:info" className="w-4 h-4" />
-          </div>
-          <div>
-            <h5 className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${cat.color}`}>Canales Oficiales</h5>
-            <p className="text-[11px] sm:text-xs text-slate-500 font-medium leading-relaxed">
-              {cat.disclaimer}
-            </p>
-          </div>
         </div>
       </div>
-
-      <motion.button
-        type="button"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={(e) => { e.stopPropagation(); onContinue(cat.id); }}
-        className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3 text-sm shadow-xl shadow-slate-900/10"
-      >
-        Continuar con {cat.title}
-        <Icon icon="lucide:arrow-right" className="w-4 h-4" />
-      </motion.button>
     </div>
   );
 }

@@ -74,10 +74,49 @@ export interface Survey {
 // ---- Formatting helpers ----
 export const categoryLabels: Record<TicketCategory, string> = {
   academico: "Académico",
-  infraestructura: "Infraestructura",
-  bienestar: "Bienestar",
+  infraestructura: "Experiencia",
+  bienestar: "Vida Estudiantil",
   financiero: "Financiero",
   otro: "Otro",
+};
+
+export const categorySubcategories: Record<TicketCategory, { label: string; description?: string }[]> = {
+  academico: [
+    { label: "Metodología Docente", description: "El profe no explica bien" },
+    { label: "Trato y Comunicación", description: "Problemas de convivencia docente-alumno" },
+    { label: "Asistencia y Puntualidad", description: "El profe siempre llega tarde" },
+    { label: "Pautas y Evaluaciones", description: "Rúbricas poco claras o reclamos de notas" },
+    { label: "Topes e Inscripción", description: "Problemas armando el horario" },
+    { label: "Mallas y Prerrequisitos", description: "Dudas sobre qué ramo tomar" },
+    { label: "Plataforma AVA", description: "Problemas con el aula virtual" },
+    { label: "Ayudantías Académicas", description: "Solicitud de reforzamientos" },
+  ],
+  bienestar: [
+    { label: "Apoyo Psicológico (PAE)", description: "Atención psicológica y contención" },
+    { label: "Talleres y Recreación", description: "Actividades extraprogramáticas" },
+    { label: "Deportes y Selecciones", description: "Ramas deportivas e infraestructura" },
+    { label: "Pastoral y Misiones", description: "Actividades pastorales" },
+    { label: "Ayudantías de Servicio", description: "Becas de trabajo y servicios" },
+  ],
+  infraestructura: [
+    { label: "Casino y Microondas", description: "Filas, limpieza y calentadores" },
+    { label: "Laboratorios y Talleres", description: "Equipos y espacios técnicos" },
+    { label: "WiFi y Conectividad", description: "Problemas de red y acceso" },
+    { label: "Baños e Infraestructura", description: "Mantenimiento y aseo" },
+    { label: "Patios y Espacios de Estudio", description: "Zonas de descanso y trabajo" },
+    { label: "Seguridad y Accesos", description: "Controles y guardias" },
+    { label: "Biblioteca y Servicios", description: "Préstamos y espacios de lectura" },
+  ],
+  financiero: [
+    { label: "Orientación Becas Estudiantiles" },
+    { label: "Dudas postulación/pérdida de becas" },
+    { label: "Consultas generales sobre pagos" },
+  ],
+  otro: [
+    { label: "Dudas Generales", description: "Consultas sin categorizar" },
+    { label: "Sugerencias y Reclamos", description: "Para mejorar nuestra sede" },
+    { label: "Problemas Técnicos", description: "Errores en el portal" },
+  ],
 };
 
 export const categoryIcons: Record<TicketCategory, string> = {

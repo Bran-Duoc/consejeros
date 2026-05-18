@@ -21,6 +21,7 @@ export const solicitudSchema = z.object({
   category: z.enum(TICKET_CATEGORIES, {
     error: "Selecciona una categoría",
   }),
+  subcategory: z.string().min(1, "Selecciona una subcategoría"),
   title: z
     .string()
     .min(5, "El título debe tener al menos 5 caracteres")
@@ -62,6 +63,7 @@ const step0Schema = z.object({
   category: z.enum(TICKET_CATEGORIES, {
     error: "Selecciona una categoría",
   }),
+  subcategory: z.string().min(1, "Selecciona una subcategoría"),
 });
 
 // Step 1: Personal details + ticket info
@@ -155,7 +157,7 @@ export function sanitizeForSubmit(text: string): string {
 
 // ---- Field names for RHF trigger() by step ----
 export const STEP_FIELDS: readonly (readonly string[])[] = [
-  ["category"],
+  ["category", "subcategory"],
   ["name", "email", "school", "career", "title", "description"],
   ["urgency"],
   ["arcoConsent"],

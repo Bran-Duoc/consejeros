@@ -32,6 +32,7 @@ interface FormDraft {
 
 interface FormData {
   category: TicketCategory | "";
+  subcategory: string;
   title: string;
   description: string;
   urgency: UrgencyLevel | "";
@@ -44,6 +45,7 @@ interface FormData {
 
 const initialFormData: FormData = {
   category: "",
+  subcategory: "",
   title: "",
   description: "",
   urgency: "",
@@ -158,7 +160,7 @@ export default function TicketForm() {
     try {
       const ticket = await addTicket({
         title: sanitizeForSubmit(data.title),
-        description: sanitizeForSubmit(data.description),
+        description: `[Subcategoría: ${data.subcategory}]\n\n${sanitizeForSubmit(data.description)}`,
         category: data.category as TicketCategory,
         urgency: data.urgency as UrgencyLevel,
         createdBy: data.email,
@@ -191,8 +193,9 @@ export default function TicketForm() {
     setFieldErrors({});
   }, [updateField]);
 
-  const handleCategoryContinue = useCallback((cat: TicketCategory) => {
+  const handleCategoryContinue = useCallback((cat: TicketCategory, subcat: string) => {
     updateField("category", cat);
+    updateField("subcategory", subcat);
     setFieldErrors({});
     setDirection(1);
     setStep(1);
