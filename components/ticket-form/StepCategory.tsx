@@ -1,5 +1,4 @@
-"use client";
-
+import React, { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { transitions } from "@/lib/transitions";
@@ -8,6 +7,7 @@ import {
   categoryIcons,
   categoryLabels,
   categorySubcategories,
+  SubcategoryGroup,
 } from "@/lib/data";
 
 interface CategoryConfig {
@@ -223,36 +223,101 @@ export function StepCategory({ value, onChange, onContinue }: StepCategoryProps)
 }
 
 function CategoryDetail({ cat, onContinue }: { cat: CategoryConfig; onContinue: (cat: TicketCategory, subcat: string) => void }) {
-  const subcats = categorySubcategories[cat.id] || [];
+  const groups = categorySubcategories[cat.id] || [];
+  const [selectedGroup, setSelectedGroup] = useState<SubcategoryGroup | null>(null);
+
+  useEffect(() => {
+    setSelectedGroup(null);
+  }, [cat.id]);
 
   return (
-    <div className="flex flex-col flex-1">
-      <div className="mb-2 flex-1">
-        <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-          <Icon icon="lucide:target" className={`w-3.5 h-3.5 ${cat.color}`} />
-          Selecciona una opción específica para continuar:
-        </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {subcats.map((sub, idx) => (
-            <motion.button
-              key={idx}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 + idx * 0.03 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={(e) => { e.stopPropagation(); onContinue(cat.id, sub.label); }}
-              className={`text-left p-3.5 rounded-xl border ${cat.borderColor} bg-white ${cat.hoverBgColor} transition-all shadow-sm group flex flex-col justify-center`}
-              style={{ minHeight: '4.5rem' }}
-            >
-              <div className={`font-bold text-xs sm:text-sm text-slate-800 group-hover:${cat.color} transition-colors leading-tight`}>{sub.label}</div>
-              {sub.description && (
-                <div className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 leading-snug font-medium line-clamp-2">{sub.description}</div>
-              )}
-            </motion.button>
-          ))}
-        </div>
-      </div>
+    <div className="flex flex-col flex-1 relative overflow-hidden">
+      <AnimatePresence mode="wait">
+        {!selectedGroup ? (
+          <motion.div
+            key="groups"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1"
+          >
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Icon icon="lucide:folder-open" className={`w-3.5 h-3.5 ${cat.color}`} />
+              Selecciona un tema principal:
+            </h4>
+            <div className="flex flex-col gap-2">
+              {groups.map((group, idx) => (
+                <motion.button
+                  key={idx}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + idx * 0.03 }}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={(e) => { e.stopPropagation(); setSelectedGroup(group); }}
+                  className={`text-left p-3.5 rounded-xl border ${cat.borderColor} bg-white ${cat.hoverBgColor} transition-all shadow-sm group flex items-center gap-4`}
+                >
+                  <div className={`w-10 h-10 rounded-lg ${cat.bgColor} ${cat.color} flex items-center justify-center shrink-0 border border-white/50 shadow-inner`}>
+                    <Icon icon={group.icon} className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className={`font-bold text-xs sm:text-sm text-slate-800 group-hover:${cat.color} transition-colors leading-tight`}>{group.name}</div>
+                    <div className="text-[10px] text-slate-400 mt-1 font-medium">{group.options.length} opciones disponibles</div>
+                  </div>
+                  <Icon icon="lucide:chevron-right" className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="options"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.2 }}
+            className="flex-1 flex flex-col"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={(e) => { e.stopPropagation(); setSelectedGroup(null); }}
+                className="w-8 h-8 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-colors shrink-0 shadow-sm"
+              >
+                <Icon icon="lucide:arrow-left" className="w-4 h-4" />
+              </button>
+              <h4 className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <Icon icon={selectedGroup.icon} className={`w-3.5 h-3.5 ${cat.color}`} />
+                {selectedGroup.name}
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {selectedGroup.options.map((sub, idx) => (
+                <motion.button
+                  key={idx}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + idx * 0.03 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    onContinue(cat.id, `${selectedGroup.name} - ${sub.label}`); 
+                  }}
+                  className={`text-left p-3.5 rounded-xl border ${cat.borderColor} bg-white ${cat.hoverBgColor} transition-all shadow-sm group flex flex-col justify-center`}
+                  style={{ minHeight: '4.5rem' }}
+                >
+                  <div className={`font-bold text-xs sm:text-sm text-slate-800 group-hover:${cat.color} transition-colors leading-tight`}>{sub.label}</div>
+                  {sub.description && (
+                    <div className="text-[10px] sm:text-[11px] text-slate-500 mt-1.5 leading-snug font-medium line-clamp-2">{sub.description}</div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

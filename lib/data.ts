@@ -80,42 +80,141 @@ export const categoryLabels: Record<TicketCategory, string> = {
   otro: "Otro",
 };
 
-export const categorySubcategories: Record<TicketCategory, { label: string; description?: string }[]> = {
+export interface SubcategoryGroup {
+  name: string;
+  icon: string;
+  options: { label: string; description: string }[];
+}
+
+export const categorySubcategories: Record<TicketCategory, SubcategoryGroup[]> = {
   academico: [
-    { label: "Metodología Docente", description: "Apoyo para mejorar la comprensión y el enfoque de las clases" },
-    { label: "Trato y Comunicación", description: "Fomentar un ambiente positivo de convivencia y respeto mutuo" },
-    { label: "Asistencia y Puntualidad", description: "Coordinación y seguimiento de los horarios académicos" },
-    { label: "Pautas y Evaluaciones", description: "Claridad en rúbricas y revisión constructiva de calificaciones" },
-    { label: "Topes e Inscripción", description: "Asesoría para optimizar y organizar tu horario semestral" },
-    { label: "Mallas y Prerrequisitos", description: "Orientación y guía clara sobre la toma de asignaturas" },
-    { label: "Plataforma AVA", description: "Asistencia para potenciar tu experiencia en el aula virtual" },
-    { label: "Ayudantías Académicas", description: "Oportunidades de reforzamiento y apoyo continuo" },
+    {
+      name: "Docentes",
+      icon: "lucide:users",
+      options: [
+        { label: "Metodología y Aprendizaje", description: "Apoyo para mejorar la comprensión y el enfoque de las clases" },
+        { label: "Convivencia y Trato", description: "Fomentar un ambiente positivo de respeto mutuo" },
+        { label: "Asistencia y Puntualidad", description: "Coordinación y seguimiento de los horarios académicos" },
+        { label: "Evaluaciones y Rúbricas", description: "Claridad en pautas y revisión constructiva de calificaciones" },
+      ],
+    },
+    {
+      name: "Gestión Académica",
+      icon: "lucide:clipboard-list",
+      options: [
+        { label: "Toma de Ramos y Topes", description: "Asesoría para optimizar y organizar tu horario semestral" },
+        { label: "Mallas y Prerrequisitos", description: "Orientación vocacional y guía sobre asignaturas" },
+        { label: "Ayudantías y Reforzamientos", description: "Oportunidades de apoyo continuo y aprendizaje" },
+        { label: "Certificados y Convalidaciones", description: "Acompañamiento en trámites formales académicos" },
+      ],
+    },
+    {
+      name: "Plataformas y Sistemas",
+      icon: "lucide:laptop",
+      options: [
+        { label: "Aula Virtual (AVA)", description: "Asistencia para potenciar tu experiencia de aprendizaje en línea" },
+        { label: "Portafolio y Maletín", description: "Soporte en herramientas institucionales y portafolio" },
+        { label: "Correo e Identidad", description: "Asistencia de acceso a cuentas institucionales" },
+      ],
+    },
   ],
   bienestar: [
-    { label: "Apoyo Psicológico (PAE)", description: "Acompañamiento, contención y bienestar integral" },
-    { label: "Talleres y Recreación", description: "Participación en actividades para tu desarrollo personal" },
-    { label: "Deportes y Selecciones", description: "Impulso a la vida sana y participación deportiva" },
-    { label: "Pastoral y Misiones", description: "Espacios de encuentro, reflexión y apoyo espiritual" },
-    { label: "Ayudantías de Servicio", description: "Oportunidades de colaboración y becas de trabajo" },
+    {
+      name: "Salud y Bienestar",
+      icon: "lucide:heart",
+      options: [
+        { label: "Apoyo Psicológico (PAE)", description: "Acompañamiento, contención y bienestar integral" },
+        { label: "Primeros Auxilios", description: "Asistencia rápida y derivación en salud física" },
+      ],
+    },
+    {
+      name: "Vida Universitaria",
+      icon: "lucide:smile",
+      options: [
+        { label: "Talleres y Recreación", description: "Participación en actividades para tu desarrollo personal" },
+        { label: "Deportes y Selecciones", description: "Impulso a la vida sana y participación deportiva" },
+        { label: "Pastoral y Misiones", description: "Espacios de encuentro, reflexión y apoyo espiritual" },
+      ],
+    },
+    {
+      name: "Comunidad e Integración",
+      icon: "lucide:users-2",
+      options: [
+        { label: "Inclusión y Diversidad", description: "Iniciativas para un entorno equitativo y respetuoso" },
+        { label: "Voluntariados y Servicios", description: "Oportunidades de colaboración comunitaria y becas" },
+      ],
+    },
   ],
   infraestructura: [
-    { label: "Casino y Microondas", description: "Mejora continua en nuestros espacios de alimentación" },
-    { label: "Laboratorios y Talleres", description: "Sugerencias sobre equipamiento e instalaciones técnicas" },
-    { label: "WiFi y Conectividad", description: "Aportes para la optimización de nuestra red y acceso" },
-    { label: "Baños e Infraestructura", description: "Iniciativas para el mantenimiento y confort de nuestras áreas" },
-    { label: "Patios y Espacios de Estudio", description: "Ideas para enriquecer nuestras zonas de descanso y estudio" },
-    { label: "Seguridad y Accesos", description: "Contribución para mantener un entorno universitario seguro" },
-    { label: "Biblioteca y Servicios", description: "Aprovechamiento de recursos y espacios de lectura" },
+    {
+      name: "Espacios Comunes",
+      icon: "lucide:sofa",
+      options: [
+        { label: "Casino y Alimentación", description: "Mejora continua en nuestros espacios de comida" },
+        { label: "Patios y Áreas de Descanso", description: "Ideas para enriquecer nuestras zonas de esparcimiento" },
+        { label: "Baños e Instalaciones", description: "Iniciativas para el confort y limpieza constante" },
+      ],
+    },
+    {
+      name: "Entorno de Aprendizaje",
+      icon: "lucide:book-open",
+      options: [
+        { label: "Biblioteca y Salas de Estudio", description: "Aprovechamiento de recursos y espacios de silencio" },
+        { label: "Laboratorios y Talleres", description: "Sugerencias sobre equipamiento e infraestructura técnica" },
+        { label: "Salas de Clases", description: "Iniciativas sobre el confort y equipamiento del aula" },
+      ],
+    },
+    {
+      name: "Servicios Generales",
+      icon: "lucide:settings",
+      options: [
+        { label: "WiFi y Conectividad", description: "Aportes para la optimización de nuestra red institucional" },
+        { label: "Seguridad y Accesos", description: "Contribución para mantener un entorno universitario seguro" },
+      ],
+    },
   ],
   financiero: [
-    { label: "Orientación Becas Estudiantiles", description: "Asesoría integral para acceder a beneficios" },
-    { label: "Procesos de Asignación y Renovación", description: "Acompañamiento en el estado de tus becas" },
-    { label: "Asesoría sobre Pagos", description: "Orientación clara y oportuna sobre procesos financieros" },
+    {
+      name: "Becas y Beneficios",
+      icon: "lucide:award",
+      options: [
+        { label: "Becas Estatales (CAE, Gratuidad)", description: "Asesoría integral para acceder a beneficios públicos" },
+        { label: "Becas Institucionales", description: "Orientación oportuna sobre beneficios internos Duoc UC" },
+      ],
+    },
+    {
+      name: "Procesos de Pago",
+      icon: "lucide:credit-card",
+      options: [
+        { label: "Aranceles y Matrículas", description: "Orientación clara sobre procesos de pago regulares" },
+        { label: "Repactaciones y Casos Especiales", description: "Acompañamiento en situaciones financieras excepcionales" },
+      ],
+    },
+    {
+      name: "Renovación y Suspensión",
+      icon: "lucide:pause-circle",
+      options: [
+        { label: "Suspensión de Beneficios", description: "Guía para congelar o mantener becas durante interrupciones" },
+      ],
+    },
   ],
   otro: [
-    { label: "Dudas Generales", description: "Cualquier otra consulta en la que podamos guiarte" },
-    { label: "Sugerencias e Iniciativas", description: "Ideas constructivas para seguir mejorando nuestra sede" },
-    { label: "Soporte Digital", description: "Asistencia rápida para facilitar el uso de plataformas" },
+    {
+      name: "Centro de Ayuda",
+      icon: "lucide:help-circle",
+      options: [
+        { label: "Dudas Generales", description: "Cualquier otra consulta en la que podamos guiarte" },
+        { label: "Sugerencias e Iniciativas", description: "Ideas constructivas para seguir mejorando la sede" },
+      ],
+    },
+    {
+      name: "Soporte Digital",
+      icon: "lucide:smartphone",
+      options: [
+        { label: "App Experiencia Duoc", description: "Apoyo técnico en el uso de la aplicación móvil estudiantil" },
+        { label: "Otros Sistemas", description: "Asistencia rápida para facilitar el uso de plataformas varias" },
+      ],
+    },
   ],
 };
 
