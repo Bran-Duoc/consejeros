@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder_for_buil
 
 export async function POST(req: Request) {
   try {
-    const { estudianteNombre, estudianteEmail, categoria, ticketId } = await req.json();
+    const { estudianteNombre, categoria, ticketId } = await req.json();
 
     // Validar datos mínimos
     if (!estudianteNombre || !ticketId) {

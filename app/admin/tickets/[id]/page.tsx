@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
 import { TicketStatus, categoryLabels, urgencyLabels, TicketCategory, parseCreatedBy } from "@/lib/data";
 import { calculateSLAStatus } from "@/lib/sla";
-import { transitions } from "@/lib/transitions";
+
 
 // Pasos internos para el administrador que coinciden exactamente con los estados
 const ADMIN_STEPS = [
@@ -21,7 +21,7 @@ const ADMIN_STEPS = [
 export default function TicketDetail() {
   const { id } = useParams();
   const router = useRouter();
-  const { tickets, updateTicket, user, role } = useApp();
+  const { tickets, updateTicket, user } = useApp();
   const [comment, setComment] = useState("");
   const [isTransferring, setIsTransferring] = useState(false);
 

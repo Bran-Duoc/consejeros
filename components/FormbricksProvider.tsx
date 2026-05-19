@@ -3,6 +3,18 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
+// Define a type-safe Formbricks interface
+interface FormbricksSDK {
+  init: (config: { environmentId: string; apiHost: string }) => Promise<void>;
+  registerRouteChange: () => void;
+}
+
+declare global {
+  interface Window {
+    formbricks?: FormbricksSDK;
+  }
+}
+
 // Reemplaza esto con tu Host y Environment ID de Formbricks
 const FORMBRICKS_HOST = "https://app.formbricks.com"; 
 const FORMBRICKS_ENVIRONMENT_ID = "YOUR_ENVIRONMENT_ID"; 
@@ -22,14 +34,14 @@ export default function FormbricksProvider() {
       script.src = "https://cdn.jsdelivr.net/npm/@formbricks/js@latest/dist/index.umd.js";
       script.async = true;
       script.onload = () => {
-        if ((window as any).formbricks) {
-          (window as any).formbricks.init({
+        if (window.formbricks) {
+          window.formbricks.init({
             environmentId: FORMBRICKS_ENVIRONMENT_ID,
             apiHost: FORMBRICKS_HOST,
           }).then(() => {
             isInitialized.current = true;
             // Registrar la ruta inicial una vez inicializado
-            (window as any).formbricks.registerRouteChange();
+            window.formbricks?.registerRouteChange();
           }).catch(console.error);
         }
       };
@@ -39,8 +51,8 @@ export default function FormbricksProvider() {
 
   useEffect(() => {
     // Solo registrar cambios de ruta posteriores si ya está inicializado
-    if (isInitialized.current && (window as any).formbricks && typeof (window as any).formbricks.registerRouteChange === 'function') {
-      (window as any).formbricks.registerRouteChange();
+    if (isInitialized.current && window.formbricks && typeof window.formbricks.registerRouteChange === 'function') {
+      window.formbricks.registerRouteChange();
     }
   }, [pathname]);
 

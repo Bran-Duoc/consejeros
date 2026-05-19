@@ -7,7 +7,7 @@ import {
   generateId, STORAGE_KEYS, loadFromStorage, User, AdminRole,
 } from "@/lib/data";
 import {
-  mockTickets, mockAuditEntries, mockSurveys, mockSLAConfig, adminUsers
+  mockSLAConfig, adminUsers
 } from "@/lib/mock";
 import { logStatusChange, logAssignment, logTicketCreation } from "@/lib/audit";
 import { routeTicket } from "@/lib/routing";
@@ -313,7 +313,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const stopSync = startAutoSync(async (data) => {
       // Cast to the type addTicket expects
-      await addTicket(data as any);
+      await addTicket(data as Omit<Ticket, "id" | "createdAt" | "updatedAt" | "status" | "assignedTo" | "slaDeadline">);
     }, (res) => {
       if (res.success > 0) {
         toastAPI.success(`Sincronizadas ${res.success} solicitudes pendientes.`);
@@ -334,7 +334,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       try {
         const updatedTicket = await db.tickets.updateStatus(ticketId, newStatus);
         setTickets((prev) => prev.map((t) => (t.id === ticketId ? updatedTicket : t)));
-        const auditEntry = logStatusChange(ticketId, (user?.id || null) as any, user?.email || "Sistema", "status_change", newStatus);
+        const auditEntry = logStatusChange(ticketId, user?.id || "system", user?.email || "Sistema", "status_change", newStatus);
         await db.audit.create(auditEntry);
         setAudit((prevAudit) => [...prevAudit, auditEntry]);
         toastAPI.success("Estado actualizado correctamente.");
@@ -368,7 +368,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         
         // Log status if changed
         if (updates.status) {
-          const auditEntry = logStatusChange(ticketId, (user?.id || null) as any, user?.email || "Sistema", "status_update", updates.status);
+          const auditEntry = logStatusChange(ticketId, user?.id || "system", user?.email || "Sistema", "status_update", updates.status);
           await db.audit.create(auditEntry);
           setAudit((prev) => [...prev, auditEntry]);
         }

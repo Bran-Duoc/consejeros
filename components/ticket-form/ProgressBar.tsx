@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { fadeIn } from "@/lib/transitions";
+
 
 interface ProgressBarProps {
   current: number;

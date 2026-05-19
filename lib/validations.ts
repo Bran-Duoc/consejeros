@@ -43,7 +43,15 @@ export const solicitudSchema = z.object({
     .string()
     .email("Ingresa un email válido")
     .refine(
-      (email) => /(@duoc(uc)?\.cl)$/i.test(email),
+      (email) => {
+        const isLocal = typeof window !== "undefined"
+          ? (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+          : process.env.NODE_ENV === "development";
+        if (isLocal && (email.endsWith("@localhost") || email.endsWith("@example.com"))) {
+          return true;
+        }
+        return /(@duoc(uc)?\.cl)$/i.test(email);
+      },
       "Debes usar tu correo institucional (@duocuc.cl o @duoc.cl)"
     ),
   school: z.string().min(1, "Selecciona tu escuela"),

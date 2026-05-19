@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useApp } from "@/context/AppContext";
@@ -22,7 +23,7 @@ const getSimplifiedStatus = (status: TicketStatus) => {
 
 export default function StudentProfile() {
   const { tickets, user, isInitializing, isAuthLoading } = useApp();
-  const router = require("next/navigation").useRouter();
+  const router = useRouter();
 
   React.useEffect(() => {
     if (!isInitializing && !isAuthLoading && !user) {
@@ -114,7 +115,7 @@ export default function StudentProfile() {
                         {categoryLabels[ticket.category as TicketCategory] || ticket.category}
                       </h3>
                       <p className="text-slate-500 text-sm mt-1 line-clamp-1 italic">
-                        "{ticket.description}"
+                        &quot;{ticket.description}&quot;
                       </p>
                     </div>
                     

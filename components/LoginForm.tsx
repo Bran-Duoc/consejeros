@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -20,23 +20,29 @@ const MOBILE_FEATURES = [
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const [isLocalhost, setIsLocalhost] = useState(false);
-  const [bypassDisabled, setBypassDisabled] = useState(false);
-
-  useEffect(() => {
+  const [errorMessage] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("error") === "invalid_domain") {
-        setErrorMessage("Acceso denegado. Debes utilizar tu correo institucional (@duocuc.cl).");
+        return "Acceso denegado. Debes utilizar tu correo institucional (@duocuc.cl).";
       }
-      
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      setIsLocalhost(isLocal);
-      setBypassDisabled(localStorage.getItem("localhost_bypass_disabled") === "true");
     }
-  }, []);
+    return null;
+  });
+
+  const [isLocalhost] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    }
+    return false;
+  });
+
+  const [bypassDisabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("localhost_bypass_disabled") === "true";
+    }
+    return false;
+  });
 
   const handleEnableBypass = () => {
     localStorage.removeItem("localhost_bypass_disabled");

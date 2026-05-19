@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useApp } from "@/context/AppContext";
 import { supabase } from "@/lib/supabase";
 import { TicketCategory, UrgencyLevel } from "@/lib/data";
-import { validateStep, sanitizeForSubmit, type SolicitudFormInput } from "@/lib/validations";
+import { validateStep, sanitizeForSubmit } from "@/lib/validations";
 
 // Sub-components
 import { ProgressBar } from "./ticket-form/ProgressBar";
@@ -84,34 +84,39 @@ export default function TicketForm() {
   const { addTicket, user } = useApp();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [data, setData] = useState<FormData>(initialFormData);
+  const [data, setData] = useState<FormData>(() => loadDraft());
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [ticketId, setTicketId] = useState("");
-  const [isOffline, setIsOffline] = useState(false);
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" ? !navigator.onLine : false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const draftTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Load draft + set user info
-  useEffect(() => {
-    const draft = loadDraft();
-    if (user && !draft.email) {
-      draft.email = user.email || "";
-      draft.name = user.user_metadata?.full_name || user.email?.split("@")[0] || "";
+  // Sync user info to draft in render phase
+  const [prevUserId, setPrevUserId] = useState<string | undefined>(undefined);
+  if (user && user.id !== prevUserId) {
+    setPrevUserId(user.id);
+    if (!data.email) {
+      setData((prev) => ({
+        ...prev,
+        email: user.email || "",
+        name: user.user_metadata?.full_name || user.email?.split("@")[0] || "",
+      }));
     }
-    setData(draft);
+  }
 
+  // Setup online/offline listeners
+  useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
-    setIsOffline(!navigator.onLine);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [user]);
+  }, []);
 
   // Debounced draft save
   useEffect(() => {

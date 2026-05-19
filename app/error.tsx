@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Link from "next/link";
 import { Icon } from "@iconify/react";
 
 export default function GlobalError({
@@ -54,13 +55,13 @@ export default function GlobalError({
             <Icon icon="lucide:refresh-cw" className="w-4 h-4" />
             Intentar de nuevo
           </button>
-          <a
+          <Link
             href="/"
             className="px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
           >
             <Icon icon="lucide:home" className="w-4 h-4" />
             Volver al Inicio
-          </a>
+          </Link>
         </div>
 
         {/* Emergency Logout Option */}

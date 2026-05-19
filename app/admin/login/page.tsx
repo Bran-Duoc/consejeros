@@ -13,18 +13,21 @@ export default function AdminLoginPage() {
   const [agentId, setAgentId] = useState("");
   const [pin, setPin] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showPin, setShowPin] = useState(false);
+  const [showPin] = useState(false);
 
-  const [isLocalhost, setIsLocalhost] = useState(false);
-  const [bypassDisabled, setBypassDisabled] = useState(false);
-
-  useEffect(() => {
+  const [isLocalhost] = useState(() => {
     if (typeof window !== "undefined") {
-      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      setIsLocalhost(isLocal);
-      setBypassDisabled(localStorage.getItem("localhost_bypass_disabled") === "true");
+      return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     }
-  }, []);
+    return false;
+  });
+
+  const [bypassDisabled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("localhost_bypass_disabled") === "true";
+    }
+    return false;
+  });
 
   const handleEnableBypass = () => {
     localStorage.removeItem("localhost_bypass_disabled");
@@ -57,7 +60,7 @@ export default function AdminLoginPage() {
 
       if (error) throw error;
       router.push("/admin");
-    } catch (error: any) {
+    } catch {
       setErrorMessage("Credenciales no válidas");
     } finally {
       setLoading(false);

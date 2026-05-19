@@ -6,8 +6,7 @@ import LoginForm from "@/components/LoginForm";
 import TicketForm from "@/components/TicketForm";
 
 export default function HomePage() {
-  const { user, role, isInitializing, isAuthLoading } = useApp();
-  const router = require("next/navigation").useRouter();
+  const { user, isInitializing, isAuthLoading } = useApp();
 
 
   if (isInitializing || isAuthLoading) {

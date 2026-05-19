@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatAuditAction } from "@/lib/audit";
-import { AuditEntry } from "@/lib/data";
+
 
 const actionIcons: Record<string, string> = {
   "Ticket creado": "🆕",

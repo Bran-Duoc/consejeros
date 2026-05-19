@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useApp, type UserProfile } from "@/context/AppContext";
-import { transitions, staggerContainer, staggerItem } from "@/lib/transitions";
+import { useApp } from "@/context/AppContext";
+import { staggerContainer, staggerItem } from "@/lib/transitions";
 import type { Ticket } from "@/lib/data";
 
 const navItems = [
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const router = require("next/navigation").useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     if (isInitializing || isAuthLoading) return;

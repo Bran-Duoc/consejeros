@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { motion } from "framer-motion";
 import { useApp } from "@/context/AppContext";
@@ -28,7 +27,6 @@ const STATUS_OPTIONS: { value: TicketStatus; label: string }[] = [
 
 export default function TicketListPage() {
   const { tickets, updateTicket, role } = useApp();
-  const router = useRouter();
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<TicketStatus | "all">("all");
@@ -46,6 +44,18 @@ export default function TicketListPage() {
   };
 
   const filteredTickets = useMemo(() => {
+    const getSortVal = (t: Ticket): string | number => {
+      if (sortField === "sla") {
+        return calculateSLAStatus(t.slaDeadline).remainingMs;
+      }
+      if (sortField === "createdAt") {
+        return new Date(t.createdAt).getTime();
+      }
+      const val = t[sortField as keyof Ticket];
+      if (typeof val === "string" || typeof val === "number") return val;
+      return "";
+    };
+
     return tickets.filter((t) => {
       if (filterStatus !== "all" && t.status !== filterStatus) return false;
       if (filterCategory !== "all" && t.category !== filterCategory) return false;
@@ -61,18 +71,8 @@ export default function TicketListPage() {
       }
       return true;
     }).sort((a, b) => {
-      let valA: any = a[sortField as keyof Ticket];
-      let valB: any = b[sortField as keyof Ticket];
-
-      if (sortField === "sla") {
-        const slaA = calculateSLAStatus(a.slaDeadline);
-        const slaB = calculateSLAStatus(b.slaDeadline);
-        valA = slaA.remainingMs;
-        valB = slaB.remainingMs;
-      } else if (sortField === "createdAt") {
-        valA = new Date(a.createdAt).getTime();
-        valB = new Date(b.createdAt).getTime();
-      }
+      const valA = getSortVal(a);
+      const valB = getSortVal(b);
 
       if (valA < valB) return sortDesc ? 1 : -1;
       if (valA > valB) return sortDesc ? -1 : 1;
@@ -118,7 +118,7 @@ export default function TicketListPage() {
               <Icon icon="lucide:filter" className="w-3.5 h-3.5 text-slate-400" />
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as TicketStatus | "all")}
                 className="bg-transparent text-xs font-bold text-slate-600 outline-none uppercase tracking-wide cursor-pointer"
               >
                 <option value="all">ESTADO: TODOS</option>
@@ -130,7 +130,7 @@ export default function TicketListPage() {
             <div className="flex items-center gap-1.5 px-2 shrink-0">
               <select
                 value={filterCategory}
-                onChange={(e) => setFilterCategory(e.target.value as any)}
+                onChange={(e) => setFilterCategory(e.target.value as TicketCategory | "all")}
                 className="bg-transparent text-xs font-bold text-slate-600 outline-none uppercase tracking-wide cursor-pointer"
               >
                 <option value="all">CATEGORÍA: TODAS</option>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { transitions } from "@/lib/transitions";
@@ -82,7 +82,6 @@ interface StepCategoryProps {
 
 export function StepCategory({ value, onChange, onContinue }: StepCategoryProps) {
   const activeCat = CATEGORIES.find((c) => c.id === value);
-  const inactiveCats = CATEGORIES.filter((c) => c.id !== value);
 
   return (
     <div className="flex flex-col h-full">
@@ -224,11 +223,13 @@ export function StepCategory({ value, onChange, onContinue }: StepCategoryProps)
 
 function CategoryDetail({ cat, onContinue }: { cat: CategoryConfig; onContinue: (cat: TicketCategory, subcat: string) => void }) {
   const groups = categorySubcategories[cat.id] || [];
+  const [prevCatId, setPrevCatId] = useState<string>(cat.id);
   const [selectedGroup, setSelectedGroup] = useState<SubcategoryGroup | null>(null);
 
-  useEffect(() => {
+  if (cat.id !== prevCatId) {
+    setPrevCatId(cat.id);
     setSelectedGroup(null);
-  }, [cat.id]);
+  }
 
   return (
     <div className="flex flex-col flex-1 relative overflow-hidden">

@@ -7,7 +7,7 @@ import { useApp } from "@/context/AppContext";
 import { categoryLabels, TicketCategory, statusLabels, TicketStatus } from "@/lib/data";
 import { calculateSLAStatus } from "@/lib/sla";
 import { Icon } from "@iconify/react";
-import { staggerContainer, staggerItem, transitions } from "@/lib/transitions";
+import { staggerContainer, staggerItem } from "@/lib/transitions";
 
 function StatCard({ label, value, icon, trend, color, bgColor }: {
   label: string; value: string | number; icon: string; trend?: string; color: string; bgColor: string;

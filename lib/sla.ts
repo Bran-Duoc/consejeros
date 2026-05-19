@@ -23,8 +23,7 @@ export function calculateSLAStatus(slaDeadline: string): SLAStatus {
   const deadline = new Date(slaDeadline).getTime();
   const remainingMs = deadline - now;
 
-  // Calculate total SLA window (we estimate from remaining)
-  const totalMs = Math.abs(remainingMs) + Math.abs(remainingMs); // approximation for display
+
   const percentUsed = remainingMs <= 0 ? 100 : Math.max(0, Math.min(100, ((1 - remainingMs / (remainingMs * 2)) * 100)));
 
   let level: SLAStatus["level"];

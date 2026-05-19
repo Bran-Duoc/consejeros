@@ -6,16 +6,22 @@ import { Ticket, AuditEntry, Survey, TicketStatus, TicketCategory, UrgencyLevel,
 // Connected to Supabase project: traweqraelgoinlrcmja
 // ============================================================
 
+interface PostgresError {
+  message?: string;
+  code?: string;
+}
+
 // ---- Retry with exponential backoff ----
 async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, baseDelay = 500): Promise<T> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (err: any) {
+    } catch (err) {
       lastError = err;
-      const code = err?.code || '';
-      const msg = err?.message || '';
+      const errorObj = err as PostgresError | null;
+      const code = errorObj?.code || '';
+      const msg = errorObj?.message || '';
       if (code === '42501' || code === '23505' || code === '23503' ||
           msg.includes('JWT') || msg.includes('schema cache') ||
           msg.includes('violates foreign key') || msg.includes('row-level security')) {
@@ -30,8 +36,9 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 2, baseDelay = 50
 }
 
 // ---- User-friendly error messages (Spanish) ----
-function friendlyError(err: any): string {
-  const msg = err?.message || '';
+function friendlyError(err: unknown): string {
+  const errorObj = err as PostgresError | null;
+  const msg = errorObj?.message || '';
   if (msg.includes('row-level security')) return 'Debes iniciar sesión para realizar esta acción.';
   if (msg.includes('JWT') || msg.includes('expired')) return 'Tu sesión ha expirado. Vuelve a iniciar sesión.';
   if (msg.includes('duplicate')) return 'Esta solicitud ya fue registrada.';
@@ -80,30 +87,33 @@ const DB_TO_URGENCY = mkReverse(URGENCY_TO_DB);
 const DB_TO_STATUS = mkReverse(STATUS_TO_DB);
 
 // ---- DB Row → App Ticket ----
-function mapTicketFromDB(row: any): Ticket {
+function mapTicketFromDB(row: Record<string, unknown>): Ticket {
+  const getStr = (val: unknown): string => typeof val === 'string' ? val : '';
+  const getArray = (val: unknown): string[] => Array.isArray(val) ? val.map(v => String(v)) : [];
+  
   return {
-    id: row.id,
-    title: row.titulo || row.title || '',
-    description: row.descripcion || row.description || '',
-    category: (DB_TO_CATEGORY[row.categoria || row.category] || 'otro') as TicketCategory,
-    urgency: (DB_TO_URGENCY[row.nivel_urgencia || row.urgency] || 'bajo') as UrgencyLevel,
-    status: (DB_TO_STATUS[row.estado || row.status] || 'nuevo') as TicketStatus,
-    assignedTo: row.asignado_a || row.assigned_to || null,
-    createdBy: row.estudiante_id || row.created_by || '',
-    createdByName: row.nombre_estudiante || row.created_by_name || row.nombre || 'Estudiante',
-    createdAt: row.fecha_creacion || row.created_at || new Date().toISOString(),
-    updatedAt: row.updated_at || row.fecha_creacion || row.created_at || new Date().toISOString(),
-    slaDeadline: row.sla_deadline || new Date(Date.now() + 48 * 3600000).toISOString(),
-    school: row.escuela || row.school || '',
-    career: row.carrera || row.career || '',
-    attachments: row.attachments || [],
-    tags: row.tags || [],
+    id: getStr(row.id),
+    title: getStr(row.titulo || row.title),
+    description: getStr(row.descripcion || row.description),
+    category: (DB_TO_CATEGORY[getStr(row.categoria || row.category)] || 'otro') as TicketCategory,
+    urgency: (DB_TO_URGENCY[getStr(row.nivel_urgencia || row.urgency)] || 'bajo') as UrgencyLevel,
+    status: (DB_TO_STATUS[getStr(row.estado || row.status)] || 'nuevo') as TicketStatus,
+    assignedTo: (row.asignado_a || row.assigned_to || null) as string | null,
+    createdBy: getStr(row.estudiante_id || row.created_by),
+    createdByName: getStr(row.nombre_estudiante || row.created_by_name || row.nombre) || 'Estudiante',
+    createdAt: getStr(row.fecha_creacion || row.created_at) || new Date().toISOString(),
+    updatedAt: getStr(row.updated_at || row.fecha_creacion || row.created_at) || new Date().toISOString(),
+    slaDeadline: getStr(row.sla_deadline) || new Date(Date.now() + 48 * 3600000).toISOString(),
+    school: getStr(row.escuela || row.school),
+    career: getStr(row.carrera || row.career),
+    attachments: getArray(row.attachments),
+    tags: getArray(row.tags),
   };
 }
 
 // ---- App Ticket → DB Row (Robust Mapping) ----
-function mapTicketToDB(t: Partial<Ticket>): Record<string, any> {
-  const data: Record<string, any> = {};
+function mapTicketToDB(t: Partial<Ticket>): Record<string, unknown> {
+  const data: Record<string, unknown> = {};
 
   if (t.title !== undefined) data.titulo = t.title;
   if (t.description !== undefined) data.descripcion = t.description;
@@ -133,8 +143,10 @@ function mapTicketToDB(t: Partial<Ticket>): Record<string, any> {
 }
 
 // ---- Safe Insert with Recursive Column Stripping ----
-// This is the key to robustness: it will strip any column the DB doesn't have.
-async function safeInsert(table: string, row: Record<string, any>): Promise<{ data: any; error: any }> {
+async function safeInsert(
+  table: string, 
+  row: Record<string, unknown>
+): Promise<{ data: Record<string, unknown> | null; error: PostgresError | null }> {
   const { data, error } = await supabase.from(table).insert([row]).select().maybeSingle();
 
   if (error) {
@@ -145,13 +157,14 @@ async function safeInsert(table: string, row: Record<string, any>): Promise<{ da
     if (colMatch) {
       const badCol = colMatch[1];
       console.warn(`[API] Column "${badCol}" not found in ${table}, stripping and retrying...`);
-      const { [badCol]: _removed, ...cleaned } = row;
-      if (Object.keys(cleaned).length === 0) return { data, error }; // Don't loop forever
+      const cleaned = { ...row };
+      delete cleaned[badCol];
+      if (Object.keys(cleaned).length === 0) return { data: data as Record<string, unknown> | null, error }; // Don't loop forever
       return safeInsert(table, cleaned); // Recursive call
     }
   }
 
-  return { data, error };
+  return { data: data as Record<string, unknown> | null, error };
 }
 
 // ============================================================
@@ -174,11 +187,11 @@ export const db = {
             .select('*')
             .order('created_at', { ascending: false });
           if (altError) throw altError;
-          return (altData || []).map(mapTicketFromDB);
+          return (altData || []).map(row => mapTicketFromDB(row as Record<string, unknown>));
         }
         
         if (error) throw error;
-        return (data || []).map(mapTicketFromDB);
+        return (data || []).map(row => mapTicketFromDB(row as Record<string, unknown>));
       });
     },
 
@@ -198,9 +211,10 @@ export const db = {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         } as Ticket;
-      } catch (err: any) {
+      } catch (err) {
+        const errorObj = err as PostgresError | null;
         console.error('[API] Ticket creation failed:', err);
-        throw new Error(err.message || friendlyError(err));
+        throw new Error(errorObj?.message || friendlyError(err));
       }
     },
 
@@ -227,8 +241,8 @@ export const db = {
         }
 
         if (error) throw new Error(friendlyError(error));
-        if (data) return mapTicketFromDB(data);
-        return { id, status } as Ticket;
+        if (data) return mapTicketFromDB(data as Record<string, unknown>);
+        return { id, status } as unknown as Ticket;
       });
     },
 
@@ -247,8 +261,8 @@ export const db = {
           .maybeSingle();
 
         if (error) throw new Error(friendlyError(error));
-        if (data) return mapTicketFromDB(data);
-        return { id, ...updates } as any;
+        if (data) return mapTicketFromDB(data as Record<string, unknown>);
+        return { id, ...updates } as unknown as Ticket;
       });
     },
   },
@@ -264,17 +278,20 @@ export const db = {
         console.warn('Audit fetch failed:', error.message);
         return [];
       }
-      return (data || []).map((a: any) => ({
-        id: a.id,
-        ticketId: a.ticket_id,
-        userId: a.user_id,
-        userName: a.user_name || a.nombre_usuario || 'Sistema',
-        action: a.action || a.accion || '',
-        previousState: a.previous_state || a.estado_anterior,
-        newState: a.new_state || a.estado_nuevo,
-        metadata: a.metadata,
-        timestamp: a.created_at,
-      }));
+      return (data || []).map((a) => {
+        const row = a as Record<string, unknown>;
+        return {
+          id: String(row.id),
+          ticketId: String(row.ticket_id),
+          userId: String(row.user_id || ''),
+          userName: String(row.user_name || row.nombre_usuario || 'Sistema'),
+          action: String(row.action || row.accion || ''),
+          previousState: row.previous_state ? String(row.previous_state) : undefined,
+          newState: row.new_state ? String(row.new_state) : undefined,
+          metadata: row.metadata ? String(row.metadata) : undefined,
+          timestamp: String(row.created_at),
+        };
+      });
     },
 
     async create(entry: Partial<AuditEntry>): Promise<void> {
@@ -302,15 +319,18 @@ export const db = {
         console.warn('Surveys fetch failed:', error.message);
         return [];
       }
-      return (data || []).map((s: any) => ({
-        id: s.id,
-        ticketId: s.ticket_id,
-        userId: s.user_id,
-        csat: s.csat_score || s.csat || 3,
-        ces: s.ces_score || s.ces || 3,
-        comment: s.comment,
-        createdAt: s.created_at,
-      }));
+      return (data || []).map((s) => {
+        const row = s as Record<string, unknown>;
+        return {
+          id: String(row.id),
+          ticketId: String(row.ticket_id),
+          userId: String(row.user_id || ''),
+          csat: Number(row.csat_score || row.csat || 3),
+          ces: Number(row.ces_score || row.ces || 3),
+          comment: row.comment ? String(row.comment) : undefined,
+          createdAt: String(row.created_at),
+        };
+      });
     },
 
     async create(survey: Partial<Survey>): Promise<void> {
@@ -333,23 +353,29 @@ export const db = {
     async getAll() {
       const { data, error } = await supabase.from('staff_users').select('*');
       if (!error && data) {
-        return data.filter(u => !!u).map((u: any) => ({
-          id: u.id,
-          name: u.nombre || u.name || 'Staff',
-          email: u.email,
-          role: u.rol || u.role || 'Consejo',
-          department: u.departamento || u.department,
-        }));
+        return data.filter(u => !!u).map((u) => {
+          const row = u as Record<string, unknown>;
+          return {
+            id: String(row.id),
+            name: String(row.nombre || row.name || 'Staff'),
+            email: String(row.email || ''),
+            role: (row.rol || row.role || 'Consejo') as AdminRole,
+            department: row.departamento ? String(row.departamento) : undefined,
+          };
+        });
       }
       const { data: userData, error: userError } = await supabase.from('users').select('*');
       if (userError) return [];
-      return (userData || []).filter(u => !!u).map((u: any) => ({
-        id: u.id,
-        name: u.rol || 'Estudiante',
-        email: '', // La tabla public.users no tiene email, se saca de auth.users si fuera necesario
-        role: (u.rol as AdminRole) || 'Estudiante',
-        activeTickets: 0
-      }));
+      return (userData || []).filter(u => !!u).map((u) => {
+        const row = u as Record<string, unknown>;
+        return {
+          id: String(row.id),
+          name: String(row.rol || 'Estudiante'),
+          email: '', // La tabla public.users no tiene email
+          role: (row.rol as AdminRole) || 'Estudiante',
+          activeTickets: 0
+        };
+      });
     },
   },
 };

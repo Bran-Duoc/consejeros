@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context/AppContext";
-import { categoryLabels, TicketCategory, urgencyLabels, Ticket } from "@/lib/data";
+import { categoryLabels, TicketCategory } from "@/lib/data";
 import { Icon } from "@iconify/react";
 
 // ---- Canvas Bar Chart ----
@@ -73,7 +73,6 @@ function BarChart({ data, height = 260 }: {
       // Bar shadow
       ctx.fillStyle = "rgba(0,0,0,0.05)";
       ctx.beginPath();
-      // @ts-ignore
       ctx.roundRect(x + 2, y + 2, barWidth, barHeight, [6, 6, 0, 0]);
       ctx.fill();
 
@@ -83,7 +82,6 @@ function BarChart({ data, height = 260 }: {
       gradient.addColorStop(1, d.color + "66");
       ctx.fillStyle = gradient;
       ctx.beginPath();
-      // @ts-ignore
       ctx.roundRect(x, y, barWidth, barHeight, [6, 6, 0, 0]);
       ctx.fill();
 
